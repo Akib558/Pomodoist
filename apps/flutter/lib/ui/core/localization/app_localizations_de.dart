@@ -3686,4 +3686,34 @@ class AppLocalizationsDe extends AppLocalizations {
   String taskParentPath(String path) {
     return 'Teil von: $path';
   }
+
+  @override
+  String get projectViewList => 'Liste';
+
+  @override
+  String get projectViewMap => 'Karte';
+
+  @override
+  String get projectViewBranches => 'Zweige';
+
+  @override
+  String get projectOwnTasks => 'Projektaufgaben';
+
+  @override
+  String get projectShowCompleted => 'Erledigte anzeigen';
+
+  @override
+  String get projectExpandBranch => 'Zweig aufklappen';
+
+  @override
+  String get projectCollapseBranch => 'Zweig einklappen';
+
+  @override
+  String get projectPlaceInside => 'Hinein verschieben';
+
+  @override
+  String get projectPlaceBefore => 'Davor verschieben';
+
+  @override
+  String get projectPlaceAfter => 'Danach verschieben';
 }

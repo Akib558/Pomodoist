@@ -1153,5 +1153,15 @@
   "taskCollapseSubtasks": "Contraer subtareas",
   "taskAllSubtasksProgress": "Todas las subtareas: {completed} de {total} completadas",
   "taskOpenFullBranch": "Abrir todas las subtareas",
-  "taskParentPath": "Parte de: {path}"
+  "taskParentPath": "Parte de: {path}",
+  "projectViewList": "Lista",
+  "projectViewMap": "Mapa",
+  "projectViewBranches": "Ramas",
+  "projectOwnTasks": "Tareas del proyecto",
+  "projectShowCompleted": "Mostrar completadas",
+  "projectExpandBranch": "Expandir rama",
+  "projectCollapseBranch": "Contraer rama",
+  "projectPlaceInside": "Mover dentro",
+  "projectPlaceBefore": "Mover antes",
+  "projectPlaceAfter": "Mover después"
 }

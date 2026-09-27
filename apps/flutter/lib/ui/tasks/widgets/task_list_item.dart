@@ -161,6 +161,9 @@ class TaskListItem extends ConsumerWidget {
     this.enableSubtaskDrop = true,
     this.presentation = TaskListItemPresentation.standard,
     this.project,
+    this.diagram = false,
+    this.onAddSubtask,
+    this.onDiagramMove,
     super.key,
   });
 
@@ -172,6 +175,9 @@ class TaskListItem extends ConsumerWidget {
   final bool enableSubtaskDrop;
   final TaskListItemPresentation presentation;
   final ProjectItem? project;
+  final bool diagram;
+  final VoidCallback? onAddSubtask;
+  final VoidCallback? onDiagramMove;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -271,12 +277,175 @@ class TaskListItem extends ConsumerWidget {
       );
     }
 
+    if (diagram) {
+      final menu = [
+        if (task.canEdit && onAddSubtask != null)
+          ShadContextMenuItem(
+            height: 44,
+            onPressed: onAddSubtask,
+            leading: const Icon(LucideIcons.plus, size: 16),
+            child: Text(l10n.addSubtask),
+          ),
+        if (task.canEdit && onDiagramMove != null)
+          ShadContextMenuItem(
+            height: 44,
+            onPressed: onDiagramMove,
+            leading: const Icon(LucideIcons.move, size: 16),
+            child: Text(l10n.taskMove),
+          ),
+        if (task.canEdit)
+          ..._quickActionItems(context, ref, includeFocus: true)
+        else
+          ShadContextMenuItem(
+            height: 44,
+            enabled: !task.isCompleted,
+            onPressed: () => unawaited(_startFocus(context, ref)),
+            leading: const Icon(LucideIcons.play, size: 16),
+            child: Text(l10n.startFocus),
+          ),
+      ];
+      final schedule = task.schedule;
+      final label = schedule == null
+          ? null
+          : formatTaskListSchedule(
+              context,
+              schedule,
+              displayMode: timeDisplayMode,
+              defaultTimedBlockMinutes: defaultTimedBlockMinutes,
+            );
+      return AppContextMenuRegion(
+        items: menu,
+        child: Material(
+          color: selection?.isSelected(task.id) == true
+              ? colors.accentTint
+              : Colors.transparent,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: InkWell(
+                  onTap: () => selection?.active == true
+                      ? selection!.toggle(task.id)
+                      : openTaskDetails(context, task.id),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                    child: Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: Tooltip(
+                        message: task.content,
+                        child: Text(
+                          task.content,
+                          maxLines: 3,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: task.isCompleted
+                                    ? colors.secondaryText
+                                    : colors.primaryText,
+                                decoration: task.isCompleted
+                                    ? TextDecoration.lineThrough
+                                    : null,
+                              ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Text(
+                  [
+                    if (label != null) label,
+                    if (focusEstimate != null)
+                      '${task.completedFocusIntervals}/$focusEstimate',
+                  ].join(' · '),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelSmall?.copyWith(color: colors.secondaryText),
+                ),
+              ),
+              Row(
+                children: [
+                  SizedBox(
+                    width: 44,
+                    height: 48,
+                    child: Center(
+                      child: TaskCompletionControl(
+                        taskId: task.id,
+                        isCompleted: task.isCompleted,
+                        color: _priorityColor(
+                          task.priority,
+                          colorScheme,
+                          colors,
+                        ),
+                        fillColor: colors.accentFill,
+                        tooltip: task.isCompleted
+                            ? l10n.markOpen
+                            : l10n.markComplete,
+                        onPressed: task.canEdit ? toggleCompletion : null,
+                      ),
+                    ),
+                  ),
+                  if (progress != null && progress.total > 0)
+                    Expanded(
+                      child: TaskBranchProgressButton(
+                        taskId: task.id,
+                        progress: progress,
+                      ),
+                    )
+                  else
+                    const Spacer(),
+                  AppActionMenu(tooltip: l10n.taskMore, items: menu),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    Widget? branchDisclosure() =>
+        hierarchy?.hasVisibleChildren == true &&
+            branchScope != null &&
+            progress != null &&
+            progress.total > 0
+        ? TaskBranchProgressButton(
+            taskId: task.id,
+            progress: progress,
+            expanded: hierarchy!.expanded,
+            showProgress: false,
+            onToggle: () => unawaited(
+              setTaskBranchExpanded(
+                context,
+                ref,
+                branchScope!,
+                task.id,
+                !hierarchy!.expanded,
+              ),
+            ),
+          )
+        : null;
+
     Widget row(
       bool accepting, {
       required bool agendaDesktop,
       required bool showAgendaFocusAction,
     }) {
-      final trailingAction = isModern
+      final trailingAction = usesTouchTaskInteraction
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (agendaDesktop ||
+                    (!isModern &&
+                        presentation == TaskListItemPresentation.standard))
+                  focusAction(),
+                SizedBox(width: 48, child: branchDisclosure()),
+              ],
+            )
+          : isModern
           ? SizedBox(
               width: agendaDesktop ? 96 : 48,
               child: AnimatedOpacity(
@@ -292,16 +461,6 @@ class TaskListItem extends ConsumerWidget {
                 ),
               ),
             )
-          : _usesTouchTaskInteraction
-          ? Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (presentation == TaskListItemPresentation.standard ||
-                    agendaDesktop)
-                  focusAction(),
-                overflowAction(),
-              ],
-            )
           : switch (presentation) {
               TaskListItemPresentation.standard => focusAction(),
               TaskListItemPresentation.agenda when agendaDesktop => SizedBox(
@@ -316,7 +475,7 @@ class TaskListItem extends ConsumerWidget {
               ),
               TaskListItemPresentation.agenda => overflowAction(),
             };
-      Widget buildContent(ValueChanged<bool>? onTaskDraggingChanged) {
+      Widget buildContent() {
         final rowContent = Material(
           color: accepting || (selection?.isSelected(task.id) ?? false)
               ? colors.accentTint
@@ -338,7 +497,7 @@ class TaskListItem extends ConsumerWidget {
                 }
               },
               onLongPress:
-                  _usesTouchTaskInteraction && (selection?.active ?? false)
+                  usesTouchTaskInteraction && (selection?.active ?? false)
                   ? () => selection!.toggle(task.id)
                   : null,
               child: Padding(
@@ -404,7 +563,6 @@ class TaskListItem extends ConsumerWidget {
                               defaultTimedBlockMinutes:
                                   defaultTimedBlockMinutes,
                               dragEnabled: !(selection?.active ?? false),
-                              onDraggingChanged: onTaskDraggingChanged,
                             )
                           else
                             Row(
@@ -412,7 +570,6 @@ class TaskListItem extends ConsumerWidget {
                                 Expanded(
                                   child: _TaskTextDragSource(
                                     task: task,
-                                    onDraggingChanged: onTaskDraggingChanged,
                                     enabled: !(selection?.active ?? false),
                                     child: _TaskContent(
                                       task: task,
@@ -453,31 +610,8 @@ class TaskListItem extends ConsumerWidget {
         );
         final rowWithDisclosure = Row(
           children: [
-            if (hierarchy != null)
-              SizedBox(
-                width: taskBranchGutterWidth,
-                child:
-                    hierarchy?.hasVisibleChildren == true &&
-                        branchScope != null &&
-                        progress != null &&
-                        progress.total > 0
-                    ? TaskBranchProgressButton(
-                        taskId: task.id,
-                        progress: progress,
-                        expanded: hierarchy!.expanded,
-                        showProgress: false,
-                        onToggle: () => unawaited(
-                          setTaskBranchExpanded(
-                            context,
-                            ref,
-                            branchScope!,
-                            task.id,
-                            !hierarchy!.expanded,
-                          ),
-                        ),
-                      )
-                    : null,
-              ),
+            if (hierarchy != null && !usesTouchTaskInteraction)
+              SizedBox(width: taskBranchGutterWidth, child: branchDisclosure()),
             Expanded(
               child: Padding(
                 padding: EdgeInsetsDirectional.only(start: rowDepth * 28),
@@ -492,8 +626,12 @@ class TaskListItem extends ConsumerWidget {
         final contextualContent = selection?.active ?? false
             ? content
             : AppContextMenuRegion(
-                enableLongPress: false,
-                items: _quickActionItems(context, ref),
+                enableLongPress: usesTouchTaskInteraction,
+                items: _quickActionItems(
+                  context,
+                  ref,
+                  includeFocus: usesTouchTaskInteraction,
+                ),
                 child: content,
               );
         if (!enableSubtaskDrop) {
@@ -509,14 +647,14 @@ class TaskListItem extends ConsumerWidget {
         );
       }
 
-      if (!_usesTouchTaskInteraction) return buildContent(null);
+      if (!usesTouchTaskInteraction) return buildContent();
       return TaskSwipeActions(
         key: ValueKey('task-swipe-${task.id}'),
         enabled:
             !task.isCompleted && !(selection?.active ?? false) && !accepting,
         onFocus: () => _startFocus(context, ref),
         onSchedule: () => _scheduleTask(context, ref),
-        builder: buildContent,
+        builder: (_) => buildContent(),
       );
     }
 
@@ -606,13 +744,13 @@ class TaskListItem extends ConsumerWidget {
     final colors = context.appColors;
     final selection = TaskSelectionScope.maybeOf(context);
     return [
-      if (includeFocus && selection != null)
+      if (includeFocus)
         ShadContextMenuItem(
           height: 44,
           onPressed: () => unawaited(
             _runQuickAction(context, ref, _TaskQuickAction.startFocus),
           ),
-          enabled: !task.isCompleted && !selection.active,
+          enabled: !task.isCompleted && !(selection?.active ?? false),
           child: _TaskMenuRow(icon: LucideIcons.play, label: l10n.startFocus),
         ),
       ShadContextMenuItem(
@@ -1005,7 +1143,7 @@ class TaskListDivider extends StatelessWidget {
     final divider = Padding(
       padding: EdgeInsetsDirectional.only(start: indent),
       child: Divider(
-        height: _usesTouchTaskInteraction ? 12 : 1,
+        height: usesTouchTaskInteraction ? 12 : 1,
         thickness: 1,
         color: context.appColors.border,
       ),
@@ -1024,7 +1162,6 @@ class _AgendaTaskContent extends StatelessWidget {
     required this.allowMetadataWrap,
     required this.subtaskProgress,
     required this.dragEnabled,
-    required this.onDraggingChanged,
     required this.taskTimeState,
     required this.timeDisplayMode,
     required this.defaultTimedBlockMinutes,
@@ -1039,7 +1176,6 @@ class _AgendaTaskContent extends StatelessWidget {
   final bool allowMetadataWrap;
   final TaskSubtaskProgress? subtaskProgress;
   final bool dragEnabled;
-  final ValueChanged<bool>? onDraggingChanged;
   final TaskTimeState? taskTimeState;
   final TaskTimeDisplayMode timeDisplayMode;
   final int defaultTimedBlockMinutes;
@@ -1061,12 +1197,8 @@ class _AgendaTaskContent extends StatelessWidget {
             displayMode: timeDisplayMode,
             defaultTimedBlockMinutes: defaultTimedBlockMinutes,
           );
-    Widget dragSource(Widget child) => _TaskTextDragSource(
-      task: task,
-      enabled: dragEnabled,
-      onDraggingChanged: onDraggingChanged,
-      child: child,
-    );
+    Widget dragSource(Widget child) =>
+        _TaskTextDragSource(task: task, enabled: dragEnabled, child: child);
     final textScaler = MediaQuery.textScalerOf(context);
     final metadata = <Widget>[
       SizedBox(
@@ -1483,13 +1615,11 @@ class _TaskTextDragSource extends StatelessWidget {
     required this.task,
     required this.child,
     this.enabled = true,
-    this.onDraggingChanged,
   });
 
   final TaskItem task;
   final Widget child;
   final bool enabled;
-  final ValueChanged<bool>? onDraggingChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -1504,24 +1634,9 @@ class _TaskTextDragSource extends StatelessWidget {
         child: child,
       );
     }
-    if (_usesTouchTaskInteraction) {
-      return LongPressDraggable<String>(
-        data: task.id,
-        onDragStarted: () => onDraggingChanged?.call(true),
-        onDragEnd: (_) => onDraggingChanged?.call(false),
-        feedback: feedback,
-        childWhenDragging: childWhenDragging,
-        child: child,
-      );
-    }
     return child;
   }
 }
-
-bool get _usesTouchTaskInteraction =>
-    !kIsWeb &&
-    (defaultTargetPlatform == TargetPlatform.android ||
-        defaultTargetPlatform == TargetPlatform.iOS);
 
 bool _usesImmediateTaskDrag(TargetPlatform platform) {
   return switch (platform) {

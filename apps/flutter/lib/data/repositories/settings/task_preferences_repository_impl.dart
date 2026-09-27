@@ -14,6 +14,7 @@ class LocalTaskPreferencesRepository implements TaskPreferencesRepository {
   final _edited = <String>{};
   Future<Result<void>>? _loadFuture;
   Future<Result<void>> _branchWrites = Future.value(const Result.ok(null));
+  Future<Result<void>> _projectModeWrites = Future.value(const Result.ok(null));
   bool _disposed = false;
   TaskPreferences _state = TaskPreferences();
 
@@ -41,6 +42,7 @@ class LocalTaskPreferencesRepository implements TaskPreferencesRepository {
       quickAddDefaultTimedBlockMinutesPreferenceKey,
       taskTimeDisplayModePreferenceKey,
       taskListStylePreferenceKey,
+      projectViewModePreferenceKey,
       taskRowSpacingPreferenceKey,
       taskBranchExpansionPreferenceKey,
       timelineVisibleStartMinutesPreferenceKey,
@@ -78,6 +80,9 @@ class LocalTaskPreferencesRepository implements TaskPreferencesRepository {
                 values[taskTimeDisplayModePreferenceKey] as String,
               )
             : null,
+        projectViewMode: ProjectViewMode.values
+            .where((v) => v.name == values[projectViewModePreferenceKey])
+            .firstOrNull,
         listStyle: TaskListStyle.values
             .where((v) => v.name == values[taskListStylePreferenceKey])
             .firstOrNull,
@@ -188,6 +193,16 @@ class LocalTaskPreferencesRepository implements TaskPreferencesRepository {
     state.copyWith(timeDisplayMode: mode),
     {taskTimeDisplayModePreferenceKey: mode.storageValue},
   );
+  @override
+  Future<Result<void>> setProjectViewMode(ProjectViewMode mode) {
+    if (_disposed) return Future.value(const Result.ok(null));
+    _edited.add(projectViewModePreferenceKey);
+    _publish(state.copyWith(projectViewMode: mode));
+    return _projectModeWrites = _projectModeWrites.then(
+      (_) => _preferences.write({projectViewModePreferenceKey: mode.name}),
+    );
+  }
+
   @override
   Future<Result<void>> setListStyle(TaskListStyle style) => _save(
     state.copyWith(listStyle: style),

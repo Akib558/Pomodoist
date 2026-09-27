@@ -3470,4 +3470,34 @@ class AppLocalizationsZh extends AppLocalizations {
   String taskParentPath(String path) {
     return '所属任务：$path';
   }
+
+  @override
+  String get projectViewList => '列表';
+
+  @override
+  String get projectViewMap => '地图';
+
+  @override
+  String get projectViewBranches => '分支';
+
+  @override
+  String get projectOwnTasks => '项目任务';
+
+  @override
+  String get projectShowCompleted => '显示已完成';
+
+  @override
+  String get projectExpandBranch => '展开分支';
+
+  @override
+  String get projectCollapseBranch => '折叠分支';
+
+  @override
+  String get projectPlaceInside => '移入';
+
+  @override
+  String get projectPlaceBefore => '移到前面';
+
+  @override
+  String get projectPlaceAfter => '移到后面';
 }

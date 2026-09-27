@@ -3694,6 +3694,36 @@ class AppLocalizationsPt extends AppLocalizations {
   String taskParentPath(String path) {
     return 'Parte de: $path';
   }
+
+  @override
+  String get projectViewList => 'Lista';
+
+  @override
+  String get projectViewMap => 'Mapa';
+
+  @override
+  String get projectViewBranches => 'Ramos';
+
+  @override
+  String get projectOwnTasks => 'Tarefas do projeto';
+
+  @override
+  String get projectShowCompleted => 'Mostrar concluídas';
+
+  @override
+  String get projectExpandBranch => 'Expandir ramo';
+
+  @override
+  String get projectCollapseBranch => 'Recolher ramo';
+
+  @override
+  String get projectPlaceInside => 'Mover para dentro';
+
+  @override
+  String get projectPlaceBefore => 'Mover antes';
+
+  @override
+  String get projectPlaceAfter => 'Mover depois';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
@@ -3921,4 +3951,34 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   String taskParentPath(String path) {
     return 'Parte de: $path';
   }
+
+  @override
+  String get projectViewList => 'Lista';
+
+  @override
+  String get projectViewMap => 'Mapa';
+
+  @override
+  String get projectViewBranches => 'Ramos';
+
+  @override
+  String get projectOwnTasks => 'Tarefas do projeto';
+
+  @override
+  String get projectShowCompleted => 'Mostrar concluídas';
+
+  @override
+  String get projectExpandBranch => 'Expandir ramo';
+
+  @override
+  String get projectCollapseBranch => 'Recolher ramo';
+
+  @override
+  String get projectPlaceInside => 'Mover para dentro';
+
+  @override
+  String get projectPlaceBefore => 'Mover antes';
+
+  @override
+  String get projectPlaceAfter => 'Mover depois';
 }

@@ -16,6 +16,7 @@ import 'package:pomodoist/domain/use_cases/tasks/project_list_data.dart';
 class ProjectTreeController extends ChangeNotifier {
   final collapsedIds = <String>{};
   String? draggedId;
+  String? lastRevealedParentId;
   bool _disposed = false;
 
   @override
@@ -37,6 +38,7 @@ class ProjectTreeController extends ChangeNotifier {
 
   void reveal(String? parentId, List<ProjectItem> projects) {
     if (_disposed) return;
+    lastRevealedParentId = parentId;
     final parents = projectParents(projects);
     final seen = <String>{};
     while (parentId != null && seen.add(parentId)) {

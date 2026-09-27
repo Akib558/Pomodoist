@@ -1,3 +1,4 @@
+import 'package:pomodoist/domain/models/tasks/task_order.dart';
 import 'package:pomodoist/utils/result.dart';
 import 'package:pomodoist/data/repositories/kanban/kanban_repository.dart';
 import 'dart:convert';
@@ -15,7 +16,6 @@ import 'package:pomodoist/domain/models/collaboration/collaboration_models.dart'
 import 'package:pomodoist/data/services/local/kanban_local_service.dart';
 import 'package:pomodoist/data/repositories/local/kanban_transition_coordinator.dart';
 
-const _minimumOrderValue = 0;
 const _maximumOrderValue = 4503599627370496;
 const _orderKeyWidth = 20;
 
@@ -526,25 +526,8 @@ class DriftKanbanRepository implements KanbanRepository {
     ], occurredAt: now);
   }
 
-  String? _midpointOrderKey(String? left, String? right) {
-    final leftValue = left == null ? _minimumOrderValue : _parseOrderKey(left);
-    final rightValue = right == null
-        ? _maximumOrderValue
-        : _parseOrderKey(right);
-    if (leftValue == null ||
-        rightValue == null ||
-        rightValue - leftValue <= 1) {
-      return null;
-    }
-    return _formatOrderValue(leftValue + ((rightValue - leftValue) ~/ 2));
-  }
-
-  int? _parseOrderKey(String value) {
-    if (value.length != _orderKeyWidth) {
-      return null;
-    }
-    return int.tryParse(value);
-  }
+  String? _midpointOrderKey(String? left, String? right) =>
+      taskOrderBetween(left, right);
 
   Future<List<db_schema.LabelRow>> _activeStatusRows({
     String? scopeId,

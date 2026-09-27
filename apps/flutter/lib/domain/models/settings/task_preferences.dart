@@ -5,6 +5,7 @@ const reengagementNotificationsEnabledPreferenceKey =
 const quickAddDefaultTimedBlockMinutesPreferenceKey =
     'quickAdd.defaultTimedBlockMinutes';
 const taskTimeDisplayModePreferenceKey = 'tasks.timeDisplayMode';
+const projectViewModePreferenceKey = 'projects.viewMode';
 const taskListStylePreferenceKey = 'tasks.listStyle';
 const taskRowSpacingPreferenceKey = 'tasks.rowSpacing';
 const taskBranchExpansionPreferenceKey = 'tasks.branchExpansion.v1';
@@ -20,6 +21,8 @@ const defaultTimelineVisibleStartMinutes = 0;
 const defaultTimelineVisibleEndMinutes = 24 * 60;
 const defaultTimelineHourWidth = 192;
 const timelineHourWidthLevels = <int>[96, 144, 192, 288, 384];
+
+enum ProjectViewMode { list, map, branches }
 
 enum TaskListStyle { modern, classic }
 
@@ -52,6 +55,7 @@ class TaskPreferences {
     this.quickAddMinutes = defaultQuickAddTimedBlockMinutes,
     this.timeDisplayMode = TaskTimeDisplayMode.smart,
     this.listStyle = TaskListStyle.modern,
+    this.projectViewMode = ProjectViewMode.list,
     this.rowSpacing = TaskRowSpacing.comfortable,
     this.visibleHours = const TimelineVisibleHours(
       startMinutes: 0,
@@ -69,6 +73,7 @@ class TaskPreferences {
   final int quickAddMinutes;
   final TaskTimeDisplayMode timeDisplayMode;
   final TaskListStyle listStyle;
+  final ProjectViewMode projectViewMode;
   final TaskRowSpacing rowSpacing;
   final TimelineVisibleHours visibleHours;
   final int hourWidth;
@@ -79,6 +84,7 @@ class TaskPreferences {
     int? quickAddMinutes,
     TaskTimeDisplayMode? timeDisplayMode,
     TaskListStyle? listStyle,
+    ProjectViewMode? projectViewMode,
     TaskRowSpacing? rowSpacing,
     TimelineVisibleHours? visibleHours,
     int? hourWidth,
@@ -89,6 +95,7 @@ class TaskPreferences {
     quickAddMinutes: quickAddMinutes ?? this.quickAddMinutes,
     timeDisplayMode: timeDisplayMode ?? this.timeDisplayMode,
     listStyle: listStyle ?? this.listStyle,
+    projectViewMode: projectViewMode ?? this.projectViewMode,
     rowSpacing: rowSpacing ?? this.rowSpacing,
     visibleHours: visibleHours ?? this.visibleHours,
     hourWidth: hourWidth ?? this.hourWidth,

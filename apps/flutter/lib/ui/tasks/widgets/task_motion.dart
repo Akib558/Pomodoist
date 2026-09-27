@@ -218,6 +218,7 @@ class TaskCompletionControl extends StatelessWidget {
     required this.fillColor,
     required this.onPressed,
     this.tooltip,
+    this.hitSize = 24,
     super.key,
   });
 
@@ -227,6 +228,7 @@ class TaskCompletionControl extends StatelessWidget {
   final Color fillColor;
   final VoidCallback? onPressed;
   final String? tooltip;
+  final double hitSize;
 
   @override
   Widget build(BuildContext context) {
@@ -246,18 +248,26 @@ class TaskCompletionControl extends StatelessWidget {
         onTap: onPressed,
         radius: 18,
         child: SizedBox.square(
-          dimension: 24,
-          child: TweenAnimationBuilder<double>(
-            key: ValueKey('task-completion-${event?.revision}-$target'),
-            tween: Tween(begin: animated ? 1 - target : target, end: target),
-            duration: duration,
-            builder: (context, progress, child) => CustomPaint(
-              key: Key('task-completion-paint-$taskId'),
-              painter: TaskCompletionPainter(
-                progress: progress,
-                color: color,
-                fillColor: fillColor,
-                checkColor: context.appColors.onAccent,
+          dimension: hitSize,
+          child: Center(
+            child: SizedBox.square(
+              dimension: 24,
+              child: TweenAnimationBuilder<double>(
+                key: ValueKey('task-completion-${event?.revision}-$target'),
+                tween: Tween(
+                  begin: animated ? 1 - target : target,
+                  end: target,
+                ),
+                duration: duration,
+                builder: (context, progress, child) => CustomPaint(
+                  key: Key('task-completion-paint-$taskId'),
+                  painter: TaskCompletionPainter(
+                    progress: progress,
+                    color: color,
+                    fillColor: fillColor,
+                    checkColor: context.appColors.onAccent,
+                  ),
+                ),
               ),
             ),
           ),

@@ -3667,4 +3667,34 @@ class AppLocalizationsRu extends AppLocalizations {
   String taskParentPath(String path) {
     return 'Часть задачи: $path';
   }
+
+  @override
+  String get projectViewList => 'Список';
+
+  @override
+  String get projectViewMap => 'Карта';
+
+  @override
+  String get projectViewBranches => 'Ветки';
+
+  @override
+  String get projectOwnTasks => 'Задачи проекта';
+
+  @override
+  String get projectShowCompleted => 'Показать завершённые';
+
+  @override
+  String get projectExpandBranch => 'Развернуть ветку';
+
+  @override
+  String get projectCollapseBranch => 'Свернуть ветку';
+
+  @override
+  String get projectPlaceInside => 'Переместить внутрь';
+
+  @override
+  String get projectPlaceBefore => 'Переместить перед';
+
+  @override
+  String get projectPlaceAfter => 'Переместить после';
 }

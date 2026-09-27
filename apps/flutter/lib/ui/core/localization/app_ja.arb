@@ -1764,5 +1764,15 @@
   "taskCollapseSubtasks": "サブタスクを折りたたむ",
   "taskAllSubtasksProgress": "すべてのサブタスク：{total}件中{completed}件完了",
   "taskOpenFullBranch": "すべてのサブタスクを開く",
-  "taskParentPath": "親タスク：{path}"
+  "taskParentPath": "親タスク：{path}",
+  "projectViewList": "リスト",
+  "projectViewMap": "マップ",
+  "projectViewBranches": "ブランチ",
+  "projectOwnTasks": "プロジェクトのタスク",
+  "projectShowCompleted": "完了済みを表示",
+  "projectExpandBranch": "ブランチを展開",
+  "projectCollapseBranch": "ブランチを折りたたむ",
+  "projectPlaceInside": "中に移動",
+  "projectPlaceBefore": "前に移動",
+  "projectPlaceAfter": "後に移動"
 }

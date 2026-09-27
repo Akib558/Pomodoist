@@ -13,11 +13,13 @@ import 'package:pomodoist/ui/tasks/view_models/task_branch_rows.dart';
 import 'package:pomodoist/ui/tasks/view_models/task_branch_view_model.dart';
 import 'package:pomodoist/ui/tasks/view_models/task_subtask_progress.dart';
 
-/// Pointer layouts use a compact margin; touch keeps a full tap target.
-double get taskBranchGutterWidth => switch (defaultTargetPlatform) {
-  TargetPlatform.android || TargetPlatform.iOS => 44,
-  _ => 24,
-};
+bool get usesTouchTaskInteraction =>
+    !kIsWeb &&
+    (defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS);
+
+/// Mobile disclosure uses the trailing action slot, not a leading margin.
+double get taskBranchGutterWidth => usesTouchTaskInteraction ? 0 : 24;
 
 Future<void> setTaskBranchExpanded(
   BuildContext context,

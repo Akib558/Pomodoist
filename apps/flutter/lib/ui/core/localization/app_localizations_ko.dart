@@ -3561,4 +3561,34 @@ class AppLocalizationsKo extends AppLocalizations {
   String taskParentPath(String path) {
     return '상위 작업: $path';
   }
+
+  @override
+  String get projectViewList => '목록';
+
+  @override
+  String get projectViewMap => '지도';
+
+  @override
+  String get projectViewBranches => '가지';
+
+  @override
+  String get projectOwnTasks => '프로젝트 작업';
+
+  @override
+  String get projectShowCompleted => '완료된 작업 표시';
+
+  @override
+  String get projectExpandBranch => '가지 펼치기';
+
+  @override
+  String get projectCollapseBranch => '가지 접기';
+
+  @override
+  String get projectPlaceInside => '안으로 이동';
+
+  @override
+  String get projectPlaceBefore => '앞으로 이동';
+
+  @override
+  String get projectPlaceAfter => '뒤로 이동';
 }

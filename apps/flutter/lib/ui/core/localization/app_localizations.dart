@@ -6262,6 +6262,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Part of: {path}'**
   String taskParentPath(String path);
+
+  /// No description provided for @projectViewList.
+  ///
+  /// In en, this message translates to:
+  /// **'List'**
+  String get projectViewList;
+
+  /// No description provided for @projectViewMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Map'**
+  String get projectViewMap;
+
+  /// No description provided for @projectViewBranches.
+  ///
+  /// In en, this message translates to:
+  /// **'Branches'**
+  String get projectViewBranches;
+
+  /// No description provided for @projectOwnTasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Project tasks'**
+  String get projectOwnTasks;
+
+  /// No description provided for @projectShowCompleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Show completed'**
+  String get projectShowCompleted;
+
+  /// No description provided for @projectExpandBranch.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand branch'**
+  String get projectExpandBranch;
+
+  /// No description provided for @projectCollapseBranch.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse branch'**
+  String get projectCollapseBranch;
+
+  /// No description provided for @projectPlaceInside.
+  ///
+  /// In en, this message translates to:
+  /// **'Move inside'**
+  String get projectPlaceInside;
+
+  /// No description provided for @projectPlaceBefore.
+  ///
+  /// In en, this message translates to:
+  /// **'Move before'**
+  String get projectPlaceBefore;
+
+  /// No description provided for @projectPlaceAfter.
+  ///
+  /// In en, this message translates to:
+  /// **'Move after'**
+  String get projectPlaceAfter;
 }
 
 class _AppLocalizationsDelegate

@@ -1153,5 +1153,15 @@
   "taskCollapseSubtasks": "Unteraufgaben einklappen",
   "taskAllSubtasksProgress": "Alle Unteraufgaben: {completed} von {total} erledigt",
   "taskOpenFullBranch": "Alle Unteraufgaben öffnen",
-  "taskParentPath": "Teil von: {path}"
+  "taskParentPath": "Teil von: {path}",
+  "projectViewList": "Liste",
+  "projectViewMap": "Karte",
+  "projectViewBranches": "Zweige",
+  "projectOwnTasks": "Projektaufgaben",
+  "projectShowCompleted": "Erledigte anzeigen",
+  "projectExpandBranch": "Zweig aufklappen",
+  "projectCollapseBranch": "Zweig einklappen",
+  "projectPlaceInside": "Hinein verschieben",
+  "projectPlaceBefore": "Davor verschieben",
+  "projectPlaceAfter": "Danach verschieben"
 }

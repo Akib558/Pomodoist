@@ -3682,4 +3682,34 @@ class AppLocalizationsEs extends AppLocalizations {
   String taskParentPath(String path) {
     return 'Parte de: $path';
   }
+
+  @override
+  String get projectViewList => 'Lista';
+
+  @override
+  String get projectViewMap => 'Mapa';
+
+  @override
+  String get projectViewBranches => 'Ramas';
+
+  @override
+  String get projectOwnTasks => 'Tareas del proyecto';
+
+  @override
+  String get projectShowCompleted => 'Mostrar completadas';
+
+  @override
+  String get projectExpandBranch => 'Expandir rama';
+
+  @override
+  String get projectCollapseBranch => 'Contraer rama';
+
+  @override
+  String get projectPlaceInside => 'Mover dentro';
+
+  @override
+  String get projectPlaceBefore => 'Mover antes';
+
+  @override
+  String get projectPlaceAfter => 'Mover después';
 }

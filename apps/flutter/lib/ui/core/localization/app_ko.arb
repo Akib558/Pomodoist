@@ -1764,5 +1764,15 @@
   "taskCollapseSubtasks": "하위 작업 접기",
   "taskAllSubtasksProgress": "모든 하위 작업: {total}개 중 {completed}개 완료",
   "taskOpenFullBranch": "모든 하위 작업 열기",
-  "taskParentPath": "상위 작업: {path}"
+  "taskParentPath": "상위 작업: {path}",
+  "projectViewList": "목록",
+  "projectViewMap": "지도",
+  "projectViewBranches": "가지",
+  "projectOwnTasks": "프로젝트 작업",
+  "projectShowCompleted": "완료된 작업 표시",
+  "projectExpandBranch": "가지 펼치기",
+  "projectCollapseBranch": "가지 접기",
+  "projectPlaceInside": "안으로 이동",
+  "projectPlaceBefore": "앞으로 이동",
+  "projectPlaceAfter": "뒤로 이동"
 }

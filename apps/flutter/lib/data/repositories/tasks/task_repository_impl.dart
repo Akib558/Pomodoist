@@ -1,3 +1,4 @@
+import 'package:pomodoist/domain/models/tasks/task_order.dart';
 import 'package:pomodoist/utils/result.dart';
 import 'package:pomodoist/data/repositories/tasks/task_repository.dart';
 import 'dart:convert';
@@ -512,6 +513,89 @@ class DriftTaskRepository implements TaskRepository {
       }
     });
   });
+
+  @override
+  Future<Result<void>> placeTask(
+    String id, {
+    required String projectId,
+    required String? parentId,
+    required String? beforeTaskId,
+  }) => Result.capture(
+    () => _db.transaction(() async {
+      await _access.task(id, destinationProjectId: projectId);
+      final destination = await (_db.select(
+        _db.projects,
+      )..where((p) => p.id.equals(projectId))).getSingleOrNull();
+      if (destination == null ||
+          destination.isDeleted ||
+          destination.isArchived) {
+        throw ArgumentError('Invalid destination project');
+      }
+      await _access.requireEdit(destination.scopeId);
+      final rows = await _tasks.activeTasks();
+      final task = rows.firstWhereOrNull((t) => t.id == id);
+      if (task == null) throw ArgumentError('Task unavailable');
+      final parent = rows.firstWhereOrNull((t) => t.id == parentId);
+      if (parentId != null &&
+          (parent == null || parent.projectId != projectId)) {
+        throw ArgumentError('Invalid destination parent');
+      }
+      if (beforeTaskId == id &&
+          task.projectId == projectId &&
+          task.parentId == parentId)
+        return;
+      final siblings =
+          rows
+              .where(
+                (t) =>
+                    t.id != id &&
+                    t.projectId == projectId &&
+                    t.parentId == parentId,
+              )
+              .toList()
+            ..sort((a, b) {
+              final c = a.orderKey.compareTo(b.orderKey);
+              return c == 0 ? a.id.compareTo(b.id) : c;
+            });
+      final index = beforeTaskId == null
+          ? siblings.length
+          : siblings.indexWhere((t) => t.id == beforeTaskId);
+      if (index < 0) throw ArgumentError('Invalid task position');
+      final key = taskOrderBetween(
+        index == 0 ? null : siblings[index - 1].orderKey,
+        index == siblings.length ? null : siblings[index].orderKey,
+      );
+      // moveTask owns subtree, cycle and collaboration checks. Its nested transaction
+      // and this placement's order/outbox writes commit or roll back together.
+      (await moveTask(
+        id,
+        projectId: projectId,
+        parentId: parentId,
+        clearParentId: parentId == null,
+        clearSectionId: true,
+        orderKey: key,
+      )).getOrThrow();
+      if (key != null) return;
+      siblings.insert(index, task);
+      final now = DateTime.now().toUtc();
+      final step = maximumTaskOrderValue ~/ (siblings.length + 1);
+      for (var i = 0; i < siblings.length; i++) {
+        final sibling = siblings[i];
+        final orderKey = formatTaskOrder(step * (i + 1));
+        if (sibling.orderKey == orderKey) continue;
+        await _access.task(sibling.id);
+        await _tasks.updateTask(
+          sibling.id,
+          TasksCompanion(orderKey: Value(orderKey), updatedAt: Value(now)),
+        );
+        await _syncQueue.enqueue(
+          type: 'task.move',
+          clientId: sibling.id,
+          payload: {'id': sibling.id, 'orderKey': orderKey},
+        );
+      }
+    }),
+  );
 
   @override
   Future<Result<void>> placeTaskOnTimeline(

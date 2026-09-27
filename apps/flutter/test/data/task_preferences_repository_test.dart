@@ -9,6 +9,53 @@ import 'package:pomodoist/data/repositories/settings/task_preferences_repository
 
 void main() {
   test(
+    'rapid project mode changes serialize writes and retain the final choice',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final preferences = _ControlledPreferences();
+      final repository = LocalTaskPreferencesRepository(preferences);
+      addTearDown(repository.dispose);
+      final first = repository.setProjectViewMode(ProjectViewMode.map);
+      await preferences.started.future;
+      final second = repository.setProjectViewMode(ProjectViewMode.branches);
+      await Future<void>.delayed(Duration.zero);
+      expect(preferences.writeCount, 1);
+      preferences.release.complete();
+      for (final result in await Future.wait([first, second])) {
+        result.getOrThrow();
+      }
+      final restored = LocalTaskPreferencesRepository(preferences);
+      addTearDown(restored.dispose);
+      (await restored.load()).getOrThrow();
+      expect(restored.state.projectViewMode, ProjectViewMode.branches);
+    },
+  );
+
+  test(
+    'project view is global, survives reload, and wins against delayed hydration',
+    () async {
+      SharedPreferences.setMockInitialValues({
+        projectViewModePreferenceKey: 'map',
+      });
+      final ready = Completer<SharedPreferences?>();
+      final preferences = PreferencesService(() => ready.future);
+      final repository = LocalTaskPreferencesRepository(preferences);
+      addTearDown(repository.dispose);
+      expect(repository.state.projectViewMode, ProjectViewMode.list);
+      final loading = repository.load();
+      final saving = repository.setProjectViewMode(ProjectViewMode.branches);
+      ready.complete(await SharedPreferences.getInstance());
+      (await loading).getOrThrow();
+      (await saving).getOrThrow();
+      expect(repository.state.projectViewMode, ProjectViewMode.branches);
+      final restored = LocalTaskPreferencesRepository(preferences);
+      addTearDown(restored.dispose);
+      (await restored.load()).getOrThrow();
+      expect(restored.state.projectViewMode, ProjectViewMode.branches);
+    },
+  );
+
+  test(
     'a late load preserves local edits and loads unrelated saved values',
     () async {
       SharedPreferences.setMockInitialValues({

@@ -33,9 +33,11 @@ class TaskListView extends ConsumerWidget {
     this.showQuickAdd = true,
     this.quickAddProjectId,
     this.titleLeading,
+    this.showHeader = true,
     super.key,
   });
 
+  final bool showHeader;
   final String title;
   final String? subtitle;
   final TaskQuery query;
@@ -115,75 +117,76 @@ class TaskListView extends ConsumerWidget {
             scopeKey: query,
             child: CustomScrollView(
               slivers: [
-                SliverPadding(
-                  padding: EdgeInsets.fromLTRB(
-                    24,
-                    query.kind == TaskQueryKind.today ? 32 : 20,
-                    24,
-                    8,
-                  ),
-                  sliver: SliverToBoxAdapter(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            if (titleLeading != null) ...[
-                              titleLeading!,
-                              const SizedBox(width: 8),
-                            ],
-                            Expanded(
-                              child: Text(
-                                title,
-                                style: Theme.of(
-                                  context,
-                                ).textTheme.headlineMedium,
+                if (showHeader)
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(
+                      24,
+                      query.kind == TaskQueryKind.today ? 32 : 20,
+                      24,
+                      8,
+                    ),
+                    sliver: SliverToBoxAdapter(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              if (titleLeading != null) ...[
+                                titleLeading!,
+                                const SizedBox(width: 8),
+                              ],
+                              Expanded(
+                                child: Text(
+                                  title,
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.headlineMedium,
+                                ),
                               ),
+                            ],
+                          ),
+                          if (subtitle != null) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              subtitle!,
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurfaceVariant,
+                                  ),
                             ),
                           ],
-                        ),
-                        if (subtitle != null) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            subtitle!,
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(
-                                  color: Theme.of(
+                          if (headerAddon != null) ...[
+                            const SizedBox(height: 16),
+                            headerAddon!,
+                          ],
+                          if (showQuickAdd) ...[
+                            const SizedBox(height: 16),
+                            QuickAddBar(
+                              defaultDate: query.kind == TaskQueryKind.today
+                                  ? query.now
+                                  : null,
+                              projectId: quickAddProjectId,
+                              labelId: query.labelId,
+                              onTaskCreated: (taskIds) {
+                                motion.created(taskIds.toSet());
+                                unawaited(
+                                  revealCreatedTaskBranches(
                                     context,
-                                  ).colorScheme.onSurfaceVariant,
-                                ),
-                          ),
+                                    ref,
+                                    branchScope,
+                                    taskIds,
+                                  ),
+                                );
+                                unawaited(playHaptic(AppHapticCue.light));
+                              },
+                            ),
+                          ],
                         ],
-                        if (headerAddon != null) ...[
-                          const SizedBox(height: 16),
-                          headerAddon!,
-                        ],
-                        if (showQuickAdd) ...[
-                          const SizedBox(height: 16),
-                          QuickAddBar(
-                            defaultDate: query.kind == TaskQueryKind.today
-                                ? query.now
-                                : null,
-                            projectId: quickAddProjectId,
-                            labelId: query.labelId,
-                            onTaskCreated: (taskIds) {
-                              motion.created(taskIds.toSet());
-                              unawaited(
-                                revealCreatedTaskBranches(
-                                  context,
-                                  ref,
-                                  branchScope,
-                                  taskIds,
-                                ),
-                              );
-                              unawaited(playHaptic(AppHapticCue.light));
-                            },
-                          ),
-                        ],
-                      ],
+                      ),
                     ),
                   ),
-                ),
                 if (tasks.isLoading && tasks.hasValue)
                   const SliverToBoxAdapter(child: LinearProgressIndicator()),
                 if (tasks.hasError && tasks.hasValue)

@@ -590,7 +590,8 @@ a value is absent, with 12 px gaps; scale slot widths with text size. Narrow
 layouts place these same slots below the heading, aligned to the trailing edge,
 and wrap only when they do not fit. A task's nesting depth must not change the
 list's column-layout breakpoint. Subtask disclosure stays before the completion
-circle. Progress controls remain outside task drag targets.
+circle on desktop and in the trailing action slot on mobile. Progress controls
+remain outside task drag targets.
 Touch actions stay available. Project and timing colors retain their semantics.
 Custom Kanban and Timeline blocks keep their specialized layouts.
 Kanban card action menus open on activation; pointer hover only highlights the
@@ -616,10 +617,12 @@ use this spacing preference.
 
 ### Connected task branches
 
-Use an icon-only disclosure button before the completion circle, outside the
-task body's hover, selection, and drop highlight. Hierarchical lists share a
-compact 24 px leading margin on pointer platforms and a 44 px margin on touch
-platforms; lists that cannot expand branches reserve no disclosure margin.
+On desktop, use an icon-only disclosure button before the completion circle,
+outside the task body's hover, selection, and drop highlight. Hierarchical lists
+share a compact 24 px leading margin; lists that cannot expand branches reserve
+no disclosure margin. On native iOS/Android, reserve no leading margin: place
+the disclosure in the 48 px trailing action slot, with a minimum 44 px tap target,
+and omit the ellipsis button in both row styles. Long-press opens the task menu.
 Keep the margin empty for leaf rows and apply tree indentation outside the
 highlighted body as well. The margin remains inside the row's layout bounds so
 the disclosure has a working hit target without relying on painted overflow.
@@ -657,15 +660,48 @@ row density and drag semantics remain independent of disclosure. Interactive
 disclosure and parent links have at least 44 px touch targets; compact summaries rely
 on the containing task's accessible activation target.
 
-### Touch task dragging
+### Project map and branches
 
-On native iOS/Android, long-press the shared row's text or metadata to drag using
-`LongPressDraggable`. Do not show a separate grip or start dragging from the
-checkbox or action buttons. Long-press no longer opens a competing context menu;
-keep the ellipsis available in both row styles alongside existing buttons.
-In selection mode, long-press toggles selection and dragging is disabled. Preserve
-drag payloads, previews, nesting and drop targets. Mouse dragging and specialized
-Kanban and Timeline cards retain their existing behavior.
+An open project exposes List, Map and Branches directly in its heading. The last
+choice is a single local preference for every project, initially List; it is not
+an Appearance setting or synchronized project data. Keep the shared Quick Add
+composer mounted, preserve detail routing and drafts, and retain each visited
+view's scroll position while the project remains open.
+
+Map lays out the current project horizontally through existing subprojects,
+tasks and subtasks. Branches gives each immediate subproject a column; tasks
+owned directly by the open project use a visual Project tasks column. This
+column is not a new entity. Both views share one hierarchy projection and local
+expansion scope per open project. Root and first-level branches begin expanded;
+deeper branches begin collapsed. Empty subprojects remain visible. Exclude
+archived/deleted descendant projects; hide completed tasks initially, with an
+inline Show completed control. Progress includes all accessible descendants,
+independently of filtering and disclosure. Order projects before tasks, retaining
+each entity type's existing sibling order.
+
+Use measured, text-scaled cards, theme surfaces and 1 px border connectors;
+mirror geometry in RTL. Keep controls at least 44 px and title tooltips available.
+Cards use existing details, menus, completion/Undo and Focus actions. New tasks
+and subprojects use the existing composers; adding a subtask uses the existing
+subtask editor logic. Explicit creation and successful drops reveal the parent.
+
+Mouse drops distinguish before, inside and after. A task dropped on a project
+becomes a root task; a task dropped on another task becomes its subtask. Move
+the entire task subtree atomically with order and sync-queue changes. Projects
+can move only relative to other projects; the diagram root is not draggable.
+Reject cycles, unavailable destinations and forbidden scope changes. Invalid
+drop zones do not highlight. Dragging near the viewport edge scrolls the canvas.
+On touch, both views scroll normally and structure changes use menus instead
+of long-press dragging. The ordinary list and project catalog retain their
+existing hierarchy and interaction rules.
+
+### Touch task menus
+
+On native iOS/Android, long-press the shared row's text or metadata to open its
+context menu, including Focus and Move. Do not also register a long-press drag
+recognizer on that row. In selection mode, long-press toggles selection. Mouse
+dragging, drop targets, and specialized Kanban and Timeline cards retain their
+existing behavior.
 
 ### Mobile swipe actions
 
@@ -676,7 +712,7 @@ an action area capped at 144 px and half the row width. Even a full swipe only
 reveals a button: never execute or dismiss a task on gesture completion.
 
 Use Flutter's gesture arena to separate horizontal swipes, vertical scrolling and
-long-press dragging. Disable swiping during selection, task dragging and action
+long-press menus. Disable swiping during selection, task dragging and action
 execution. Close on an outside tap, reverse swipe or Back. Snap open and closed
 with the existing 180 ms state transition; Reduce Motion applies the final state
 immediately, without delaying actions or waiting for animation callbacks.

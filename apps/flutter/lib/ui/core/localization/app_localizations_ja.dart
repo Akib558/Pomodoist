@@ -3551,4 +3551,34 @@ class AppLocalizationsJa extends AppLocalizations {
   String taskParentPath(String path) {
     return '親タスク：$path';
   }
+
+  @override
+  String get projectViewList => 'リスト';
+
+  @override
+  String get projectViewMap => 'マップ';
+
+  @override
+  String get projectViewBranches => 'ブランチ';
+
+  @override
+  String get projectOwnTasks => 'プロジェクトのタスク';
+
+  @override
+  String get projectShowCompleted => '完了済みを表示';
+
+  @override
+  String get projectExpandBranch => 'ブランチを展開';
+
+  @override
+  String get projectCollapseBranch => 'ブランチを折りたたむ';
+
+  @override
+  String get projectPlaceInside => '中に移動';
+
+  @override
+  String get projectPlaceBefore => '前に移動';
+
+  @override
+  String get projectPlaceAfter => '後に移動';
 }

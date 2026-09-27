@@ -1153,5 +1153,15 @@
   "taskCollapseSubtasks": "Свернуть подзадачи",
   "taskAllSubtasksProgress": "Все вложенные задачи: выполнено {completed} из {total}",
   "taskOpenFullBranch": "Открыть все подзадачи",
-  "taskParentPath": "Часть задачи: {path}"
+  "taskParentPath": "Часть задачи: {path}",
+  "projectViewList": "Список",
+  "projectViewMap": "Карта",
+  "projectViewBranches": "Ветки",
+  "projectOwnTasks": "Задачи проекта",
+  "projectShowCompleted": "Показать завершённые",
+  "projectExpandBranch": "Развернуть ветку",
+  "projectCollapseBranch": "Свернуть ветку",
+  "projectPlaceInside": "Переместить внутрь",
+  "projectPlaceBefore": "Переместить перед",
+  "projectPlaceAfter": "Переместить после"
 }

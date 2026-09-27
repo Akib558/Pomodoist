@@ -21,6 +21,13 @@ abstract interface class TaskRepository {
     bool clearParentId = false,
     String? orderKey,
   });
+  /// Atomically move a subtree and position its root among destination siblings.
+  Future<Result<void>> placeTask(
+    String id, {
+    required String projectId,
+    required String? parentId,
+    required String? beforeTaskId,
+  });
   Future<Result<void>> placeTaskOnTimeline(
     String id, {
     required TaskSchedule schedule,

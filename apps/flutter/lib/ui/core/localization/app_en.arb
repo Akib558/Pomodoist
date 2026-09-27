@@ -1883,5 +1883,15 @@
         "type": "String"
       }
     }
-  }
+  },
+  "projectViewList": "List",
+  "projectViewMap": "Map",
+  "projectViewBranches": "Branches",
+  "projectOwnTasks": "Project tasks",
+  "projectShowCompleted": "Show completed",
+  "projectExpandBranch": "Expand branch",
+  "projectCollapseBranch": "Collapse branch",
+  "projectPlaceInside": "Move inside",
+  "projectPlaceBefore": "Move before",
+  "projectPlaceAfter": "Move after"
 }

@@ -1153,5 +1153,15 @@
   "taskCollapseSubtasks": "Réduire les sous-tâches",
   "taskAllSubtasksProgress": "Toutes les sous-tâches : {completed} sur {total} terminées",
   "taskOpenFullBranch": "Ouvrir toutes les sous-tâches",
-  "taskParentPath": "Fait partie de : {path}"
+  "taskParentPath": "Fait partie de : {path}",
+  "projectViewList": "Liste",
+  "projectViewMap": "Carte",
+  "projectViewBranches": "Branches",
+  "projectOwnTasks": "Tâches du projet",
+  "projectShowCompleted": "Afficher les tâches terminées",
+  "projectExpandBranch": "Déplier la branche",
+  "projectCollapseBranch": "Replier la branche",
+  "projectPlaceInside": "Déplacer à l’intérieur",
+  "projectPlaceBefore": "Déplacer avant",
+  "projectPlaceAfter": "Déplacer après"
 }

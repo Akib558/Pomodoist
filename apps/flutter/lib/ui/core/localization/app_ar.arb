@@ -1153,5 +1153,15 @@
   "taskCollapseSubtasks": "طي المهام الفرعية",
   "taskAllSubtasksProgress": "جميع المهام المتفرعة: اكتمل {completed} من {total}",
   "taskOpenFullBranch": "فتح جميع المهام الفرعية",
-  "taskParentPath": "جزء من: {path}"
+  "taskParentPath": "جزء من: {path}",
+  "projectViewList": "قائمة",
+  "projectViewMap": "خريطة",
+  "projectViewBranches": "فروع",
+  "projectOwnTasks": "مهام المشروع",
+  "projectShowCompleted": "إظهار المكتملة",
+  "projectExpandBranch": "توسيع الفرع",
+  "projectCollapseBranch": "طي الفرع",
+  "projectPlaceInside": "نقل إلى الداخل",
+  "projectPlaceBefore": "نقل قبل",
+  "projectPlaceAfter": "نقل بعد"
 }

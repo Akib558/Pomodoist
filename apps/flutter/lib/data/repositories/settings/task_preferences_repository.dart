@@ -12,6 +12,7 @@ abstract interface class TaskPreferencesRepository {
   Future<Result<void>> setReengagementEnabled(bool enabled);
   Future<Result<void>> setQuickAddMinutes(int minutes);
   Future<Result<void>> setTimeDisplayMode(TaskTimeDisplayMode mode);
+  Future<Result<void>> setProjectViewMode(ProjectViewMode mode);
   Future<Result<void>> setListStyle(TaskListStyle style);
   Future<Result<void>> setRowSpacing(TaskRowSpacing spacing);
   Future<Result<void>> setBranchExpanded(
