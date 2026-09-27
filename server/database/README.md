@@ -76,6 +76,34 @@ remain supported. Validation errors use SQLSTATE `22023` and do not echo task
 contents. Receipt replay, conflict handling and integration transactions remain
 unchanged.
 
+## Account deletion
+
+`supabase/migrations/20260927125910_pomodoist_core_account_delete_calendar_guard.sql`
+adds a profile-existence guard to the Google Calendar task trigger so account
+deletion cannot recreate child state. It follows the frozen baseline in the
+normal migration chain and is recorded atomically with its schema change.
+
+## Pending (release-gated) migrations
+
+`database/pending-migrations/` contains prepared SQL that the normal migration
+runner does **not** mount or apply. Once a release gate is met, generate a new
+migration with `supabase migration new <name> --workdir server`, then copy the
+prepared SQL into it. Its timestamp must follow the active baseline and any
+other dependencies. Do not move an older pending filename into the active chain.
+
+An unreleased runner previously applied pending SQL and recorded
+`20260909211735_pomodoist_core_account_delete_calendar_guard` and
+`20260913210628_pomodoist_core_client_sync_batch_limits`. A database with either
+entry is not a supported release ledger: the corrected runner fails closed.
+Do not delete ledger rows, alter checksums, or assume that removing a record
+undoes the installed batch limits. Preserve the database and Vault key before
+planning a data-preserving repair. For a disposable test instance, provision a
+separate fresh stack; leave the old volumes intact until their data is accounted
+for. The ordinary backup script rejects these mismatched ledgers too, so retain
+an independent database dump and Vault key if the data must be recovered.
+
+## Client batch limits
+
 Client batch limits are deliberately **not enabled by the normal migration set**.
 The prepared script is
 `database/pending-migrations/20260913210628_pomodoist_core_client_sync_batch_limits.sql`.

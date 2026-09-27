@@ -1,6 +1,13 @@
 ---
 name: pomodoist
 description: Manage the user's Pomodoist tasks, projects, deadlines and synchronized Focus sessions through the configured Pomodoist MCP connection.
+version: 1.0.0
+license: MIT-0
+metadata:
+  openclaw:
+    homepage: https://github.com/Kabanya/Pomodoist/tree/main/tool/openclaw
+    requires:
+      bins: [node, openclaw]
 ---
 
 # Pomodoist
@@ -10,6 +17,38 @@ priorities, scheduling, deadlines, productivity or Pomodoro/Focus sessions.
 Use only the configured Pomodoist MCP tools. Native OpenClaw may prefix their
 names with the configured server name; select tools by their original names and
 descriptions. Never substitute shell/database access when a tool is unavailable.
+
+## Connect
+
+Requires OpenClaw 2026.9.3 or newer with native MCP OAuth and a supported Node.js
+runtime (24.16+ on the 24.x line, or 26.1+). Use an existing Pomodoist Cloud
+account with the required hosted access, or an independent self-hosted account.
+The skill is free; hosted service access follows the account's Pomodoist plan.
+
+On an explicit setup request, use the bundled `scripts/configure.mjs`. Run these
+commands from this skill's installed directory on the machine running OpenClaw:
+
+```sh
+# Preview the cloud connection; does not change configuration or contact a server.
+node scripts/configure.mjs https://mcp.pomodoist.com/functions/v1/pomodoist-mcp
+
+# Save the connection, sign in through native browser OAuth, and probe MCP.
+node scripts/configure.mjs https://mcp.pomodoist.com/functions/v1/pomodoist-mcp --apply
+
+# Only when the user explicitly enables task changes and Focus controls:
+node scripts/configure.mjs https://mcp.pomodoist.com/functions/v1/pomodoist-mcp --write --apply
+```
+
+For self-hosting, replace the URL with the operator's HTTPS MCP resource URL,
+normally `https://api.example.com/functions/v1/pomodoist-mcp`. Exact loopback
+HTTP hosts are accepted for local development. No environment variable or API
+key is required by the skill. OAuth credentials remain in OpenClaw's native
+credential store. The setup verifies CLI compatibility and refuses to replace a
+different server named `pomodoist`. Errors stop setup without retrying.
+
+Restart the running Gateway/agent after setup. Keep existing channel restrictions
+and tool policies; a profile hiding `bundle-mcp` tools needs deliberate operator
+configuration. Never enable writes or change the user's policy automatically.
 
 ## Read and resolve
 
@@ -69,3 +108,16 @@ The local read/write filter is NOT a read-only OAuth grant. Explain that server
 access is revoked in Pomodoist Settings by revoking the OAuth connection; local
 OpenClaw logout/unset only clears local credentials/configuration. Keep summaries
 limited to the data and actions the user requested, in the user's language.
+
+After revoking the connection in Pomodoist Settings, clear local credentials and
+disable the connection:
+
+```sh
+openclaw mcp logout pomodoist
+openclaw mcp configure pomodoist --disable
+```
+
+Optionally remove the disabled entry with `openclaw mcp unset pomodoist`.
+OpenClaw 2026.9.3 may reject removal as `size-drop`; access is already revoked
+and the entry stays disabled. Do not bypass the CLI's configuration guards.
+The old definition must be removed before this setup can switch endpoints.

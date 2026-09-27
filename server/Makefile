@@ -1,7 +1,7 @@
 SHELL := /bin/sh
 COMPOSE := docker compose --project-directory . --env-file .env -f compose.yaml
 
-.PHONY: setup validate up core-up down status logs migrate backup restore test-db test-smoke
+.PHONY: setup validate up core-up down status logs migrate backup restore test-db test-smoke test-openclaw test-openclaw-native
 
 setup:
 	sh scripts/bootstrap.sh
@@ -44,3 +44,9 @@ test-db:
 
 test-smoke:
 	sh scripts/smoke-test.sh
+
+test-openclaw:
+	node tests/openclaw-smoke.mjs --local
+
+test-openclaw-native:
+	node tests/openclaw-native.mjs --local

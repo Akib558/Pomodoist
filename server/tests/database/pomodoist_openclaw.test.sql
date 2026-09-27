@@ -46,7 +46,10 @@ select is((select value ->> 'revision' from first_prepare),'0','empty account pr
 create temporary table first_result as select pg_temp.action('44444444-4444-4444-8444-444444444444',
  jsonb_build_array(pg_temp.op('original')), (select (value ->> 'revision')::bigint from first_prepare)) as value;
 select is((select value ->> 'id' from first_result),'original','commit returns stable result');
-select is((select count(*) from private.pomodoist_openclaw_receipts),1::bigint,'commit stores one durable receipt');
+select is((select count(*) from private.pomodoist_openclaw_receipts
+ where user_id='11111111-1111-4111-8111-111111111111'
+   and client_id='22222222-2222-4222-8222-222222222222'
+   and request_id='44444444-4444-4444-8444-444444444444'),1::bigint,'commit stores one durable receipt');
 select is(pg_temp.action('44444444-4444-4444-8444-444444444444',jsonb_build_array(pg_temp.op('duplicate')),0),
  (select value from first_result),'concurrent/retried commit returns original result before checking stale revision');
 select ok(not exists(select 1 from public.sync_entities where entity_id='duplicate'), 'replay does not create another task');
