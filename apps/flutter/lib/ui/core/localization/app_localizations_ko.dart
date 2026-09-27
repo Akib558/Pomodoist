@@ -3591,4 +3591,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get projectPlaceAfter => '뒤로 이동';
+
+  @override
+  String get projectCatalogSearch => '프로젝트 및 작업 검색';
 }

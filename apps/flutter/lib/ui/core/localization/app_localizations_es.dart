@@ -3712,4 +3712,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get projectPlaceAfter => 'Mover después';
+
+  @override
+  String get projectCatalogSearch => 'Buscar proyectos y tareas';
 }

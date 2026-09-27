@@ -12,13 +12,15 @@ typedef ProjectDiagramState = ({
   bool showCompleted,
 });
 final projectDiagramViewModelProvider = NotifierProvider.autoDispose
-    .family<ProjectDiagramViewModel, ProjectDiagramState, String>(
+    .family<ProjectDiagramViewModel, ProjectDiagramState, String?>(
       ProjectDiagramViewModel.new,
     );
 
 class ProjectDiagramViewModel extends Notifier<ProjectDiagramState> {
   ProjectDiagramViewModel(this.projectId);
-  final String projectId;
+  final String? projectId;
+  String _search = '';
+  bool _archivedOnly = false;
   bool _showCompleted = false;
   @override
   ProjectDiagramState build() {
@@ -39,11 +41,20 @@ class ProjectDiagramViewModel extends Notifier<ProjectDiagramState> {
         [...?open.value, ...?completed.value],
         expansion: expansion,
         showCompleted: _showCompleted,
+        search: _search,
+        archivedOnly: _archivedOnly,
       ),
       loading: projects.isLoading || open.isLoading || completed.isLoading,
       hasError: projects.hasError || open.hasError || completed.hasError,
       showCompleted: _showCompleted,
     );
+  }
+
+  void setCatalogFilter({String? search, bool? archivedOnly}) {
+    if (projectId != null) return;
+    _search = search ?? _search;
+    _archivedOnly = archivedOnly ?? _archivedOnly;
+    ref.invalidateSelf();
   }
 
   void showCompleted(bool value) {
@@ -57,11 +68,14 @@ class ProjectDiagramViewModel extends Notifier<ProjectDiagramState> {
     ref.invalidate(tasksByQueryProvider(const TaskQuery.completed()));
   }
 
-  Future<void> setMode(ProjectViewMode mode) async =>
-      (await ref
-              .read(taskPreferencesRepositoryProvider)
-              .setProjectViewMode(mode))
-          .getOrThrow();
+  Future<void> setMode(ProjectViewMode mode) async {
+    final repository = ref.read(taskPreferencesRepositoryProvider);
+    (await (projectId == null
+            ? repository.setProjectCatalogViewMode(mode)
+            : repository.setProjectViewMode(mode)))
+        .getOrThrow();
+  }
+
   Future<void> expand(String key, bool expanded) async =>
       (await ref
               .read(taskPreferencesRepositoryProvider)
@@ -82,6 +96,8 @@ class ProjectDiagramViewModel extends Notifier<ProjectDiagramState> {
   }
 
   Future<void> place(ProjectDiagramDrop target) async {
+    if (!state.tree.movesEnabled)
+      throw StateError('Structural moves are disabled');
     // Repositories revalidate permissions and destinations against current storage.
     if (target.sourceKey.startsWith('p:')) {
       (await ref
@@ -97,7 +113,7 @@ class ProjectDiagramViewModel extends Notifier<ProjectDiagramState> {
               .read(taskRepositoryProvider)
               .placeTask(
                 target.sourceKey.substring(2),
-                projectId: target.projectId,
+                projectId: target.projectId!,
                 parentId: target.parentId,
                 beforeTaskId: target.beforeId,
               ))
@@ -105,7 +121,9 @@ class ProjectDiagramViewModel extends Notifier<ProjectDiagramState> {
     }
     if (!ref.mounted) return;
     await reveal(
-      target.sourceKey.startsWith('p:') || target.parentId == null
+      target.projectId == null
+          ? projectCatalogRootKey
+          : target.sourceKey.startsWith('p:') || target.parentId == null
           ? 'p:${target.projectId}'
           : 't:${target.parentId}',
     );

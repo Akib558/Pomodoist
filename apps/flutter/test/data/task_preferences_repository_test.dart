@@ -9,6 +9,59 @@ import 'package:pomodoist/data/repositories/settings/task_preferences_repository
 
 void main() {
   test(
+    'catalog choice is independent and survives delayed load and restart',
+    () async {
+      SharedPreferences.setMockInitialValues({
+        projectViewModePreferenceKey: 'branches',
+        projectCatalogViewModePreferenceKey: 'map',
+      });
+      final ready = Completer<SharedPreferences?>();
+      final service = PreferencesService(() => ready.future);
+      final repository = LocalTaskPreferencesRepository(service);
+      addTearDown(repository.dispose);
+      expect(repository.state.projectCatalogViewMode, ProjectViewMode.list);
+      final loading = repository.load();
+      final saving = repository.setProjectCatalogViewMode(
+        ProjectViewMode.branches,
+      );
+      ready.complete(await SharedPreferences.getInstance());
+      (await loading).getOrThrow();
+      (await saving).getOrThrow();
+      (await repository.setProjectViewMode(ProjectViewMode.map)).getOrThrow();
+      final restored = LocalTaskPreferencesRepository(service);
+      addTearDown(restored.dispose);
+      (await restored.load()).getOrThrow();
+      expect(restored.state.projectCatalogViewMode, ProjectViewMode.branches);
+      expect(restored.state.projectViewMode, ProjectViewMode.map);
+    },
+  );
+  test(
+    'rapid catalog choices serialize independently of project choices',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final service = _ControlledPreferences();
+      final repository = LocalTaskPreferencesRepository(service);
+      addTearDown(repository.dispose);
+      final first = repository.setProjectCatalogViewMode(ProjectViewMode.map);
+      await service.started.future;
+      final second = repository.setProjectCatalogViewMode(
+        ProjectViewMode.branches,
+      );
+      await Future<void>.delayed(Duration.zero);
+      expect(service.writeCount, 1);
+      service.release.complete();
+      for (final result in await Future.wait([first, second])) {
+        result.getOrThrow();
+      }
+      final restored = LocalTaskPreferencesRepository(service);
+      addTearDown(restored.dispose);
+      (await restored.load()).getOrThrow();
+      expect(restored.state.projectCatalogViewMode, ProjectViewMode.branches);
+      expect(restored.state.projectViewMode, ProjectViewMode.list);
+    },
+  );
+
+  test(
     'rapid project mode changes serialize writes and retain the final choice',
     () async {
       SharedPreferences.setMockInitialValues({});

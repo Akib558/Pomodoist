@@ -43,6 +43,7 @@ class LocalTaskPreferencesRepository implements TaskPreferencesRepository {
       taskTimeDisplayModePreferenceKey,
       taskListStylePreferenceKey,
       projectViewModePreferenceKey,
+      projectCatalogViewModePreferenceKey,
       taskRowSpacingPreferenceKey,
       taskBranchExpansionPreferenceKey,
       timelineVisibleStartMinutesPreferenceKey,
@@ -82,6 +83,9 @@ class LocalTaskPreferencesRepository implements TaskPreferencesRepository {
             : null,
         projectViewMode: ProjectViewMode.values
             .where((v) => v.name == values[projectViewModePreferenceKey])
+            .firstOrNull,
+        projectCatalogViewMode: ProjectViewMode.values
+            .where((v) => v.name == values[projectCatalogViewModePreferenceKey])
             .firstOrNull,
         listStyle: TaskListStyle.values
             .where((v) => v.name == values[taskListStylePreferenceKey])
@@ -194,12 +198,29 @@ class LocalTaskPreferencesRepository implements TaskPreferencesRepository {
     {taskTimeDisplayModePreferenceKey: mode.storageValue},
   );
   @override
-  Future<Result<void>> setProjectViewMode(ProjectViewMode mode) {
+  Future<Result<void>> setProjectViewMode(ProjectViewMode mode) =>
+      _saveProjectMode(
+        state.copyWith(projectViewMode: mode),
+        projectViewModePreferenceKey,
+        mode,
+      );
+  @override
+  Future<Result<void>> setProjectCatalogViewMode(ProjectViewMode mode) =>
+      _saveProjectMode(
+        state.copyWith(projectCatalogViewMode: mode),
+        projectCatalogViewModePreferenceKey,
+        mode,
+      );
+  Future<Result<void>> _saveProjectMode(
+    TaskPreferences next,
+    String key,
+    ProjectViewMode mode,
+  ) {
     if (_disposed) return Future.value(const Result.ok(null));
-    _edited.add(projectViewModePreferenceKey);
-    _publish(state.copyWith(projectViewMode: mode));
+    _edited.add(key);
+    _publish(next);
     return _projectModeWrites = _projectModeWrites.then(
-      (_) => _preferences.write({projectViewModePreferenceKey: mode.name}),
+      (_) => _preferences.write({key: mode.name}),
     );
   }
 

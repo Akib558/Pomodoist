@@ -695,6 +695,28 @@ On touch, both views scroll normally and structure changes use menus instead
 of long-press dragging. The ordinary list and project catalog retain their
 existing hierarchy and interaction rules.
 
+The Projects catalog also offers List, Map and Branches directly in its heading.
+Its view preference and shared map/branches expansion scope are local and
+independent of the view inside individual projects. A display-only Projects root
+connects the project forest; it is never a stored project or a task destination.
+Exclude Inbox. Keep empty projects and promote projects whose parent is excluded
+by the active/archive filter. Root and first-level projects start expanded.
+
+Catalog diagrams search project names and task titles case-insensitively. Project
+matches retain their contents; task matches retain their ancestor paths. Reveal
+matching paths temporarily without overwriting saved expansion. Completion
+visibility still applies to search; progress ignores search and expansion.
+Disable structural moves during search and in archive mode, including menu and
+bulk moves. Otherwise, dropping a project on the catalog root returns it to the
+top level using the existing scope and permission checks. Preserve per-view
+scroll positions, the search field, and task detail routing across view switches.
+Keep the catalog header scrollable and bounded on short windows and while the
+software keyboard is visible. Retained inactive views must not capture keyboard
+focus, Escape or Back through their selection controllers. The Labels tab and
+ordinary list keep their existing search behavior. Use the
+tabs component's own scrolling mode; do not put expanding tabs into an unbounded
+horizontal viewport.
+
 ### Touch task menus
 
 On native iOS/Android, long-press the shared row's text or metadata to open its

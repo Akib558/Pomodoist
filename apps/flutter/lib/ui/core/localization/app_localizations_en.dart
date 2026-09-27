@@ -3702,4 +3702,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get projectPlaceAfter => 'Move after';
+
+  @override
+  String get projectCatalogSearch => 'Search projects and tasks';
 }

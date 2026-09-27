@@ -114,6 +114,8 @@ class TaskSelectionRegion extends ConsumerStatefulWidget {
     this.scopeKey,
     this.shrinkWrap = false,
     this.floatingToolbar = true,
+    this.allowProjectMove = true,
+    this.isActive = true,
     super.key,
   });
 
@@ -123,6 +125,8 @@ class TaskSelectionRegion extends ConsumerStatefulWidget {
 
   /// Disable for selection hosted inside modal panels.
   final bool floatingToolbar;
+  final bool allowProjectMove;
+  final bool isActive;
   final Widget child;
 
   @override
@@ -166,7 +170,8 @@ class _TaskSelectionRegionState extends ConsumerState<TaskSelectionRegion> {
   }
 
   bool _handleKeyEvent(KeyEvent event) {
-    if (!_controller.active ||
+    if (!widget.isActive ||
+        !_controller.active ||
         event is! KeyDownEvent ||
         event.logicalKey != LogicalKeyboardKey.escape ||
         !(ModalRoute.of(context)?.isCurrent ?? false)) {
@@ -197,15 +202,18 @@ class _TaskSelectionRegionState extends ConsumerState<TaskSelectionRegion> {
   Widget build(BuildContext context) {
     final selection = ref.watch(taskSelectionViewModelProvider(_identity));
     return PopScope(
-      canPop: !_controller.active,
+      canPop: !widget.isActive || !_controller.active,
       onPopInvokedWithResult: (didPop, result) {
-        if (!didPop) _controller.close();
+        if (widget.isActive && !didPop) _controller.close();
       },
       child: Focus(
-        autofocus: !widget.shrinkWrap,
+        autofocus: widget.isActive && !widget.shrinkWrap,
+        canRequestFocus: widget.isActive,
+        descendantsAreFocusable: widget.isActive,
+        descendantsAreTraversable: widget.isActive,
         child: CallbackShortcuts(
           bindings: {
-            if (_controller.active)
+            if (widget.isActive && _controller.active)
               const SingleActivator(LogicalKeyboardKey.escape):
                   _controller.close,
           },
@@ -277,7 +285,8 @@ class _TaskSelectionRegionState extends ConsumerState<TaskSelectionRegion> {
     final actions = Row(
       children: [
         _barAction(LucideIcons.calendar, l10n.taskDue, _showDue),
-        _barAction(LucideIcons.folder, l10n.taskProject, _showProject),
+        if (widget.allowProjectMove)
+          _barAction(LucideIcons.folder, l10n.taskProject, _showProject),
         _barAction(LucideIcons.tag, l10n.taskLabels, _showLabels),
         _barAction(LucideIcons.flag, l10n.taskPriority, _showPriority),
         _barAction(LucideIcons.ellipsis, l10n.taskMore, _showMore),
@@ -340,6 +349,7 @@ class _TaskSelectionRegionState extends ConsumerState<TaskSelectionRegion> {
   }
 
   Future<void> _showProject(BuildContext context) async {
+    if (!widget.allowProjectMove) return;
     if (!_controller.hasSelection) return;
     final projects = ref
         .read(taskSelectionViewModelProvider(_identity))

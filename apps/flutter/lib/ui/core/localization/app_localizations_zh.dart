@@ -3500,4 +3500,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get projectPlaceAfter => '移到后面';
+
+  @override
+  String get projectCatalogSearch => '搜索项目和任务';
 }

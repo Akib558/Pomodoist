@@ -1163,5 +1163,6 @@
   "projectCollapseBranch": "Contraer rama",
   "projectPlaceInside": "Mover dentro",
   "projectPlaceBefore": "Mover antes",
-  "projectPlaceAfter": "Mover después"
+  "projectPlaceAfter": "Mover después",
+  "projectCatalogSearch": "Buscar proyectos y tareas"
 }

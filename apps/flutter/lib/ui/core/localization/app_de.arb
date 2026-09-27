@@ -1163,5 +1163,6 @@
   "projectCollapseBranch": "Zweig einklappen",
   "projectPlaceInside": "Hinein verschieben",
   "projectPlaceBefore": "Davor verschieben",
-  "projectPlaceAfter": "Danach verschieben"
+  "projectPlaceAfter": "Danach verschieben",
+  "projectCatalogSearch": "Projekte und Aufgaben suchen"
 }

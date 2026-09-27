@@ -1163,5 +1163,6 @@
   "projectCollapseBranch": "Replier la branche",
   "projectPlaceInside": "Déplacer à l’intérieur",
   "projectPlaceBefore": "Déplacer avant",
-  "projectPlaceAfter": "Déplacer après"
+  "projectPlaceAfter": "Déplacer après",
+  "projectCatalogSearch": "Rechercher des projets et des tâches"
 }

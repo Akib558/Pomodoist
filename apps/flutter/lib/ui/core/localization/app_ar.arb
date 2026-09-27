@@ -1163,5 +1163,6 @@
   "projectCollapseBranch": "طي الفرع",
   "projectPlaceInside": "نقل إلى الداخل",
   "projectPlaceBefore": "نقل قبل",
-  "projectPlaceAfter": "نقل بعد"
+  "projectPlaceAfter": "نقل بعد",
+  "projectCatalogSearch": "البحث في المشاريع والمهام"
 }

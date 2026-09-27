@@ -1774,5 +1774,6 @@
   "projectCollapseBranch": "Recolher ramo",
   "projectPlaceInside": "Mover para dentro",
   "projectPlaceBefore": "Mover antes",
-  "projectPlaceAfter": "Mover depois"
+  "projectPlaceAfter": "Mover depois",
+  "projectCatalogSearch": "Pesquisar projetos e tarefas"
 }

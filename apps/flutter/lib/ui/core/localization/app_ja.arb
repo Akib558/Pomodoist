@@ -1774,5 +1774,6 @@
   "projectCollapseBranch": "ブランチを折りたたむ",
   "projectPlaceInside": "中に移動",
   "projectPlaceBefore": "前に移動",
-  "projectPlaceAfter": "後に移動"
+  "projectPlaceAfter": "後に移動",
+  "projectCatalogSearch": "プロジェクトとタスクを検索"
 }

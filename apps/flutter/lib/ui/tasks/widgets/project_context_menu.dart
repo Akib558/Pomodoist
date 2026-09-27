@@ -29,12 +29,14 @@ class ProjectContextMenu extends ConsumerStatefulWidget {
     required this.project,
     required this.child,
     this.showMenuButton = false,
+    this.allowMove = true,
     super.key,
   });
 
   final ProjectItem project;
   final Widget child;
   final bool showMenuButton;
+  final bool allowMove;
 
   @override
   ConsumerState<ProjectContextMenu> createState() => _ProjectContextMenuState();
@@ -79,12 +81,13 @@ class _ProjectContextMenuState extends ConsumerState<ProjectContextMenu> {
                   showCreateProjectDialog(context, parentId: project.id),
               child: Text(l10n.addSubproject),
             ),
-            ShadContextMenuItem(
-              leading: const Icon(LucideIcons.folderInput, size: 16),
-              onPressed: () => showMoveProjectDialog(context, ref, project),
-              child: Text(l10n.moveProject),
-            ),
-            if (index > 0)
+            if (widget.allowMove)
+              ShadContextMenuItem(
+                leading: const Icon(LucideIcons.folderInput, size: 16),
+                onPressed: () => showMoveProjectDialog(context, ref, project),
+                child: Text(l10n.moveProject),
+              ),
+            if (widget.allowMove && index > 0)
               ShadContextMenuItem(
                 leading: const Icon(LucideIcons.arrowUp, size: 16),
                 onPressed: () => moveProjectInTree(
@@ -98,7 +101,7 @@ class _ProjectContextMenuState extends ConsumerState<ProjectContextMenu> {
                 ),
                 child: Text(l10n.projectMoveUp),
               ),
-            if (index >= 0 && index + 1 < siblings.length)
+            if (widget.allowMove && index >= 0 && index + 1 < siblings.length)
               ShadContextMenuItem(
                 leading: const Icon(LucideIcons.arrowDown, size: 16),
                 onPressed: () => moveProjectInTree(

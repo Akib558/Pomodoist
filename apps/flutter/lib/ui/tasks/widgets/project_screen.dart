@@ -143,6 +143,7 @@ class _ProjectContentState extends ConsumerState<_ProjectContent> {
                         projectId: widget.projectId,
                       ),
                       showHeader: false,
+                      isActive: mode == ProjectViewMode.list,
                       showQuickAdd: false,
                       quickAddProjectId: widget.projectId,
                     )
@@ -151,6 +152,7 @@ class _ProjectContentState extends ConsumerState<_ProjectContent> {
                       key: ValueKey('${widget.projectId}:${view.name}'),
                       projectId: widget.projectId,
                       mode: view,
+                      isActive: mode == view,
                     ),
               ],
             ),

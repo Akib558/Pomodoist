@@ -55,12 +55,14 @@ Size projectDiagramNodeSize(
 
 class ProjectDiagram extends ConsumerStatefulWidget {
   const ProjectDiagram({
-    required this.projectId,
+    this.projectId,
     required this.mode,
+    this.isActive = true,
     super.key,
   });
-  final String projectId;
+  final String? projectId;
   final ProjectViewMode mode;
+  final bool isActive;
   @override
   ConsumerState<ProjectDiagram> createState() => _ProjectDiagramState();
 }
@@ -174,7 +176,8 @@ class _ProjectDiagramState extends ConsumerState<ProjectDiagram> {
       for (final key in tree.visibleKeys)
         key: projectDiagramNodeSize(
           tree.nodes[key]!.project?.displayName(l10n) ??
-              tree.nodes[key]!.task!.content,
+              tree.nodes[key]!.task?.content ??
+              l10n.navProjects,
           style,
           MediaQuery.textScalerOf(context),
           Directionality.of(context),
@@ -199,6 +202,8 @@ class _ProjectDiagramState extends ConsumerState<ProjectDiagram> {
           child: TaskMotionScope(
             builder: (context, motion) => TaskSelectionRegion(
               visibleTasks: tasks,
+              isActive: widget.isActive,
+              allowProjectMove: tree.movesEnabled,
               scopeKey: projectDiagramScope(widget.projectId),
               child: ProjectTreeScope(
                 controller: _projectTree,
@@ -260,8 +265,9 @@ class _ProjectDiagramState extends ConsumerState<ProjectDiagram> {
                                         tree: tree,
                                         node: tree.nodes[entry.key]!,
                                         selected:
+                                            selectedId != null &&
                                             tree.nodes[entry.key]!.task?.id ==
-                                            selectedId,
+                                                selectedId,
                                         onExpand: () => _action(
                                           () => _model.expand(
                                             entry.key,
@@ -435,14 +441,38 @@ class _DiagramNodeState extends ConsumerState<_DiagramNode> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Expanded(
-          child: project == null
+          child: node.isCatalogRoot
+              ? Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.navProjects,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      const Spacer(),
+                      Text(
+                        node.progress.label,
+                        style: Theme.of(context).textTheme.labelSmall,
+                      ),
+                      if (node.children.isEmpty)
+                        Text(
+                          l10n.noProjects,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                    ],
+                  ),
+                )
+              : project == null
               ? TaskListItem(
                   task: node.task!,
                   diagram: true,
                   enableSubtaskDrop: false,
                   subtaskProgress: node.progress,
                   onAddSubtask: widget.onAddSubtask,
-                  onDiagramMove: widget.onMoveTask,
+                  onDiagramMove: tree.movesEnabled ? widget.onMoveTask : null,
                 )
               : Column(
                   children: [
@@ -518,6 +548,7 @@ class _DiagramNodeState extends ConsumerState<_DiagramNode> {
                             child: ProjectContextMenu(
                               project: project,
                               showMenuButton: true,
+                              allowMove: tree.movesEnabled,
                               child: const SizedBox.shrink(),
                             ),
                           ),

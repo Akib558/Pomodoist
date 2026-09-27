@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:pomodoist/ui/tasks/widgets/project_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:shadcn_ui/shadcn_ui.dart'
@@ -17,6 +18,10 @@ import 'package:go_router/go_router.dart';
 import 'package:pomodoist/ui/core/localization/app_l10n.dart';
 import 'package:pomodoist/ui/core/widgets/app_context_menu_region.dart';
 import 'package:pomodoist/ui/tasks/view_models/projects_view_model.dart';
+import 'package:pomodoist/ui/tasks/view_models/project_diagram_view_model.dart';
+import 'package:pomodoist/domain/models/settings/task_preferences.dart';
+import 'package:pomodoist/ui/core/widgets/action_feedback.dart';
+import 'project_diagram.dart';
 import 'package:pomodoist/ui/core/themes/app_theme.dart';
 import 'package:pomodoist/domain/models/tasks/task_models.dart';
 import 'package:pomodoist/ui/collaboration/widgets/shared_project_badge.dart';
@@ -41,6 +46,9 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
   final _searchController = TextEditingController();
   _ProjectsMode _mode = _ProjectsMode.projects;
   final _identity = Object();
+  final _visitedViews = <ProjectViewMode>{ProjectViewMode.list};
+  ProjectDiagramViewModel get _diagramModel =>
+      ref.read(projectDiagramViewModelProvider(null).notifier);
   ProjectsViewModel get _viewModel =>
       ref.read(projectsViewModelProvider(_identity).notifier);
   final _projectTree = ProjectTreeController();
@@ -73,237 +81,389 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
     final taskCounts = viewState.taskCounts;
     final archivedOnly = viewState.archivedOnly;
     final projectMode = _mode == _ProjectsMode.projects;
+    final catalogMode = ref.watch(projectCatalogViewModeProvider);
+    final diagram = ref.watch(projectDiagramViewModelProvider(null));
+    final tabHeight = (MediaQuery.textScalerOf(context).scale(16) + 16).clamp(
+      44.0,
+      double.infinity,
+    );
+    if (projectMode) _visitedViews.add(catalogMode);
 
     return SafeArea(
-      child: CustomScrollView(
-        slivers: [
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 22, 20, 10),
-            sliver: SliverToBoxAdapter(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Wrap(
-                    spacing: 10,
-                    runSpacing: 8,
-                    crossAxisAlignment: WrapCrossAlignment.center,
+      child: LayoutBuilder(
+        builder: (context, constraints) => Column(
+          children: [
+            ConstrainedBox(
+              constraints: BoxConstraints(
+                maxHeight: constraints.maxHeight * .55,
+              ),
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 22, 20, 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        l10n.navProjects,
-                        style: Theme.of(context).textTheme.headlineMedium,
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 8,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Text(
+                            l10n.navProjects,
+                            style: Theme.of(context).textTheme.headlineMedium,
+                          ),
+                          IntrinsicWidth(
+                            child: ShadTabs<_ProjectsMode>(
+                              key: const Key('projects-mode-segmented-button'),
+                              value: _mode,
+                              tabs: [
+                                ShadTab(
+                                  value: _ProjectsMode.projects,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(LucideIcons.folder),
+                                      const SizedBox(width: 8),
+                                      Text(l10n.navProjects),
+                                    ],
+                                  ),
+                                ),
+                                ShadTab(
+                                  value: _ProjectsMode.labels,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(LucideIcons.tag),
+                                      const SizedBox(width: 8),
+                                      Text(l10n.labelsTitle),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                              onChanged: (mode) => setState(() => _mode = mode),
+                              gap: 0,
+                            ),
+                          ),
+                          Tooltip(
+                            message: projectMode
+                                ? l10n.addProject
+                                : l10n.addLabel,
+                            child: ShadIconButton(
+                              key: Key(
+                                projectMode
+                                    ? 'projects-add-button'
+                                    : 'labels-add-button',
+                              ),
+                              onPressed: projectMode
+                                  ? () => showCreateProjectDialog(context)
+                                  : () => showCreateLabelDialog(context),
+                              icon: const Icon(LucideIcons.plus),
+                              foregroundColor: colors.accent,
+                              backgroundColor: colors.accentTint,
+                              height: 42,
+                              width: 42,
+                            ),
+                          ),
+                        ],
                       ),
-                      IntrinsicWidth(
-                        child: ShadTabs<_ProjectsMode>(
-                          key: const Key('projects-mode-segmented-button'),
-                          value: _mode,
+                      if (projectMode) ...[
+                        const SizedBox(height: 12),
+                        ShadTabs<ProjectViewMode>(
+                          value: catalogMode,
+                          scrollable: true,
+                          gap: 0,
+                          onChanged: (value) => unawaited(_setViewMode(value)),
                           tabs: [
                             ShadTab(
-                              value: _ProjectsMode.projects,
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(LucideIcons.folder),
-                                  const SizedBox(width: 8),
-                                  Text(l10n.navProjects),
-                                ],
-                              ),
+                              value: ProjectViewMode.list,
+                              height: tabHeight,
+                              child: Text(l10n.projectViewList),
                             ),
                             ShadTab(
-                              value: _ProjectsMode.labels,
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(LucideIcons.tag),
-                                  const SizedBox(width: 8),
-                                  Text(l10n.labelsTitle),
-                                ],
-                              ),
+                              value: ProjectViewMode.map,
+                              height: tabHeight,
+                              child: Text(l10n.projectViewMap),
+                            ),
+                            ShadTab(
+                              value: ProjectViewMode.branches,
+                              height: tabHeight,
+                              child: Text(l10n.projectViewBranches),
                             ),
                           ],
-                          onChanged: (mode) => setState(() => _mode = mode),
-                          gap: 0,
                         ),
-                      ),
-                      Tooltip(
-                        message: projectMode ? l10n.addProject : l10n.addLabel,
-                        child: ShadIconButton(
-                          key: Key(
-                            projectMode
-                                ? 'projects-add-button'
-                                : 'labels-add-button',
-                          ),
-                          onPressed: projectMode
-                              ? () => showCreateProjectDialog(context)
-                              : () => showCreateLabelDialog(context),
-                          icon: const Icon(LucideIcons.plus),
-                          foregroundColor: colors.accent,
-                          backgroundColor: colors.accentTint,
-                          height: 42,
-                          width: 42,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 18),
-                  ShadInput(
-                    key: const Key('projects-search-field'),
-                    controller: _searchController,
-                    placeholder: Text(
-                      projectMode ? l10n.searchProjects : l10n.searchLabels,
-                    ),
-                    leading: const Icon(LucideIcons.search),
-                  ),
-                  if (projectMode) ...[
-                    const SizedBox(height: 14),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            l10n.archivedProjectsOnly,
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(
-                                  color: colors.secondaryText,
-                                  fontWeight: FontWeight.w500,
+                        if (catalogMode != ProjectViewMode.list)
+                          Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 12,
+                            children: [
+                              TextButton.icon(
+                                onPressed: () => _diagramModel.showCompleted(
+                                  !diagram.showCompleted,
                                 ),
+                                icon: Icon(
+                                  diagram.showCompleted
+                                      ? LucideIcons.circleCheck
+                                      : LucideIcons.circle,
+                                  size: 16,
+                                ),
+                                label: Text(l10n.projectShowCompleted),
+                              ),
+                              if (!diagram.loading &&
+                                  !diagram.hasError &&
+                                  diagram.tree.nodes[diagram.tree.rootKey] !=
+                                      null)
+                                Text(
+                                  diagram
+                                      .tree
+                                      .nodes[diagram.tree.rootKey]!
+                                      .progress
+                                      .label,
+                                  style: Theme.of(context).textTheme.labelSmall,
+                                ),
+                            ],
                           ),
+                      ],
+                      const SizedBox(height: 18),
+                      ShadInput(
+                        key: const Key('projects-search-field'),
+                        controller: _searchController,
+                        placeholder: Text(
+                          projectMode
+                              ? (catalogMode == ProjectViewMode.list
+                                    ? l10n.searchProjects
+                                    : l10n.projectCatalogSearch)
+                              : l10n.searchLabels,
                         ),
-                        ShadSwitch(
-                          key: const Key('projects-archived-switch'),
-                          value: archivedOnly,
-                          onChanged: (value) =>
-                              _viewModel.setArchivedOnly(value),
+                        leading: const Icon(LucideIcons.search),
+                      ),
+                      if (projectMode) ...[
+                        const SizedBox(height: 14),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                l10n.archivedProjectsOnly,
+                                style: Theme.of(context).textTheme.titleMedium
+                                    ?.copyWith(
+                                      color: colors.secondaryText,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                              ),
+                            ),
+                            ShadSwitch(
+                              key: const Key('projects-archived-switch'),
+                              value: archivedOnly,
+                              onChanged: (value) {
+                                _viewModel.setArchivedOnly(value);
+                                _diagramModel.setCatalogFilter(
+                                  archivedOnly: value,
+                                );
+                              },
+                            ),
+                          ],
                         ),
                       ],
-                    ),
-                  ],
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: IndexedStack(
+                index: projectMode ? catalogMode.index : 0,
+                children: [
+                  CustomScrollView(
+                    slivers: [
+                      if (projectMode)
+                        projects.when(
+                          data: (items) {
+                            final filteredProjects = items;
+                            final rows = projectRows(
+                              filteredProjects,
+                              collapsedIds:
+                                  _searchController.text.trim().isEmpty
+                                  ? _projectTree.collapsedIds
+                                  : const {},
+                            );
+                            if (rows.isEmpty) {
+                              return SliverFillRemaining(
+                                hasScrollBody: false,
+                                child: Center(
+                                  child: Text(
+                                    l10n.noProjects,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.titleMedium,
+                                  ),
+                                ),
+                              );
+                            }
+                            return ProjectTreeScope(
+                              controller: _projectTree,
+                              child: SliverPadding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  20,
+                                  12,
+                                  20,
+                                  24,
+                                ),
+                                sliver: SliverList.separated(
+                                  itemCount: rows.length + 1,
+                                  itemBuilder: (context, index) {
+                                    if (index == 0) {
+                                      return Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
+                                        children: [
+                                          _ProjectCountHeader(
+                                            count: filteredProjects.length,
+                                          ),
+                                          if (!archivedOnly &&
+                                              _searchController.text
+                                                  .trim()
+                                                  .isEmpty)
+                                            const ProjectTreeRootTarget(),
+                                        ],
+                                      );
+                                    }
+                                    final row = rows[index - 1];
+                                    return ProjectTreeRow(
+                                      key: ValueKey(
+                                        'project-tree-${row.project.id}',
+                                      ),
+                                      row: row,
+                                      dragEnabled:
+                                          !archivedOnly &&
+                                          _searchController.text.trim().isEmpty,
+                                      child: _ProjectListTile(
+                                        project: row.project,
+                                        count: taskCounts[row.project.id] ?? 0,
+                                        onTap: () => context.go(
+                                          '/project/${row.project.id}',
+                                        ),
+                                        onColor: () => changeProjectColor(
+                                          context,
+                                          ref,
+                                          row.project,
+                                        ),
+                                        onFavorite: () => toggleProjectFavorite(
+                                          context,
+                                          ref,
+                                          row.project,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  separatorBuilder: (context, index) => Divider(
+                                    height: 1,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.outlineVariant,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                          loading: () => const SliverFillRemaining(
+                            child: Center(child: CircularProgressIndicator()),
+                          ),
+                          error: (error, stackTrace) => SliverFillRemaining(
+                            child: Center(
+                              child: Text(l10n.projectsUnavailable(error)),
+                            ),
+                          ),
+                        )
+                      else
+                        labels.when(
+                          data: (items) {
+                            final filteredLabels = items;
+                            if (filteredLabels.isEmpty) {
+                              return SliverFillRemaining(
+                                hasScrollBody: false,
+                                child: Center(
+                                  child: Text(
+                                    l10n.noLabels,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.titleMedium,
+                                  ),
+                                ),
+                              );
+                            }
+                            return SliverPadding(
+                              padding: const EdgeInsets.fromLTRB(
+                                20,
+                                12,
+                                20,
+                                24,
+                              ),
+                              sliver: SliverList.separated(
+                                itemCount: filteredLabels.length + 1,
+                                itemBuilder: (context, index) {
+                                  if (index == 0) {
+                                    return _LabelCountHeader(
+                                      count: filteredLabels.length,
+                                    );
+                                  }
+                                  final label = filteredLabels[index - 1];
+                                  return _LabelListTile(
+                                    label: label,
+                                    onDelete: () => _confirmDeleteLabel(label),
+                                  );
+                                },
+                                separatorBuilder: (context, index) => Divider(
+                                  height: 1,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.outlineVariant,
+                                ),
+                              ),
+                            );
+                          },
+                          loading: () => const SliverFillRemaining(
+                            child: Center(child: CircularProgressIndicator()),
+                          ),
+                          error: (error, stackTrace) => SliverFillRemaining(
+                            child: Center(
+                              child: Text(l10n.failedToLoadLabels(error)),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  for (final view in [
+                    ProjectViewMode.map,
+                    ProjectViewMode.branches,
+                  ])
+                    if (_visitedViews.contains(view))
+                      ProjectDiagram(
+                        key: ValueKey('catalog:${view.name}'),
+                        mode: view,
+                        isActive: projectMode && catalogMode == view,
+                      )
+                    else
+                      const SizedBox.shrink(),
                 ],
               ),
             ),
-          ),
-          if (projectMode)
-            projects.when(
-              data: (items) {
-                final filteredProjects = items;
-                final rows = projectRows(
-                  filteredProjects,
-                  collapsedIds: _searchController.text.trim().isEmpty
-                      ? _projectTree.collapsedIds
-                      : const {},
-                );
-                if (rows.isEmpty) {
-                  return SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Center(
-                      child: Text(
-                        l10n.noProjects,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                    ),
-                  );
-                }
-                return ProjectTreeScope(
-                  controller: _projectTree,
-                  child: SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-                    sliver: SliverList.separated(
-                      itemCount: rows.length + 1,
-                      itemBuilder: (context, index) {
-                        if (index == 0) {
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              _ProjectCountHeader(
-                                count: filteredProjects.length,
-                              ),
-                              if (!archivedOnly &&
-                                  _searchController.text.trim().isEmpty)
-                                const ProjectTreeRootTarget(),
-                            ],
-                          );
-                        }
-                        final row = rows[index - 1];
-                        return ProjectTreeRow(
-                          key: ValueKey('project-tree-${row.project.id}'),
-                          row: row,
-                          dragEnabled:
-                              !archivedOnly &&
-                              _searchController.text.trim().isEmpty,
-                          child: _ProjectListTile(
-                            project: row.project,
-                            count: taskCounts[row.project.id] ?? 0,
-                            onTap: () =>
-                                context.go('/project/${row.project.id}'),
-                            onColor: () =>
-                                changeProjectColor(context, ref, row.project),
-                            onFavorite: () => toggleProjectFavorite(
-                              context,
-                              ref,
-                              row.project,
-                            ),
-                          ),
-                        );
-                      },
-                      separatorBuilder: (context, index) => Divider(
-                        height: 1,
-                        color: Theme.of(context).colorScheme.outlineVariant,
-                      ),
-                    ),
-                  ),
-                );
-              },
-              loading: () => const SliverFillRemaining(
-                child: Center(child: CircularProgressIndicator()),
-              ),
-              error: (error, stackTrace) => SliverFillRemaining(
-                child: Center(child: Text(l10n.projectsUnavailable(error))),
-              ),
-            )
-          else
-            labels.when(
-              data: (items) {
-                final filteredLabels = items;
-                if (filteredLabels.isEmpty) {
-                  return SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Center(
-                      child: Text(
-                        l10n.noLabels,
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                    ),
-                  );
-                }
-                return SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-                  sliver: SliverList.separated(
-                    itemCount: filteredLabels.length + 1,
-                    itemBuilder: (context, index) {
-                      if (index == 0) {
-                        return _LabelCountHeader(count: filteredLabels.length);
-                      }
-                      final label = filteredLabels[index - 1];
-                      return _LabelListTile(
-                        label: label,
-                        onDelete: () => _confirmDeleteLabel(label),
-                      );
-                    },
-                    separatorBuilder: (context, index) => Divider(
-                      height: 1,
-                      color: Theme.of(context).colorScheme.outlineVariant,
-                    ),
-                  ),
-                );
-              },
-              loading: () => const SliverFillRemaining(
-                child: Center(child: CircularProgressIndicator()),
-              ),
-              error: (error, stackTrace) => SliverFillRemaining(
-                child: Center(child: Text(l10n.failedToLoadLabels(error))),
-              ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
+  }
+
+  Future<void> _setViewMode(ProjectViewMode mode) async {
+    try {
+      await _diagramModel.setMode(mode);
+    } catch (_) {
+      if (mounted)
+        showActionFeedback(
+          context,
+          message: context.l10n.settingsSaveError,
+          icon: LucideIcons.circleAlert,
+          sound: ActionFeedbackSound.none,
+        );
+    }
   }
 
   Future<void> _confirmDeleteLabel(LabelItem label) async {
@@ -340,7 +500,10 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
     }
   }
 
-  void _onSearchChanged() => _viewModel.search(_searchController.text);
+  void _onSearchChanged() {
+    _viewModel.search(_searchController.text);
+    _diagramModel.setCatalogFilter(search: _searchController.text);
+  }
 }
 
 enum _ProjectsMode { projects, labels }
@@ -502,6 +665,11 @@ class _LabelListTile extends ConsumerWidget {
       key: ValueKey('projects-screen-label-${label.id}'),
       items: [
         ShadContextMenuItem(
+          leading: Icon(labelIconData(label.icon), size: 16),
+          onPressed: () => editLabelIcon(context, ref, label),
+          child: Text(context.l10n.labelIcon),
+        ),
+        ShadContextMenuItem(
           leading: const Icon(LucideIcons.pencil, size: 16),
           onPressed: () => showEditLabelDialog(context, label),
           child: Text(context.l10n.editLabel),
@@ -542,8 +710,8 @@ class _LabelListTile extends ConsumerWidget {
                 const SizedBox(width: 8),
                 Text('$count', style: Theme.of(context).textTheme.bodySmall),
                 IconButton(
-                  tooltip: context.l10n.editLabel,
-                  onPressed: () => showEditLabelDialog(context, label),
+                  tooltip: context.l10n.labelIcon,
+                  onPressed: () => editLabelIcon(context, ref, label),
                   icon: const Icon(LucideIcons.pencil, size: 16),
                 ),
               ],

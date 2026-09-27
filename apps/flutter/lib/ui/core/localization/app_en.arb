@@ -1893,5 +1893,6 @@
   "projectCollapseBranch": "Collapse branch",
   "projectPlaceInside": "Move inside",
   "projectPlaceBefore": "Move before",
-  "projectPlaceAfter": "Move after"
+  "projectPlaceAfter": "Move after",
+  "projectCatalogSearch": "Search projects and tasks"
 }

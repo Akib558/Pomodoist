@@ -34,10 +34,12 @@ class TaskListView extends ConsumerWidget {
     this.quickAddProjectId,
     this.titleLeading,
     this.showHeader = true,
+    this.isActive = true,
     super.key,
   });
 
   final bool showHeader;
+  final bool isActive;
   final String title;
   final String? subtitle;
   final TaskQuery query;
@@ -113,6 +115,7 @@ class TaskListView extends ConsumerWidget {
         return SafeArea(
           bottom: false,
           child: TaskSelectionRegion(
+            isActive: isActive,
             visibleTasks: selectable,
             scopeKey: query,
             child: CustomScrollView(

@@ -3716,4 +3716,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get projectPlaceAfter => 'Danach verschieben';
+
+  @override
+  String get projectCatalogSearch => 'Projekte und Aufgaben suchen';
 }

@@ -3632,4 +3632,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get projectPlaceAfter => 'نقل بعد';
+
+  @override
+  String get projectCatalogSearch => 'البحث في المشاريع والمهام';
 }

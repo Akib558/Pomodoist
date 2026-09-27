@@ -3697,4 +3697,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get projectPlaceAfter => 'Переместить после';
+
+  @override
+  String get projectCatalogSearch => 'Поиск проектов и задач';
 }

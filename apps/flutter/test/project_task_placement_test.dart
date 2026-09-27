@@ -114,7 +114,7 @@ void main() {
       )!;
       (await tasks.placeTask(
         source,
-        projectId: drop.projectId,
+        projectId: drop.projectId!,
         parentId: drop.parentId,
         beforeTaskId: drop.beforeId,
       )).getOrThrow();

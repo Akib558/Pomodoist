@@ -3581,4 +3581,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get projectPlaceAfter => '後に移動';
+
+  @override
+  String get projectCatalogSearch => 'プロジェクトとタスクを検索';
 }

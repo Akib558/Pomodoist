@@ -3724,6 +3724,9 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get projectPlaceAfter => 'Mover depois';
+
+  @override
+  String get projectCatalogSearch => 'Pesquisar projetos e tarefas';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
@@ -3981,4 +3984,7 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get projectPlaceAfter => 'Mover depois';
+
+  @override
+  String get projectCatalogSearch => 'Pesquisar projetos e tarefas';
 }

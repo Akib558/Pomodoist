@@ -1163,5 +1163,6 @@
   "projectCollapseBranch": "折叠分支",
   "projectPlaceInside": "移入",
   "projectPlaceBefore": "移到前面",
-  "projectPlaceAfter": "移到后面"
+  "projectPlaceAfter": "移到后面",
+  "projectCatalogSearch": "搜索项目和任务"
 }

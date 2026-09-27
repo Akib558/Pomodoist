@@ -1774,5 +1774,6 @@
   "projectCollapseBranch": "가지 접기",
   "projectPlaceInside": "안으로 이동",
   "projectPlaceBefore": "앞으로 이동",
-  "projectPlaceAfter": "뒤로 이동"
+  "projectPlaceAfter": "뒤로 이동",
+  "projectCatalogSearch": "프로젝트 및 작업 검색"
 }

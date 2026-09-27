@@ -6,6 +6,7 @@ const quickAddDefaultTimedBlockMinutesPreferenceKey =
     'quickAdd.defaultTimedBlockMinutes';
 const taskTimeDisplayModePreferenceKey = 'tasks.timeDisplayMode';
 const projectViewModePreferenceKey = 'projects.viewMode';
+const projectCatalogViewModePreferenceKey = 'projects.catalogViewMode';
 const taskListStylePreferenceKey = 'tasks.listStyle';
 const taskRowSpacingPreferenceKey = 'tasks.rowSpacing';
 const taskBranchExpansionPreferenceKey = 'tasks.branchExpansion.v1';
@@ -56,6 +57,7 @@ class TaskPreferences {
     this.timeDisplayMode = TaskTimeDisplayMode.smart,
     this.listStyle = TaskListStyle.modern,
     this.projectViewMode = ProjectViewMode.list,
+    this.projectCatalogViewMode = ProjectViewMode.list,
     this.rowSpacing = TaskRowSpacing.comfortable,
     this.visibleHours = const TimelineVisibleHours(
       startMinutes: 0,
@@ -74,6 +76,7 @@ class TaskPreferences {
   final TaskTimeDisplayMode timeDisplayMode;
   final TaskListStyle listStyle;
   final ProjectViewMode projectViewMode;
+  final ProjectViewMode projectCatalogViewMode;
   final TaskRowSpacing rowSpacing;
   final TimelineVisibleHours visibleHours;
   final int hourWidth;
@@ -85,6 +88,7 @@ class TaskPreferences {
     TaskTimeDisplayMode? timeDisplayMode,
     TaskListStyle? listStyle,
     ProjectViewMode? projectViewMode,
+    ProjectViewMode? projectCatalogViewMode,
     TaskRowSpacing? rowSpacing,
     TimelineVisibleHours? visibleHours,
     int? hourWidth,
@@ -96,6 +100,8 @@ class TaskPreferences {
     timeDisplayMode: timeDisplayMode ?? this.timeDisplayMode,
     listStyle: listStyle ?? this.listStyle,
     projectViewMode: projectViewMode ?? this.projectViewMode,
+    projectCatalogViewMode:
+        projectCatalogViewMode ?? this.projectCatalogViewMode,
     rowSpacing: rowSpacing ?? this.rowSpacing,
     visibleHours: visibleHours ?? this.visibleHours,
     hourWidth: hourWidth ?? this.hourWidth,

@@ -6322,6 +6322,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Move after'**
   String get projectPlaceAfter;
+
+  /// No description provided for @projectCatalogSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search projects and tasks'**
+  String get projectCatalogSearch;
 }
 
 class _AppLocalizationsDelegate

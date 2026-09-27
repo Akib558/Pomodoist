@@ -3,6 +3,8 @@ import 'package:pomodoist/domain/models/tasks/task_models.dart';
 import 'task_branch_rows.dart';
 import 'task_subtask_progress.dart';
 
+const projectCatalogRootKey = 'catalog:projects';
+
 class ProjectTreeNode {
   ProjectTreeNode({
     required this.key,
@@ -12,6 +14,7 @@ class ProjectTreeNode {
     this.children = const [],
     this.progress = const TaskSubtaskProgress(completed: 0, total: 0),
   });
+  bool get isCatalogRoot => key == projectCatalogRootKey;
   final String key;
   final String? parentKey;
   final ProjectItem? project;
@@ -26,8 +29,12 @@ class ProjectTreeData {
     this.nodes,
     this.visibleKeys,
     this.expandedKeys,
-    this.tasksById,
-  );
+    this.tasksById, {
+    this.movesEnabled = true,
+    this.projects = const [],
+  });
+  final bool movesEnabled;
+  final List<ProjectItem> projects;
   final String rootKey;
   final Map<String, ProjectTreeNode> nodes;
   final List<String> visibleKeys;
@@ -37,30 +44,43 @@ class ProjectTreeData {
       expandedKeys.contains(key) ? nodes[key]?.children ?? const [] : const [];
 }
 
-String projectDiagramScope(String id) => 'project-diagram:$id';
+String projectDiagramScope(String? id) =>
+    id == null ? 'project-catalog-diagram' : 'project-diagram:$id';
 
 ProjectTreeData projectTreeData(
-  String projectId,
+  String? projectId,
   List<ProjectItem> projects,
   List<TaskItem> tasks, {
   bool showCompleted = false,
+  bool archivedOnly = false,
+  String search = '',
   Map<String, bool> expansion = const {},
 }) {
-  final rootKey = 'p:$projectId';
-  final active = projects.where((p) => !p.isDeleted).toList();
+  final catalog = projectId == null;
+  final rootKey = catalog ? projectCatalogRootKey : 'p:$projectId';
+  final active = projects
+      .where(
+        (p) =>
+            !p.isDeleted &&
+            (!catalog ||
+                (p.id != inboxProjectId && p.isArchived == archivedOnly)),
+      )
+      .toList();
   final parents = projectParents(active);
   final byProject = {for (final p in active) p.id: p};
-  final projectChildren = <String, List<ProjectItem>>{};
+  final projectChildren = <String?, List<ProjectItem>>{};
   for (final p in active) {
     final parent = parents[p.id];
-    if (!p.isArchived && parent != null)
+    if (catalog || (!p.isArchived && parent != null))
       projectChildren.putIfAbsent(parent, () => []).add(p);
   }
   for (final children in projectChildren.values) {
     children.sort(compareProjects);
   }
   final included = <String>{};
-  final pending = [projectId];
+  final pending = catalog
+      ? (projectChildren[null] ?? []).map((p) => p.id).toList()
+      : [projectId!];
   while (pending.isNotEmpty) {
     final id = pending.removeLast();
     if (!byProject.containsKey(id) || !included.add(id)) continue;
@@ -121,7 +141,11 @@ ProjectTreeData projectTreeData(
     nodes['p:$id'] = ProjectTreeNode(
       key: 'p:$id',
       project: byProject[id],
-      parentKey: id == projectId ? null : 'p:${parents[id]}',
+      parentKey: id == projectId
+          ? null
+          : parents[id] == null
+          ? rootKey
+          : 'p:${parents[id]}',
       children: [
         ...(projectChildren[id] ?? []).map((p) => 'p:${p.id}'),
         ...?taskChildren[null],
@@ -132,6 +156,52 @@ ProjectTreeData projectTreeData(
       ),
     );
   }
+  if (catalog) {
+    nodes[rootKey] = ProjectTreeNode(
+      key: rootKey,
+      children: (projectChildren[null] ?? []).map((p) => 'p:${p.id}').toList(),
+      progress: TaskSubtaskProgress(
+        completed: allTasks.values.where((t) => t.isCompleted).length,
+        total: allTasks.length,
+      ),
+    );
+  }
+  final query = catalog ? search.trim().toLowerCase() : '';
+  final searchExpanded = <String>{};
+  if (query.isNotEmpty) {
+    final keep = <String>{rootKey};
+    for (final node in nodes.values) {
+      final name = node.project?.name ?? node.task?.content;
+      if (name == null || !name.toLowerCase().contains(query)) continue;
+      String? ancestor = node.key;
+      while (ancestor != null) {
+        keep.add(ancestor);
+        searchExpanded.add(ancestor);
+        ancestor = nodes[ancestor]?.parentKey;
+      }
+      if (node.project != null) {
+        final pending = [...node.children];
+        final visited = <String>{};
+        while (pending.isNotEmpty) {
+          final key = pending.removeLast();
+          keep.add(key);
+          if (visited.add(key)) pending.addAll(nodes[key]!.children);
+        }
+      }
+    }
+    nodes.removeWhere((key, _) => !keep.contains(key));
+    for (final key in nodes.keys.toList()) {
+      final node = nodes[key]!;
+      nodes[key] = ProjectTreeNode(
+        key: key,
+        parentKey: node.parentKey,
+        project: node.project,
+        task: node.task,
+        progress: node.progress,
+        children: node.children.where(keep.contains).toList(),
+      );
+    }
+  }
   final visibleKeys = <String>[];
   final expanded = <String>{};
   final stack = [(rootKey, 0)];
@@ -139,7 +209,9 @@ ProjectTreeData projectTreeData(
     final (key, depth) = stack.removeLast();
     if (!nodes.containsKey(key)) continue;
     visibleKeys.add(key);
-    if (key == rootKey || (expansion[key] ?? depth <= 1)) {
+    if (key == rootKey ||
+        searchExpanded.contains(key) ||
+        (expansion[key] ?? depth <= 1)) {
       expanded.add(key);
       for (final child in nodes[key]!.children.reversed) {
         stack.add((child, depth + 1));
@@ -152,6 +224,8 @@ ProjectTreeData projectTreeData(
     List.unmodifiable(visibleKeys),
     Set.unmodifiable(expanded),
     Map.unmodifiable(allTasks),
+    movesEnabled: !catalog || (!archivedOnly && query.isEmpty),
+    projects: List.unmodifiable(projects),
   );
 }
 
@@ -163,19 +237,23 @@ class ProjectDiagramDrop {
     required this.beforeId,
   });
   final String sourceKey;
-  final String projectId;
+  final String? projectId;
   final String? parentId;
   final String? beforeId;
 }
 
 bool canMoveProjectDiagramNode(ProjectTreeData tree, String key) {
   final node = tree.nodes[key];
-  if (node == null || key == tree.rootKey) return false;
+  if (!tree.movesEnabled || node == null || key == tree.rootKey) return false;
   if (node.task case final task?) return task.canEdit;
   final project = node.project!;
   final personalSharedLink =
       project.scopeId != null &&
-      project.scopeId != tree.nodes[node.parentKey]?.project?.scopeId;
+      project.scopeId !=
+          tree.projects
+              .where((p) => p.id == project.parentId)
+              .firstOrNull
+              ?.scopeId;
   return !project.isArchived && (project.canEdit || personalSharedLink);
 }
 
@@ -198,6 +276,23 @@ ProjectDiagramDrop? projectDiagramDrop(
     return null;
   final source = tree.nodes[sourceKey]!, target = tree.nodes[targetKey];
   if (target == null) return null;
+  if (target.isCatalogRoot) {
+    if (source.project == null || position != ProjectDropPosition.inside)
+      return null;
+    final project = source.project!;
+    final parent = tree.projects
+        .where((p) => p.id == project.parentId)
+        .firstOrNull;
+    // Shared subprojects must remain inside their shared scope; shared roots are personal links.
+    if (project.scopeId != null && project.scopeId == parent?.scopeId)
+      return null;
+    return ProjectDiagramDrop(
+      sourceKey: sourceKey,
+      projectId: null,
+      parentId: null,
+      beforeId: null,
+    );
+  }
   if (source.task case final task?) {
     if (target.project != null && position != ProjectDropPosition.inside)
       return null;
@@ -258,23 +353,34 @@ ProjectDiagramDrop? projectDiagramDrop(
   if (target.project == null ||
       targetKey == tree.rootKey && position != ProjectDropPosition.inside)
     return null;
-  final projects = tree.nodes.values
-      .map((n) => n.project)
-      .whereType<ProjectItem>()
-      .toList();
+  final projects = tree.projects;
   final move = projectDropTarget(
     projects,
     source.project!.id,
     target.project!.id,
     position,
   );
-  if (move == null || move.parentId == null) return null;
+  if (move == null) return null;
+  if (move.parentId == null) {
+    if (tree.rootKey != projectCatalogRootKey) return null;
+    final project = source.project!;
+    final parent = projects.where((p) => p.id == project.parentId).firstOrNull;
+    if (project.scopeId != null && project.scopeId == parent?.scopeId)
+      return null;
+    return ProjectDiagramDrop(
+      sourceKey: sourceKey,
+      projectId: null,
+      parentId: null,
+      beforeId: move.beforeProjectId,
+    );
+  }
   final destination = tree.nodes['p:${move.parentId}']?.project;
   if (destination == null) return null;
   final project = source.project!;
   final sharedRoot =
       project.scopeId != null &&
-      project.scopeId != tree.nodes[source.parentKey]?.project?.scopeId;
+      project.scopeId !=
+          projects.where((p) => p.id == project.parentId).firstOrNull?.scopeId;
   if (sharedRoot
       ? destination.scopeId != null
       : !destination.canEdit || project.scopeId != destination.scopeId)

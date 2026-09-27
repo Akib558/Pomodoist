@@ -294,7 +294,12 @@ class TaskListItem extends ConsumerWidget {
             child: Text(l10n.taskMove),
           ),
         if (task.canEdit)
-          ..._quickActionItems(context, ref, includeFocus: true)
+          ..._quickActionItems(
+            context,
+            ref,
+            includeFocus: true,
+            includeMove: false,
+          )
         else
           ShadContextMenuItem(
             height: 44,
@@ -375,6 +380,7 @@ class TaskListItem extends ConsumerWidget {
                     child: Center(
                       child: TaskCompletionControl(
                         taskId: task.id,
+                        hitSize: 44,
                         isCompleted: task.isCompleted,
                         color: _priorityColor(
                           task.priority,
@@ -739,6 +745,7 @@ class TaskListItem extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref, {
     bool includeFocus = false,
+    bool includeMove = true,
   }) {
     final l10n = context.l10n;
     final colors = context.appColors;
@@ -772,15 +779,16 @@ class TaskListItem extends ConsumerWidget {
             label: l10n.taskSelect,
           ),
         ),
-        ShadContextMenuItem(
-          height: 44,
-          onPressed: () =>
-              unawaited(_runQuickAction(context, ref, _TaskQuickAction.move)),
-          child: _TaskMenuRow(
-            icon: LucideIcons.folderInput,
-            label: l10n.taskMove,
+        if (includeMove)
+          ShadContextMenuItem(
+            height: 44,
+            onPressed: () =>
+                unawaited(_runQuickAction(context, ref, _TaskQuickAction.move)),
+            child: _TaskMenuRow(
+              icon: LucideIcons.folderInput,
+              label: l10n.taskMove,
+            ),
           ),
-        ),
         ShadContextMenuItem(
           height: 44,
           onPressed: () => unawaited(
@@ -828,7 +836,7 @@ class TaskListItem extends ConsumerWidget {
             label: task.isCompleted ? l10n.markOpen : l10n.markComplete,
           ),
         ),
-        if (task.parentId != null)
+        if (includeMove && task.parentId != null)
           ShadContextMenuItem(
             height: 44,
             onPressed: () => unawaited(

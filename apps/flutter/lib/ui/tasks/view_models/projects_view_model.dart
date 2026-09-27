@@ -1,8 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pomodoist/config/providers.dart';
+import 'package:pomodoist/config/task_preferences_dependencies.dart';
 import 'package:pomodoist/domain/models/tasks/task_models.dart';
 import 'package:pomodoist/domain/models/tasks/project_hierarchy.dart';
 import 'package:pomodoist/domain/use_cases/tasks/project_list_data.dart';
+
+final projectCatalogViewModeProvider = Provider(
+  (ref) => ref.watch(
+    taskPreferencesStateProvider.select(
+      (state) => state.projectCatalogViewMode,
+    ),
+  ),
+);
 
 typedef ProjectsState = ({
   AsyncValue<List<ProjectItem>> projects,

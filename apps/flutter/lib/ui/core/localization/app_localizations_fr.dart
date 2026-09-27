@@ -3719,4 +3719,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get projectPlaceAfter => 'Déplacer après';
+
+  @override
+  String get projectCatalogSearch => 'Rechercher des projets et des tâches';
 }

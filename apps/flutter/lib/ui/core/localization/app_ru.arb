@@ -1163,5 +1163,6 @@
   "projectCollapseBranch": "Свернуть ветку",
   "projectPlaceInside": "Переместить внутрь",
   "projectPlaceBefore": "Переместить перед",
-  "projectPlaceAfter": "Переместить после"
+  "projectPlaceAfter": "Переместить после",
+  "projectCatalogSearch": "Поиск проектов и задач"
 }
