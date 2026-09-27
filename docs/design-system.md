@@ -399,7 +399,7 @@ expansion intact. Start the dialog at 680 × 180 px and the native window at
 
 Group daily destinations separately from planning views, followed by the existing
 project tree. Search and Add task stay near the profile. Browse, Reports and
-Settings sit below projects; on short windows the footer scrolls with the list.
+Settings sit below projects and scroll with the list at every window height.
 Preserve command identities and user shortcut bindings independently of visual
 order. Shortcut hints display the actual configured binding.
 Use `textTheme.titleMedium` for destination labels, Add task, and project names

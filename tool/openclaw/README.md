@@ -3,21 +3,35 @@
 Connect OpenClaw to the existing Pomodoist account using native Streamable HTTP
 MCP and browser OAuth. There is no separate task database, account-password
 prompt, service key, hosted endpoint default, or dependency on an unofficial
-OpenClaw plugin. Requires an OpenClaw build with `openclaw mcp set/login/doctor`
-and a Pomodoist server with the OpenClaw migration and updated MCP function.
+OpenClaw plugin. Requires OpenClaw 2026.9.3 or newer with native
+`openclaw mcp set/login/doctor`, Node.js 24.16+ on the 24.x line or 26.1+,
+and a Pomodoist server with the OpenClaw schema and updated MCP function.
 
 The distributable skill is `tool/openclaw/skills/pomodoist/`. The parent folders
 organize this repository; installation still uses the `pomodoist` skill directory
-with its unchanged `SKILL.md`. See the official [skill layout guidance](https://docs.openclaw.ai/tools/creating-skills).
+with `SKILL.md`, `LICENSE`, and `scripts/configure.mjs`. It runs independently
+of this repository, without installing JavaScript dependencies. The skill is
+MIT-0 licensed; the application and server remain AGPL-3.0-only. See
+[release preparation](RELEASE.md) for the licensing boundary, publication status,
+and the remaining release gates.
 
 ## Connect
 
-Use the exact MCP resource URL supplied by your Pomodoist server operator
-(`POMODOIST_MCP_RESOURCE_URL`), normally ending in
-`/functions/v1/pomodoist-mcp`. The script requires Node.js 22 or newer. HTTPS is
-required except for exact local loopback development hosts.
+Pomodoist Cloud uses `https://mcp.pomodoist.com/functions/v1/pomodoist-mcp`.
+For self-hosting, use the exact resource URL supplied by your server operator,
+normally ending in `/functions/v1/pomodoist-mcp`. HTTPS is required except for
+exact local loopback development hosts. Use your account on the selected server;
+hosted service access follows the account's Pomodoist plan.
+
+Use HTTPS for deployed instances. Native loopback OAuth and probing passed with
+OpenClaw 2026.9.4 in the isolated review stack. Other versions or operator network
+policies may reject a target; do not disable network guards to complete setup.
+
+From the repository root, set the endpoint and preview before applying:
 
 ```sh
+POMODOIST_MCP_RESOURCE_URL=https://mcp.pomodoist.com/functions/v1/pomodoist-mcp
+
 # Preview only: prints an OpenClaw config fragment and changes nothing.
 node tool/openclaw/configure.mjs "$POMODOIST_MCP_RESOURCE_URL"
 
@@ -28,21 +42,39 @@ node tool/openclaw/configure.mjs "$POMODOIST_MCP_RESOURCE_URL" --apply
 node tool/openclaw/configure.mjs "$POMODOIST_MCP_RESOURCE_URL" --write --apply
 ```
 
-`--apply` replaces only `mcp.servers.pomodoist`; review an existing entry before
-using it, especially when changing accounts or servers. Sign out first when
-switching servers. Other configured servers are not changed. OAuth access and
+The setup checks CLI compatibility and saved configuration before making changes.
+It refuses to overwrite a different server named `pomodoist`. An existing entry
+for the same endpoint can be updated to enable writes. Other servers are not
+changed. OAuth access and
 refresh tokens remain in OpenClaw's native credential store, not in this script,
 repository, skill, or generated config. Sign in and approve access only on the
 trusted Pomodoist consent page. Never paste a password, service-role key, access
 token, or refresh token into a conversation.
 
-Install the skill on the machine running OpenClaw:
+Install the skill on the machine running OpenClaw. Until version 1.0.0 is
+published on ClawHub, copy the directory instead:
 
 ```sh
 mkdir -p "$HOME/.openclaw/skills"
 cp -R tool/openclaw/skills/pomodoist "$HOME/.openclaw/skills/"
 openclaw mcp doctor pomodoist --probe
 ```
+
+Once published, install it from the registry:
+
+```sh
+clawhub install pomodoist --version 1.0.0 --workdir .
+```
+
+For a skill installed from ClawHub or copied without a repository checkout, run
+the bundled script from the installed `pomodoist` directory:
+
+```sh
+node scripts/configure.mjs https://mcp.pomodoist.com/functions/v1/pomodoist-mcp
+node scripts/configure.mjs https://mcp.pomodoist.com/functions/v1/pomodoist-mcp --apply
+```
+
+Add `--write` only when enabling changes and Focus controls deliberately.
 
 Restart the running OpenClaw gateway/agent through its usual restart mechanism.
 `openclaw mcp reload` alone only resets the invoking CLI process, not another
@@ -64,8 +96,13 @@ read/action, including receipt replays. Then clear local credentials/config:
 
 ```sh
 openclaw mcp logout pomodoist
-openclaw mcp unset pomodoist
+openclaw mcp configure pomodoist --disable
 ```
+
+Optionally remove the disabled definition with `openclaw mcp unset pomodoist`.
+Some OpenClaw versions reject removal with a `size-drop` configuration guard;
+leave the connection disabled rather than bypassing that guard. Removal must
+succeed before this setup can switch to a different endpoint.
 
 Logout alone clears local credentials; it does **not** revoke Pomodoist consent.
 Removing the local server definition or skill alone is also not revocation.
@@ -139,12 +176,61 @@ deno test --config server/supabase/deno.json --allow-env --allow-net --allow-rea
 make -C server test-db
 ```
 
-The existing self-hosted CI discovers the Deno registration/runtime tests and
-pgTAP fixtures for auth, isolation, replay, rollback and revision conflicts.
-Run the setup/planner Node tests separately using the command above.
-Live browser OAuth and cross-device smoke still need a deployed test instance:
-connect, read Today/Upcoming, create/edit/schedule/complete a task, start/pause/
-resume/stop Focus, repeat a request, revoke access and verify reads/writes fail.
+The self-hosted CI runs the Node setup/planner tests, including installation
+from a standalone copy, plus Deno registration/runtime tests, pgTAP fixtures for
+auth, isolation, replay, rollback and revision conflicts, and the HTTP acceptance
+test against a fresh local instance:
+
+```sh
+make -C server test-openclaw
+```
+
+That test requires the local stack and its generated private `server/.env`. It
+refuses remote URLs and uses only synthetic accounts for OAuth/PKCE, tasks, Focus
+actions, two-client synchronization, refresh and revocation. It does not prove
+that a real production account has signed in.
+
+`make -C server test-openclaw-native` exercises the bundled setup through the real
+OpenClaw CLI with isolated configuration and credentials. It passed with OpenClaw
+2026.9.4 after correcting the setup-script path. See
+[release preparation](RELEASE.md#native-cli-acceptance) for the exact local scope;
+production OAuth and clean ClawHub installation still need release verification.
+
+## Publish on ClawHub
+
+Choose **Skill**, not Plugin. The publication unit is only
+`tool/openclaw/skills/pomodoist/`, not this entire repository or `tool/openclaw/`.
+ClawHub distributes skills under MIT-0 and does not sell skills; the paid part of
+Pomodoist is the hosted service, which must be disclosed next to the install
+instructions. That split is recorded in [RELEASE.md](RELEASE.md) and `LICENSING.md`.
+
+- **Import from GitHub:** after these files are pushed to the public repository,
+  select `Kabanya/Pomodoist` and `tool/openclaw/skills/pomodoist/SKILL.md`.
+- **Upload files:** upload the package's three files, preserving the `scripts/`
+  directory. Review the publisher, version, requirements, and file preview.
+
+A GitHub import of `tool/openclaw/skills/pomodoist/SKILL.md` only picks up the
+files in that directory; keep the bundled script committed and pushed first.
+
+Alternatively, from the repository root, preview publication with the ClawHub CLI:
+
+```sh
+clawhub login
+clawhub skill publish "$PWD/tool/openclaw/skills/pomodoist" --slug pomodoist --name Pomodoist --version 1.0.0 --dry-run --json
+```
+
+Remove `--dry-run --json` only when intentionally publishing. A successful dry
+run is not publication or registry approval. After processing, inspect the public
+listing and verify a clean installation using the exact identifier shown there.
+Do not advertise an installation command until it succeeds.
+
+Before announcing availability, verify the deployed OAuth/task/Focus/revocation
+flow and ensure the consent screen and public documentation accurately describe
+Focus access. The authorization screen must state that connecting an agent grants
+account-level MCP access, including starting, pausing and stopping the active
+Focus session when writes are enabled. Local setup tests do not prove production
+sign-in or device sync. See [release preparation](RELEASE.md) for the remaining
+gates.
 
 Official integration contracts:
 - [OpenClaw MCP tools](https://docs.openclaw.ai/tools/mcp)

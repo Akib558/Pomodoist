@@ -2,7 +2,8 @@
 
 ## Software
 
-The source code, including the self-hostable server core in `server/`, and
+Except for the standalone OpenClaw skill described below,
+the source code, including the self-hostable server core in `server/`, and
 official Pomodoist client binaries are licensed under the
 GNU Affero General Public License v3.0 only (`AGPL-3.0-only`). See
 [LICENSE](LICENSE). FinchForge LLC does not offer an alternative proprietary
@@ -11,6 +12,14 @@ or commercial license for the client software.
 Official binaries correspond to the source code at their published Git tag.
 Recipients retain the rights to run, study, modify, and redistribute the
 client under the AGPL-3.0-only terms.
+
+## OpenClaw skill
+
+The standalone package in `tool/openclaw/skills/pomodoist/`, including its
+bundled setup script, is licensed under
+[MIT No Attribution (MIT-0)](tool/openclaw/skills/pomodoist/LICENSE) for distribution
+on ClawHub. This exception applies only to that directory; the application,
+server, and other repository code remain AGPL-3.0-only.
 
 ## Paid services
 

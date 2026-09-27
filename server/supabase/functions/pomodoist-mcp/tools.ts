@@ -27,6 +27,21 @@ import {
 export { pomodoistMutationPlans };
 export type { PomodoistToolDependencies } from "./tool_core.ts";
 
+const timestampFields = new Set(["createdAt", "updatedAt", "completedAt", "startedAt"]);
+
+// Sync rows may contain epoch milliseconds; the public MCP contract uses strings.
+function normalizeReadTimestamps(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(normalizeReadTimestamps);
+  const object = record(value);
+  if (!object) return value;
+  return Object.fromEntries(Object.entries(object).map(([key, child]) => [
+    key,
+    timestampFields.has(key) && typeof child === "number"
+      ? new Date(child).toISOString()
+      : normalizeReadTimestamps(child),
+  ]));
+}
+
 function registerRead(
   server: McpServer,
   operation: string,
@@ -43,13 +58,13 @@ function registerRead(
     operation,
     { inputSchema, outputSchema, annotations },
     safe(async (arguments_: unknown) =>
-      toolSuccess(transform(
+      toolSuccess(normalizeReadTimestamps(transform(
         await readRpc(
           context,
           operation,
           record(arguments_) ?? {},
         ),
-      ))
+      )))
     ),
   );
 }

@@ -21,6 +21,11 @@ jobs:
           deno-version: v2.8.0
       - name: Check public boundary
         run: sh tool/test_public_boundary.sh
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '26'
+      - name: Test standalone OpenClaw setup and action planning
+        run: node --experimental-strip-types --test tool/openclaw/*.test.mjs
       - name: Test shared functions
         run: deno test --config server/supabase/deno.json --allow-env --allow-net --allow-read server/supabase/functions server/tests/contracts_test.ts
       - name: Generate an independent instance
@@ -29,8 +34,19 @@ jobs:
         run: make -C server core-up
       - name: Test schema, ownership, and synchronization
         run: make -C server test-db test-smoke
+      - name: Verify OpenClaw OAuth, task, Focus, and revocation acceptance
+        run: make -C server test-openclaw
       - name: Verify baseline upgrades and data restoration
         run: python3 server/tests/database/baseline_check.py pomodoist-selfhost-db
+      - name: Verify the release backup and restore scripts
+        run: |
+          backup_dir=$(mktemp -d)
+          snapshot_sql="select (select count(*) from auth.users), (select md5(coalesce(string_agg(row_to_json(s)::text, '|' order by user_id, app_id, entity_type, entity_id), '')) from public.sync_entities s)"
+          before=$(docker exec pomodoist-selfhost-db psql -X -U postgres -d postgres -Atc "$snapshot_sql")
+          backup=$(sh server/scripts/backup.sh "$backup_dir")
+          sh server/scripts/restore.sh "$backup" --replace-current-database
+          after=$(docker exec pomodoist-selfhost-db psql -X -U postgres -d postgres -Atc "$snapshot_sql")
+          test "$before" = "$after"
       - name: Verify draft planners against durable receipts
         working-directory: server
         env:
@@ -103,7 +119,7 @@ jobs:
         if: steps.select.outputs.published == 'true'
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
         with:
-          app-id: ${{ secrets.POMODOIST_CORE_SYNC_APP_ID }}
+          client-id: ${{ secrets.POMODOIST_CORE_SYNC_APP_ID }}
           private-key: ${{ secrets.POMODOIST_CORE_SYNC_APP_KEY }}
           owner: ${{ github.repository_owner }}
           repositories: account-sync-platform

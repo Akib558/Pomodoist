@@ -87,6 +87,7 @@ Detailed build, self-hosting, and platform-specific instructions are available i
 
 - [Introduction](https://pomodoist.com/docs/): App overview, key features, and documentation navigation
 - [Self-hosting](https://pomodoist.com/docs/self-hosting/): Docker setup, HTTPS, email, integrations, backups, and updates
+- [OpenClaw integration](tool/openclaw/README.md): Standalone skill, OAuth setup, tasks, synchronized Focus, and ClawHub publication
 - [Flutter quickstart](https://pomodoist.com/docs/quickstart/): FVM setup, environment generation, validation, and local development
 - [System requirements](https://pomodoist.com/docs/installation/system-requirements/): Flutter SDK and platform-specific build toolchains
 - [Linux and Windows builds](https://pomodoist.com/docs/installation/desktop/): Desktop prerequisites, development, and release builds

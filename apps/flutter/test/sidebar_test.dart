@@ -113,6 +113,13 @@ void main() {
     for (var i = 1; i < destinationTops.length; i++) {
       expect(destinationTops[i], greaterThan(destinationTops[i - 1]));
     }
+    expect(
+      find.ancestor(
+        of: find.byKey(const ValueKey('sidebar-destination-/settings')),
+        matching: find.byType(ListView),
+      ),
+      findsOneWidget,
+    );
     expect(find.text('Projects'), findsOneWidget);
     expect(
       find.descendant(
@@ -878,6 +885,10 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.escape);
     await tester.pumpAndSettle();
 
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('sidebar-destination-/reports')),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Reports'));
     await _pumpFrames(tester);
     expect(find.text('Reports'), findsAtLeastNWidgets(1));
@@ -909,6 +920,10 @@ void main() {
   ) async {
     await _pumpWideApp(tester);
 
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('sidebar-destination-/settings')),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(
       find.byKey(const ValueKey('sidebar-destination-/settings')),
     );
@@ -934,6 +949,10 @@ void main() {
   ) async {
     await _pumpWideApp(tester);
 
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('sidebar-destination-/settings')),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(
       find.byKey(const ValueKey('sidebar-destination-/settings')),
     );
@@ -957,6 +976,10 @@ void main() {
   ) async {
     await _pumpWideApp(tester);
 
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('sidebar-destination-/settings')),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(
       find.byKey(const ValueKey('sidebar-destination-/settings')),
     );
@@ -982,6 +1005,10 @@ void main() {
 
     await _pumpWideApp(tester);
 
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('sidebar-destination-/settings')),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(
       find.byKey(const ValueKey('sidebar-destination-/settings')),
     );

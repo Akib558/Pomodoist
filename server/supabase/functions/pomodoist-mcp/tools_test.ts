@@ -164,6 +164,38 @@ Deno.test("registers personal tools and shared project collaboration", async () 
   });
 });
 
+Deno.test("read tools normalize epoch milliseconds without changing other numbers", async () => {
+  const epoch = 1785405600000;
+  const iso = "2026-07-30T10:00:00.000Z";
+  const dates = { createdAt: epoch, updatedAt: epoch };
+  const task = { ...publicTask(snapshot.tasks[0]), ...dates, completedAt: epoch };
+  const cases: [string, Record<string, unknown>, unknown][] = [
+    ["list_tasks", { view: "all" }, { items: [task], nextCursor: null }],
+    ["get_task", { task_id: "task-a" }, { status: "found", task }],
+    ["list_projects", {}, { items: [{ id: "project-a", name: "Project", color: null,
+      parentId: null, viewStyle: null, isFavorite: false, isArchived: false,
+      orderKey: null, ...dates }], nextCursor: null }],
+    ["list_labels", {}, { items: [{ id: "label-a", name: "Label", color: null,
+      orderKey: null, isFavorite: false, ...dates }], nextCursor: null }],
+    ["get_kanban_board", {}, { settings: { id: "settings", selectedProjectIds: [],
+      focusStatusLabelId: null, ...dates }, statuses: [{ id: "status-a", name: "Doing",
+      color: null, systemKey: null, orderKey: null, ...dates }], assignments: [] }],
+    ["list_focus_history", {}, { items: [{ id: "focus-a", taskId: null, projectId: null,
+      startedAt: epoch, completedAt: epoch, actualSeconds: 1500 }], nextCursor: null }],
+  ];
+  for (const [name, args, payload] of cases) {
+    await withClient(rpcFetcher([], { response: () => Response.json(payload) }), async client => {
+      const result = await client.callTool({ name, arguments: args });
+      assertEquals(result.isError, undefined, name);
+      const expected = JSON.parse(JSON.stringify(name === "get_task" ? task : payload),
+        (_key, value) => value === epoch ? iso : value);
+      assertEquals(result.structuredContent, { ok: true, data: expected }, name);
+      assertEquals(JSON.parse((result.content as { text: string }[])[0].text),
+        result.structuredContent, name);
+    });
+  }
+});
+
 // The app localizations live outside the public core, so a repository that only
 // consumes the core has no copy of them to compare against.
 const appLocalizations = new URL(

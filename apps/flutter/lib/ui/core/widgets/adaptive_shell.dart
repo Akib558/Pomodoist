@@ -896,7 +896,6 @@ class _TodoistSidebarState extends ConsumerState<_TodoistSidebar> {
       for (final destination in _desktopDestinations(context))
         destination.path: destination,
     };
-    final pinFooter = MediaQuery.sizeOf(context).height >= 560;
     final keyboard = ref.watch(shellKeyboardViewModelProvider);
     final sidebar = ref.watch(shellSidebarViewModelProvider);
     final searchShortcut = keyboard.shortcuts[AppShortcutCommand.search]
@@ -1075,11 +1074,10 @@ class _TodoistSidebarState extends ConsumerState<_TodoistSidebar> {
                           ),
                         ),
                       ],
-                      if (!pinFooter) footer,
+                      footer,
                     ],
                   ),
                 ),
-                if (pinFooter) footer,
               ],
             ),
           ),
