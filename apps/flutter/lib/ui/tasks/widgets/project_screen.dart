@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_ui/shadcn_ui.dart' show ShadTabs, ShadTab, LucideIcons;
-import 'package:pomodoist/config/task_preferences_dependencies.dart';
 import 'package:pomodoist/domain/models/settings/task_preferences.dart';
 import 'package:pomodoist/domain/models/tasks/task_models.dart';
 import 'package:pomodoist/ui/core/localization/app_l10n.dart';

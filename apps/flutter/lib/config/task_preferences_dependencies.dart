@@ -59,9 +59,3 @@ final timelineHourWidthProvider = Provider(
 final timelineCollapsedProjectIdsProvider = Provider(
   (ref) => ref.watch(taskPreferencesStateProvider).collapsedProjectIds,
 );
-
-final projectViewModeProvider = Provider(
-  (ref) => ref.watch(
-    taskPreferencesStateProvider.select((state) => state.projectViewMode),
-  ),
-);
