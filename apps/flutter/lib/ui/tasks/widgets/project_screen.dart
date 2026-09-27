@@ -67,27 +67,26 @@ class _ProjectContentState extends ConsumerState<_ProjectContent> {
               children: [
                 Text(title, style: Theme.of(context).textTheme.headlineMedium),
                 const SizedBox(height: 12),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: ShadTabs<ProjectViewMode>(
-                    value: mode,
-                    onChanged: (value) => unawaited(_setMode(value)),
-                    gap: 0,
-                    tabs: [
-                      ShadTab(
-                        value: ProjectViewMode.list,
-                        child: Text(l10n.projectViewList),
-                      ),
-                      ShadTab(
-                        value: ProjectViewMode.map,
-                        child: Text(l10n.projectViewMap),
-                      ),
-                      ShadTab(
-                        value: ProjectViewMode.branches,
-                        child: Text(l10n.projectViewBranches),
-                      ),
-                    ],
-                  ),
+                ShadTabs<ProjectViewMode>(
+                  value: mode,
+                  onChanged: (value) => unawaited(_setMode(value)),
+                  // ShadTabs owns scrolling and removes Expanded from its tabs.
+                  scrollable: true,
+                  gap: 0,
+                  tabs: [
+                    ShadTab(
+                      value: ProjectViewMode.list,
+                      child: Text(l10n.projectViewList),
+                    ),
+                    ShadTab(
+                      value: ProjectViewMode.map,
+                      child: Text(l10n.projectViewMap),
+                    ),
+                    ShadTab(
+                      value: ProjectViewMode.branches,
+                      child: Text(l10n.projectViewBranches),
+                    ),
+                  ],
                 ),
                 if (diagram != null)
                   Wrap(
