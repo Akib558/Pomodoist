@@ -13,48 +13,30 @@ Map<String, TaskSubtaskProgress> taskSubtaskProgressById(
   Iterable<TaskItem> tasks,
 ) {
   final byId = <String, TaskItem>{for (final task in tasks) task.id: task};
-  final childrenByParent = <String, List<TaskItem>>{};
+  final children = <String, List<String>>{};
   for (final task in byId.values) {
-    final parentId = task.parentId;
-    if (parentId == null || !byId.containsKey(parentId)) {
-      continue;
+    if (task.parentId != null && byId.containsKey(task.parentId)) {
+      children.putIfAbsent(task.parentId!, () => []).add(task.id);
     }
-    childrenByParent.putIfAbsent(parentId, () => []).add(task);
   }
-
-  final cache = <String, TaskSubtaskProgress>{};
-  TaskSubtaskProgress countFor(String id, Set<String> path) {
-    final cached = cache[id];
-    if (cached != null) {
-      return cached;
-    }
-
-    var completed = 0;
-    var total = 0;
-    for (final child in childrenByParent[id] ?? const <TaskItem>[]) {
-      if (!path.add(child.id)) {
-        continue;
-      }
-      total += 1;
-      if (child.isCompleted) {
-        completed += 1;
-      }
-      final childProgress = countFor(child.id, path);
-      completed += childProgress.completed;
-      total += childProgress.total;
-      path.remove(child.id);
-    }
-
-    final progress = TaskSubtaskProgress(completed: completed, total: total);
-    cache[id] = progress;
-    return progress;
-  }
-
+  // ponytail: repeated traversal is quadratic for deep chains; cache acyclic
+  // subtree totals if large nested collections make this measurable.
   final result = <String, TaskSubtaskProgress>{};
-  for (final id in byId.keys) {
-    final progress = countFor(id, {id});
-    if (progress.total > 0) {
-      result[id] = progress;
+  for (final id in children.keys) {
+    final visited = {id};
+    final pending = [...children[id]!];
+    var completed = 0;
+    while (pending.isNotEmpty) {
+      final child = pending.removeLast();
+      if (!visited.add(child)) continue;
+      if (byId[child]!.isCompleted) completed++;
+      pending.addAll(children[child] ?? const []);
+    }
+    if (visited.length > 1) {
+      result[id] = TaskSubtaskProgress(
+        completed: completed,
+        total: visited.length - 1,
+      );
     }
   }
   return result;

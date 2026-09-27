@@ -360,6 +360,34 @@ class DriftTaskRepository implements TaskRepository {
       });
 
   @override
+  Future<Result<void>> removeLabels(
+    String id,
+    List<String> names,
+  ) => Result.capture<void>(() async {
+    await _access.task(id);
+    final requested = names.map((name) => name.trim().toLowerCase()).toSet();
+    if (requested.isEmpty) return;
+    await _db.transaction(() async {
+      final task = await _tasks.loadTask(id);
+      final scopedLabels = await _tasks.activeUserLabelsInScope(task.scopeId);
+      final matchingIds = {
+        for (final label in scopedLabels)
+          if (requested.contains(label.name.trim().toLowerCase())) label.id,
+      };
+      final links = await _tasks.userTaskLabels([id]);
+      for (final link in links) {
+        if (!matchingIds.contains(link.labelId)) continue;
+        await _tasks.deleteUserTaskLabel(id, link.labelId);
+        await _syncQueue.enqueue(
+          type: 'task.label.delete',
+          clientId: id,
+          payload: {'taskId': id, 'labelId': link.labelId},
+        );
+      }
+    });
+  });
+
+  @override
   Future<Result<void>> materializeDueRecurringTasks({DateTime? now}) =>
       Result.capture<void>(() async {
         final timestamp = (now ?? DateTime.now()).toUtc();
@@ -1213,6 +1241,11 @@ class DriftTaskRepository implements TaskRepository {
     final label = await _tasks.loadLabel(labelId);
     if (task.scopeId != label.scopeId) {
       throw const CollaborationException('cross_scope_label');
+    }
+    if ((await _tasks.userTaskLabels([
+      taskId,
+    ])).any((row) => row.labelId == labelId)) {
+      return;
     }
     await _tasks.upsertTaskLabel(
       TaskLabelsCompanion.insert(

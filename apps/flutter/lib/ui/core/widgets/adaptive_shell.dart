@@ -11,7 +11,8 @@ import 'package:pomodoist/ui/core/widgets/app_bottom_navigation.dart';
 import 'package:pomodoist/domain/models/settings/bottom_navigation_preferences.dart';
 import 'package:pomodoist/ui/settings/view_models/bottom_navigation_view_model.dart';
 import 'package:pomodoist/ui/core/themes/app_motion.dart';
-import 'package:shadcn_ui/shadcn_ui.dart' show LucideIcons, ShadButton;
+import 'package:shadcn_ui/shadcn_ui.dart'
+    show LucideIcons, ShadButton, ShadContextMenuItem;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -41,6 +42,7 @@ import 'package:pomodoist/ui/settings/view_models/theme_settings_view_model.dart
 import 'package:pomodoist/ui/core/themes/theme_background.dart';
 import 'package:pomodoist/ui/core/themes/macos_glass.dart';
 import 'package:pomodoist/ui/core/widgets/mini_focus_player.dart';
+import 'package:pomodoist/ui/core/widgets/app_context_menu_region.dart';
 import 'package:pomodoist/ui/core/widgets/task_details_host.dart';
 
 const double _wideLayoutBreakpoint = 820;
@@ -1229,73 +1231,68 @@ class _ProjectsHeader extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: Material(
-            color: selected ? colors.accentTint : Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
-            child: InkWell(
-              key: const Key('sidebar-projects-link'),
+          child: AppContextMenuRegion(
+            items: [
+              ShadContextMenuItem(
+                leading: const Icon(LucideIcons.folderPlus, size: 16),
+                onPressed: onAdd,
+                child: Text(l10n.addProject),
+              ),
+            ],
+            child: Material(
+              color: selected ? colors.accentTint : Colors.transparent,
               borderRadius: BorderRadius.circular(8),
-              onTap: onTitleTap,
-              child: Padding(
-                padding: const EdgeInsetsDirectional.fromSTEB(10, 10, 4, 10),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        l10n.navProjects,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(
-                              color: foreground,
-                              fontWeight: FontWeight.w800,
-                            ),
-                      ),
-                    ),
-                    if (count != null) ...[
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 5,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.10),
-                          borderRadius: BorderRadius.circular(5),
-                        ),
+              child: InkWell(
+                key: const Key('sidebar-projects-link'),
+                borderRadius: BorderRadius.circular(8),
+                onTap: onTitleTap,
+                child: Padding(
+                  padding: const EdgeInsetsDirectional.fromSTEB(10, 10, 4, 10),
+                  child: Row(
+                    children: [
+                      Expanded(
                         child: Text(
-                          '$count',
-                          style: Theme.of(context).textTheme.labelSmall
+                          l10n.navProjects,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.titleMedium
                               ?.copyWith(
                                 color: foreground,
-                                fontSize: 10,
                                 fontWeight: FontWeight.w800,
-                                letterSpacing: 0.8,
                               ),
                         ),
                       ),
+                      if (count != null) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 5,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.10),
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          child: Text(
+                            '$count',
+                            style: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
+                                  color: foreground,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.8,
+                                ),
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ),
           ),
         ),
         const SizedBox(width: 2),
-        IconButton(
-          key: const Key('sidebar-add-project'),
-          tooltip: l10n.addProject,
-          onPressed: onAdd,
-          icon: const Icon(LucideIcons.plus),
-          iconSize: 22,
-          style: IconButton.styleFrom(
-            foregroundColor: colors.secondaryText,
-            fixedSize: const Size(30, 34),
-            minimumSize: const Size(34, 34),
-            padding: EdgeInsets.zero,
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
-        ),
         IconButton(
           key: const Key('sidebar-projects-toggle'),
           tooltip: expanded ? l10n.collapseProjects : l10n.expandProjects,

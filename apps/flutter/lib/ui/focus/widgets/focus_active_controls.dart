@@ -44,11 +44,17 @@ class _FocusLinkedTaskContext extends ConsumerWidget {
                 textStyle: Theme.of(context).textTheme.titleLarge,
               ),
               onPressed: () => openTaskDetails(context, task.id),
-              child: Text(
-                task.content,
-                maxLines: compact ? 2 : 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    task.content,
+                    maxLines: compact ? 2 : 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                  ),
+                  TaskHierarchySummary(task: task, compact: true),
+                ],
               ),
             ),
           ),

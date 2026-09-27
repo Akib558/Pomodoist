@@ -8,6 +8,7 @@ import 'package:uuid/uuid.dart';
 
 import 'package:pomodoist/data/services/local/database/app_database.dart';
 import 'package:pomodoist/data/services/local/sync_owner_store.dart';
+import 'package:pomodoist/data/services/local/shared_scope_cleanup.dart';
 import 'package:pomodoist/data/services/sync/account_sync_mapping.dart';
 import 'package:pomodoist/data/services/collaboration/collaboration_api.dart';
 import 'package:pomodoist/domain/models/collaboration/collaboration_models.dart';

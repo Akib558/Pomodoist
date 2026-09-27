@@ -1,8 +1,11 @@
 import 'dart:convert';
+import 'dart:async';
+import 'package:pomodoist/domain/models/collaboration/collaboration_models.dart';
+import 'package:pomodoist/data/repositories/projects/project_repository_impl.dart';
 import 'package:uuid/uuid.dart';
 import 'package:app_account/app_account.dart';
 import 'package:drift/native.dart';
-import 'package:drift/drift.dart' show Value;
+import 'package:drift/drift.dart' show Value, BooleanExpressionOperators;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pomodoist/data/services/local/database/app_database.dart';
 import 'support/account_sync_engine.dart';
@@ -29,6 +32,7 @@ void main() {
     'role': 'member',
   };
   var active = true;
+  String? revokeOnPull;
   var revision = 2;
   var conflict = false;
   var taskRevision = 2;
@@ -44,6 +48,7 @@ void main() {
     await db.ensureSeedData();
     queue = DriftOutboxService(db);
     active = true;
+    revokeOnPull = null;
     revision = 2;
     conflict = false;
     taskRevision = 2;
@@ -67,6 +72,10 @@ void main() {
             'scopes': active ? [scope] : [],
           };
         case 'pull':
+          if (revokeOnPull != null) {
+            active = false;
+            throw CollaborationException(revokeOnPull!);
+          }
           return {
             'changes':
                 [
@@ -457,6 +466,63 @@ void main() {
       await DriftTaskRepository(db, queue)
           .updateTask('task', UpdateTaskPatch(content: 'Own draft'))
           .then((result) => result.getOrThrow());
+      final project = await (db.select(
+        db.projects,
+      )..where((p) => p.id.equals('project'))).getSingle();
+      await db
+          .into(db.projects)
+          .insert(
+            project.copyWith(id: 'child', parentId: const Value('project')),
+          );
+      final now = DateTime.utc(2026, 9, 15);
+      await db
+          .into(db.sections)
+          .insert(
+            SectionsCompanion.insert(
+              id: 'section',
+              projectId: 'child',
+              name: 'Shared section',
+              orderKey: 'a',
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
+      await addReviewStatus();
+      await db
+          .into(db.taskCompletions)
+          .insert(
+            TaskCompletionsCompanion.insert(
+              id: 'completion',
+              taskId: 'task',
+              userId: 'me',
+              completedAt: now,
+              createdAt: now,
+              snapshotJson: const Value('{"content":"Shared snapshot"}'),
+            ),
+          );
+      await db
+          .into(db.reminders)
+          .insert(
+            RemindersCompanion.insert(
+              id: 'reminder',
+              userId: 'me',
+              taskId: 'task',
+              type: 'absolute',
+              specJson: '{}',
+              createdAt: now,
+              updatedAt: now,
+            ),
+          );
+      await db
+          .into(db.sharedEntities)
+          .insert(
+            SharedEntitiesCompanion.insert(
+              scopeId: 'scope',
+              entityType: 'comment',
+              entityId: 'comment',
+              dataJson: '{"body":"Someone else"}',
+            ),
+          );
       active = false;
       await engine.syncShared();
       expect(
@@ -464,12 +530,224 @@ void main() {
         isEmpty,
       );
       expect(await db.select(db.sharedScopes).get(), isEmpty);
+      expect(
+        await (db.select(
+          db.projects,
+        )..where((p) => p.scopeId.equals('scope'))).get(),
+        isEmpty,
+      );
+      expect(
+        await (db.select(
+          db.sharedEntities,
+        )..where((e) => e.scopeId.equals('scope'))).get(),
+        isEmpty,
+      );
       expect(pushes, isEmpty);
       final draft = await db.select(db.syncCommands).getSingle();
       expect(draft.status, 'revoked');
       expect(jsonDecode(draft.payloadJson), {'content': 'Own draft'});
+      expect(
+        await (db.select(
+          db.sections,
+        )..where((r) => r.id.equals('section'))).get(),
+        isEmpty,
+      );
+      expect(
+        await (db.select(
+          db.labels,
+        )..where((r) => r.scopeId.equals('scope'))).get(),
+        isEmpty,
+      );
+      expect(
+        await (db.select(
+          db.taskLabels,
+        )..where((r) => r.taskId.equals('task'))).get(),
+        isEmpty,
+      );
+      expect(await db.select(db.taskCompletions).get(), isEmpty);
+      expect(await db.select(db.reminders).get(), isEmpty);
+      await engine.syncShared();
+      expect(
+        (await db.select(db.syncCommands).getSingle()).payloadJson,
+        draft.payloadJson,
+      );
     },
   );
+
+  for (final manual in [false, true]) {
+    test(
+      'orphaned scope is removed by ${manual ? 'offline delete' : 'sync'}',
+      () async {
+        await db.delete(db.sharedScopes).go();
+        final projects = DriftProjectRepository(db, queue);
+        for (var attempt = 0; attempt < 2; attempt++) {
+          if (manual) {
+            (await projects.deleteProject('project')).getOrThrow();
+          } else {
+            active = false;
+            await engine.syncShared();
+          }
+        }
+        expect(
+          await (db.select(
+            db.projects,
+          )..where((p) => p.id.equals('project'))).get(),
+          isEmpty,
+        );
+        expect(
+          await (db.select(db.tasks)..where((t) => t.id.equals('task'))).get(),
+          isEmpty,
+        );
+        expect(
+          await (db.select(
+            db.sharedEntities,
+          )..where((e) => e.scopeId.equals('scope'))).get(),
+          isEmpty,
+        );
+        expect(await db.select(db.syncCommands).get(), isEmpty);
+        expect(
+          await (db.select(
+            db.projects,
+          )..where((p) => p.id.equals(inboxProjectId))).get(),
+          hasLength(1),
+        );
+      },
+    );
+  }
+
+  test(
+    'delete verifies stale access and only removes local scope data',
+    () async {
+      final actions = <String>[];
+      final projects = DriftProjectRepository(
+        db,
+        queue,
+        collaboration: CollaborationApi((request) async {
+          actions.add(request['action'] as String);
+          return {'scopes': []};
+        }),
+      );
+      (await projects.deleteProject('project')).getOrThrow();
+      expect(actions, ['state']);
+      expect(
+        await (db.select(
+          db.projects,
+        )..where((p) => p.id.equals('project'))).get(),
+        isEmpty,
+      );
+      expect(await db.select(db.sharedScopes).get(), isEmpty);
+      expect(
+        await (db.select(
+          db.sharedEntities,
+        )..where((e) => e.scopeId.equals('scope'))).get(),
+        isEmpty,
+      );
+      expect(await db.select(db.syncCommands).get(), isEmpty);
+    },
+  );
+
+  for (final response in ['offline', 'malformed', 'active']) {
+    test('delete preserves shared data when access is $response', () async {
+      final actions = <String>[];
+      final projects = DriftProjectRepository(
+        db,
+        queue,
+        collaboration: CollaborationApi((request) async {
+          actions.add(request['action'] as String);
+          if (response == 'offline') throw TimeoutException('offline');
+          if (response == 'malformed') return {};
+          return {
+            'scopes': [scope],
+          };
+        }),
+      );
+      await expectLater(
+        projects.deleteProject('project').then((r) => r.getOrThrow()),
+        throwsException,
+      );
+      expect(actions, ['state']);
+      expect(
+        await (db.select(
+              db.projects,
+            )..where((p) => p.id.equals('project') & p.isDeleted.equals(false)))
+            .get(),
+        hasLength(1),
+      );
+      expect(
+        await (db.select(db.tasks)..where((t) => t.id.equals('task'))).get(),
+        hasLength(1),
+      );
+      expect(await db.select(db.sharedScopes).get(), hasLength(1));
+      expect(await db.select(db.syncCommands).get(), isEmpty);
+    });
+  }
+
+  test(
+    'orphan repair leaves personal and active shared projects intact',
+    () async {
+      final projects = DriftProjectRepository(db, queue);
+      final personal = (await projects.createProject('Personal')).getOrThrow();
+      await db.delete(db.syncCommands).go();
+      final source = await (db.select(
+        db.projects,
+      )..where((p) => p.id.equals('project'))).getSingle();
+      await db
+          .into(db.projects)
+          .insert(source.copyWith(id: 'orphan', scopeId: const Value('gone')));
+      await db
+          .into(db.sharedEntities)
+          .insert(
+            SharedEntitiesCompanion.insert(
+              scopeId: 'gone',
+              entityType: 'project',
+              entityId: 'orphan',
+              dataJson: '{}',
+            ),
+          );
+      final updates = await engine.syncShared();
+      expect(updates, contains('project'));
+      final ids = (await db.select(db.projects).get()).map((p) => p.id);
+      expect(ids, containsAll([personal, 'project', inboxProjectId]));
+      expect(ids, isNot(contains('orphan')));
+      expect((await db.select(db.sharedScopes).getSingle()).id, 'scope');
+      expect(
+        await (db.select(db.tasks)..where((t) => t.id.equals('task'))).get(),
+        hasLength(1),
+      );
+      expect(
+        await (db.select(
+          db.sharedEntities,
+        )..where((e) => e.scopeId.equals('gone'))).get(),
+        isEmpty,
+      );
+      expect(await db.select(db.syncCommands).get(), isEmpty);
+    },
+  );
+
+  for (final code in ['42501', 'forbidden']) {
+    test('revocation during pull removes cached data after $code', () async {
+      revokeOnPull = code;
+      await engine.syncShared();
+      expect(
+        await (db.select(
+          db.projects,
+        )..where((p) => p.id.equals('project'))).get(),
+        isEmpty,
+      );
+      expect(
+        await (db.select(db.tasks)..where((t) => t.id.equals('task'))).get(),
+        isEmpty,
+      );
+      expect(await db.select(db.sharedScopes).get(), isEmpty);
+      expect(
+        await (db.select(
+          db.sharedEntities,
+        )..where((e) => e.scopeId.equals('scope'))).get(),
+        isEmpty,
+      );
+      expect(pushes, isEmpty);
+    });
+  }
 
   test('unshared project returns as a personal row on the next pull', () async {
     active = false;

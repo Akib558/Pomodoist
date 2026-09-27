@@ -45,6 +45,11 @@ final taskListStyleProvider = Provider(
 final taskRowSpacingProvider = Provider(
   (ref) => ref.watch(taskPreferencesStateProvider).rowSpacing,
 );
+final taskBranchExpansionProvider = Provider(
+  (ref) => ref.watch(
+    taskPreferencesStateProvider.select((state) => state.branchExpansion),
+  ),
+);
 final timelineVisibleHoursProvider = Provider(
   (ref) => ref.watch(taskPreferencesStateProvider).visibleHours,
 );

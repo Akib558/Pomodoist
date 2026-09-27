@@ -86,10 +86,7 @@ class TaskSelectionViewModel extends Notifier<TaskSelectionState> {
   }
 
   void begin([String? id]) {
-    state = _copy(
-      selectedIds: Set<String>.unmodifiable({?id}),
-      active: true,
-    );
+    state = _copy(selectedIds: Set<String>.unmodifiable({?id}), active: true);
   }
 
   void toggle(String id) {
@@ -216,6 +213,15 @@ class TaskSelectionViewModel extends Notifier<TaskSelectionState> {
           )).getOrThrow();
         })).failed,
       );
+
+  Future<List<String>> removeLabels(
+    Iterable<String> ids,
+    List<String> labels,
+  ) => _run(
+    () async => (await _each(ids, (id) async {
+      (await _tasks.removeLabels(id, labels)).getOrThrow();
+    })).failed,
+  );
 
   Future<List<String>> setPriority(Iterable<String> ids, int priority) => _run(
     () async => (await _each(ids, (id) async {

@@ -26,6 +26,8 @@ import 'package:pomodoist/ui/tasks/widgets/project_context_menu.dart';
 import 'package:pomodoist/ui/tasks/widgets/project_icon.dart';
 import 'package:pomodoist/ui/tasks/widgets/task_list_view.dart';
 import 'package:pomodoist/ui/tasks/widgets/task_selection_region.dart';
+import 'package:pomodoist/ui/tasks/widgets/label_icon.dart';
+import 'package:pomodoist/config/providers.dart';
 
 class BrowseScreen extends ConsumerStatefulWidget {
   const BrowseScreen({super.key});
@@ -316,6 +318,8 @@ class _BrowseSecondary extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final labels = ref.watch(browseLabelsViewModelProvider);
+    final labelTaskCounts =
+        ref.watch(labelTaskCountsProvider).value ?? const <String, int>{};
     final items = labels.value ?? const <LabelItem>[];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -348,12 +352,13 @@ class _BrowseSecondary extends ConsumerWidget {
             for (final label in items)
               Material(
                 type: MaterialType.transparency,
-                child: Chip(
-                  avatar: const Icon(LucideIcons.tag, size: 14),
+                child: ActionChip(
+                  avatar: LabelIconView(label: label, size: 14),
                   label: Text(
-                    '@${label.name}',
+                    '@${label.name} (${labelTaskCounts[label.id] ?? 0})',
                     overflow: TextOverflow.ellipsis,
                   ),
+                  onPressed: () => context.go('/label/${label.id}'),
                 ),
               ),
           ],

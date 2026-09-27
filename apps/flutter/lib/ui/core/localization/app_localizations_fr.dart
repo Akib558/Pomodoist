@@ -3652,4 +3652,41 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get settingsBottomNavigationRemove => 'Retirer';
+
+  @override
+  String get editLabel => 'Modifier l’étiquette';
+
+  @override
+  String get labelNameTaken => 'Une étiquette portant ce nom existe déjà';
+
+  @override
+  String get labelBulkAdd => 'Ajouter aux tâches';
+
+  @override
+  String get labelBulkRemove => 'Retirer des tâches';
+
+  @override
+  String get labelColor => 'Couleur de l’étiquette';
+
+  @override
+  String get taskParentUnavailable => 'Sous-tâche · tâche parente indisponible';
+
+  @override
+  String get taskExpandSubtasks => 'Développer les sous-tâches';
+
+  @override
+  String get taskCollapseSubtasks => 'Réduire les sous-tâches';
+
+  @override
+  String taskAllSubtasksProgress(int completed, int total) {
+    return 'Toutes les sous-tâches : $completed sur $total terminées';
+  }
+
+  @override
+  String get taskOpenFullBranch => 'Ouvrir toutes les sous-tâches';
+
+  @override
+  String taskParentPath(String path) {
+    return 'Fait partie de : $path';
+  }
 }

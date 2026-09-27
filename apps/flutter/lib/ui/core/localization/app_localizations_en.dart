@@ -3635,4 +3635,41 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsBottomNavigationRemove => 'Remove';
+
+  @override
+  String get editLabel => 'Edit label';
+
+  @override
+  String get labelNameTaken => 'A label with this name already exists';
+
+  @override
+  String get labelBulkAdd => 'Add to tasks';
+
+  @override
+  String get labelBulkRemove => 'Remove from tasks';
+
+  @override
+  String get labelColor => 'Label color';
+
+  @override
+  String get taskParentUnavailable => 'Subtask · parent unavailable';
+
+  @override
+  String get taskExpandSubtasks => 'Expand subtasks';
+
+  @override
+  String get taskCollapseSubtasks => 'Collapse subtasks';
+
+  @override
+  String taskAllSubtasksProgress(int completed, int total) {
+    return 'All descendants: $completed of $total complete';
+  }
+
+  @override
+  String get taskOpenFullBranch => 'Open all subtasks';
+
+  @override
+  String taskParentPath(String path) {
+    return 'Part of: $path';
+  }
 }

@@ -417,6 +417,12 @@ users icon. Keep sync conflicts internal: do not show conflict badges, tooltips,
 messages or resolution controls in the interface. Preserve sync conflict storage
 and processing independently of presentation.
 
+Labels follow the project palette while keeping their own icons and `@` names.
+Show the same label color in navigation, task surfaces, and selection controls;
+never use color alone to identify a label. Show each label's own open-task count,
+including subtasks, in the Labels list and Browse chips. Keep labels out of the
+sidebar; they remain accessible from Projects / Labels and Browse.
+
 The shared project context menu also offers **About project** for every project
 except Inbox, including archived projects. Its read-only dialog shows the current
 owner, the viewer's role and members with role, owner and viewer labels. Resolve
@@ -450,11 +456,22 @@ Missing parents and cycles from synchronization must never hide projects.
 
 ### Today
 
+Center the list within 1200 px of content width. Keep the date below the title
+and use the shared connected task rows with the existing inline Quick Add.
+
 Keep daily context to one text summary and one active Focus strip. The strip and
 global mini player share the existing session, interval and clock providers.
 Only replace the global player once the run and interval agree and remaining
 time is available. Completed-today rows form a collapsed group with independent
 selection, using the local completion day.
+
+### Upcoming
+
+Use a flat agenda without enclosing day cards. At 760 px of available agenda
+width, put the date in a 112 px leading column with a 24 px gap; below that
+threshold, place it above the day's tasks. Keep the calendar rail, local-day
+grouping, Quick Add, route selection and scrolling anchors. A task remains in its
+own scheduled day even when its parent belongs to another day.
 
 ### Browse
 
@@ -566,9 +583,14 @@ drag-and-drop and motion. Modern keeps desktop metadata and action slots aligned
 wraps metadata on narrow screens, and reveals actions on hover or keyboard focus.
 In both styles, timing stays below the task title and its description when shown,
 including in date-grouped lists. Keep its existing date/time format and status
-color. In the shared column layout, project (120 px) and focus progress (56 px)
-remain to the right of the title block, before row actions. Keep their order when
-metadata wraps; the subtask indicator retains its position before these fields.
+color. In the shared column layout, project (120 px), focus progress (56 px), and
+descendant progress (72 px) share one vertically centered metadata row to the
+right of the title block, before row actions. Reserve all three slots even when
+a value is absent, with 12 px gaps; scale slot widths with text size. Narrow
+layouts place these same slots below the heading, aligned to the trailing edge,
+and wrap only when they do not fit. A task's nesting depth must not change the
+list's column-layout breakpoint. Subtask disclosure stays before the completion
+circle. Progress controls remain outside task drag targets.
 Touch actions stay available. Project and timing colors retain their semantics.
 Custom Kanban and Timeline blocks keep their specialized layouts.
 Kanban card action menus open on activation; pointer hover only highlights the
@@ -584,12 +606,56 @@ Font sizes, icons, metadata placement, and horizontal spacing stay unchanged.
 
 All shared task lists use `TaskListDivider` between rows, including completed
 groups, subtasks, and the priority matrix. The line is 1 px in `appColors.border`,
-starts 38 px from the row's leading edge, and adds 18 px per level of the less
+starts 38 px from the task body's leading edge, after any disclosure margin,
+and adds 28 px per level of the less
 indented adjacent task. Do not add leading or trailing separators. Its total
 height is 1 px on desktop/web and 12 px on native iOS/Android, with the line
 centered to retain the existing touch drop area. Root-task drop targets keep
 their existing expansion and Reduce Motion behavior. Kanban and Timeline do not
 use this spacing preference.
+
+### Connected task branches
+
+Use an icon-only disclosure button before the completion circle, outside the
+task body's hover, selection, and drop highlight. Hierarchical lists share a
+compact 24 px leading margin on pointer platforms and a 44 px margin on touch
+platforms; lists that cannot expand branches reserve no disclosure margin.
+Keep the margin empty for leaf rows and apply tree indentation outside the
+highlighted body as well. The margin remains inside the row's layout bounds so
+the disclosure has a working hit target without relying on painted overflow.
+Disclosure must not toggle completion, start dragging or activate task details.
+Keep completed/total descendant progress beside the task heading as a separate
+button opening full task details. Count all descendant levels, including tasks
+outside the current filter, and explain this in the localized tooltip. Task
+details section headers may combine the chevron and progress in one button.
+
+Filter first, then project the visible tree. Roots start expanded and nested
+branches start collapsed. Persist explicit choices locally in task preferences,
+independently by destination and task ID, without synchronizing them. Today and
+Upcoming use stable destination keys without dates; projects, labels and task
+details include their IDs. Preserve local interaction over delayed preference
+loading; keep the current choice and show save feedback if persistence fails.
+
+Draw 1 px theme-border connectors through rows and their separators, with 28 px
+per level, 20 px horizontal arms, and a maximum visual indentation of two levels.
+End rails at the last
+visible sibling. Keep actual ancestry at deeper levels and show its path above
+the title. With an absent visible parent, promote the row visually to the root
+and show a parent link instead of phantom indentation. An unavailable parent has
+neutral, noninteractive text. Paths and connectors respect text direction.
+
+Shared lists, task details and Today's completed section use these branches.
+Search and Priority Matrix preserve their existing ordering and partitions;
+they show parent context and progress linking to details. Kanban, Calendar,
+Timeline and Focus use a single-line compact summary within their existing
+geometry and activation target, without expanding a second tree in the card.
+
+Disclosure has no additional animation. Preserve focus on its button when a
+branch closes; remove hidden rows from bulk selection. Expand ancestors after
+explicit task creation or nesting in the current destination. Completion, Undo,
+row density and drag semantics remain independent of disclosure. Interactive
+disclosure and parent links have at least 44 px touch targets; compact summaries rely
+on the containing task's accessible activation target.
 
 ### Touch task dragging
 

@@ -14,6 +14,11 @@ abstract interface class TaskPreferencesRepository {
   Future<Result<void>> setTimeDisplayMode(TaskTimeDisplayMode mode);
   Future<Result<void>> setListStyle(TaskListStyle style);
   Future<Result<void>> setRowSpacing(TaskRowSpacing spacing);
+  Future<Result<void>> setBranchExpanded(
+    String scopeKey,
+    String taskId,
+    bool expanded,
+  );
   Future<Result<void>> setVisibleHours(int startMinutes, int endMinutes);
   Future<Result<void>> setHourWidth(int width);
   Future<Result<void>> zoomIn();

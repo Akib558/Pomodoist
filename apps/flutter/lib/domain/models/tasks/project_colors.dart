@@ -27,6 +27,22 @@ String effectiveProjectColor(ProjectItem project) {
       projectColorPalette[_stableHash(project.id) % projectColorPalette.length];
 }
 
+String effectiveLabelColor(LabelItem label) =>
+    normalizeProjectColor(label.color) ??
+    projectColorPalette[_stableHash(label.id) % projectColorPalette.length];
+
+String nextLabelColor(Iterable<LabelItem> labels) {
+  final counts = {for (final color in projectColorPalette) color: 0};
+  for (final label in labels) {
+    if (label.isDeleted) continue;
+    final color = effectiveLabelColor(label);
+    if (counts.containsKey(color)) counts[color] = counts[color]! + 1;
+  }
+  return projectColorPalette.reduce(
+    (best, color) => counts[color]! < counts[best]! ? color : best,
+  );
+}
+
 String nextProjectColor(Iterable<ProjectItem> projects) {
   final counts = {for (final color in projectColorPalette) color: 0};
   for (final project in projects) {

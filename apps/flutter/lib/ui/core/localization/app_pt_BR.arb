@@ -57,5 +57,16 @@
   "settingsBottomNavigationDefaults": "Padrão",
   "settingsBottomNavigationLoadError": "Não foi possível carregar as configurações de navegação. Tente novamente.",
   "settingsBottomNavigationEdit": "Personalizar",
-  "settingsBottomNavigationRemove": "Remover"
+  "settingsBottomNavigationRemove": "Remover",
+  "editLabel": "Editar etiqueta",
+  "labelNameTaken": "Já existe uma etiqueta com este nome",
+  "labelBulkAdd": "Adicionar às tarefas",
+  "labelBulkRemove": "Remover das tarefas",
+  "labelColor": "Cor da etiqueta",
+  "taskParentUnavailable": "Subtarefa · tarefa principal indisponível",
+  "taskExpandSubtasks": "Expandir subtarefas",
+  "taskCollapseSubtasks": "Recolher subtarefas",
+  "taskAllSubtasksProgress": "Todas as subtarefas: {completed} de {total} concluídas",
+  "taskOpenFullBranch": "Abrir todas as subtarefas",
+  "taskParentPath": "Parte de: {path}"
 }

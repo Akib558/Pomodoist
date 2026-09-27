@@ -36,11 +36,13 @@ class ProjectColorPalettePicker extends StatelessWidget {
   const ProjectColorPalettePicker({
     required this.selectedColor,
     required this.onSelected,
+    this.optionLabel,
     super.key,
   });
 
   final String selectedColor;
   final ValueChanged<String> onSelected;
+  final String? optionLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -53,8 +55,10 @@ class ProjectColorPalettePicker extends StatelessWidget {
           _ColorOption(
             key: Key('project-color-option-$index'),
             color: projectColorPalette[index],
-            index: index,
             selected: normalized == projectColorPalette[index],
+            tooltip: optionLabel == null
+                ? context.l10n.projectColorOption(index + 1)
+                : '$optionLabel ${index + 1}',
             onPressed: () => onSelected(projectColorPalette[index]),
           ),
       ],
@@ -103,22 +107,22 @@ class ProjectColorSwatch extends StatelessWidget {
 class _ColorOption extends StatelessWidget {
   const _ColorOption({
     required this.color,
-    required this.index,
     required this.selected,
+    required this.tooltip,
     required this.onPressed,
     super.key,
   });
 
   final String color;
-  final int index;
   final bool selected;
+  final String tooltip;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Tooltip(
-      message: context.l10n.projectColorOption(index + 1),
+      message: tooltip,
       child: InkResponse(
         onTap: onPressed,
         radius: 24,

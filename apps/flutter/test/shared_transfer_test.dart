@@ -1,7 +1,8 @@
 import 'package:pomodoist/data/repositories/projects/project_repository_impl.dart';
 import 'dart:convert';
 import 'package:app_account/app_account.dart';
-import 'package:drift/drift.dart';
+import 'package:drift/drift.dart' hide isNull;
+import 'package:pomodoist/data/services/local/sync_owner_store.dart';
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:uuid/uuid.dart';
@@ -187,7 +188,89 @@ void main() {
     },
   );
 
+  test('owner recovers task-first personal pages after unsharing', () async {
+    await _localSharedState(db, root);
+    final now = DateTime.now().toUtc();
+    final taskRow = await (db.select(
+      db.tasks,
+    )..where((t) => t.id.equals(task))).getSingle();
+    final rootRow = await (db.select(
+      db.projects,
+    )..where((p) => p.id.equals(root))).getSingle();
+    final childRow = await (db.select(
+      db.projects,
+    )..where((p) => p.id.equals(child))).getSingle();
+    account.pages = [
+      [
+        AccountSyncEntity(
+          entityType: 'task',
+          entityId: task,
+          serverRevision: 1,
+          updatedAt: now,
+          data: {
+            ...taskRow.toJson(),
+            'scopeId': null,
+            'content': 'Returned task',
+          },
+        ),
+      ],
+      [
+        AccountSyncEntity(
+          entityType: 'project',
+          entityId: root,
+          serverRevision: 2,
+          updatedAt: now,
+          data: {...rootRow.toJson(), 'scopeId': null},
+        ),
+      ],
+      [
+        AccountSyncEntity(
+          entityType: 'project',
+          entityId: child,
+          serverRevision: 3,
+          updatedAt: now,
+          data: {...childRow.toJson(), 'scopeId': null},
+        ),
+      ],
+    ];
+    final engine = testSyncEngine(
+      db: db,
+      uuid: const Uuid(),
+      account: account,
+      collaboration: CollaborationApi((args) async => {'scopes': []}),
+    );
+    await engine.syncShared();
+    await engine.syncShared();
+    expect(
+      (await (db.select(
+        db.tasks,
+      )..where((t) => t.id.equals(task))).getSingle()).content,
+      'Returned task',
+    );
+    expect(
+      (await (db.select(
+        db.tasks,
+      )..where((t) => t.id.equals(task))).getSingle()).scopeId,
+      isNull,
+    );
+    expect(
+      (await (db.select(
+        db.projects,
+      )..where((p) => p.id.equals(child))).getSingle()).parentId,
+      root,
+    );
+    expect(
+      await (db.select(db.projects)..where((p) => p.scopeId.isNotNull())).get(),
+      isEmpty,
+    );
+    expect(await db.select(db.sharedScopes).get(), isEmpty);
+    expect(await db.select(db.sharedEntities).get(), isEmpty);
+  });
+
   test('owner deletes a shared root through the server scope delete', () async {
+    final rootTask = (await DriftTaskRepository(db, queue).createTask(
+      CreateTaskInput(content: 'Root task', projectId: root),
+    )).getOrThrow();
     (await repository.share(root)).getOrThrow();
     await _localSharedState(db, root);
     final actions = <String>[];
@@ -196,18 +279,40 @@ void main() {
       queue,
       collaboration: CollaborationApi((args) async {
         actions.add(args['action'] as String);
+        if (args['action'] == 'state') {
+          return {
+            'scopes': [
+              {
+                'id': 'scope',
+                'rootProjectId': root,
+                'ownerId': 'me',
+                'role': 'administrator',
+              },
+            ],
+          };
+        }
         return {'ok': true};
       }),
     );
 
     (await projects.deleteProject(root)).getOrThrow();
 
-    expect(actions, ['delete']);
+    expect(actions, ['state', 'delete']);
     expect(
-      (await (db.select(
+      await (db.select(
+        db.tasks,
+      )..where((t) => t.id.isIn([task, rootTask]))).get(),
+      isEmpty,
+    );
+    expect(await db.select(db.sharedScopes).get(), isEmpty);
+    expect(await db.select(db.sharedEntities).get(), isEmpty);
+    expect(await db.select(db.syncCommands).get(), isEmpty);
+
+    expect(
+      await (db.select(
         db.projects,
-      )..where((p) => p.id.equals(root))).getSingle()).isDeleted,
-      isTrue,
+      )..where((p) => p.id.isIn([root, child]))).get(),
+      isEmpty,
     );
   });
 }
@@ -215,9 +320,39 @@ void main() {
 /// Leaves the database as a completed shared sync would: the project carries
 /// the scope and the scope row is cached locally.
 Future<void> _localSharedState(AppDatabase db, String root) async {
-  await db
-      .update(db.projects)
+  await SyncOwnerStore(db, const Uuid()).writeOwner('me');
+  await (db.update(db.projects)
+        ..where((p) => p.id.equals(inboxProjectId).not()))
       .write(const ProjectsCompanion(scopeId: Value('scope')));
+  await db
+      .update(db.tasks)
+      .write(const TasksCompanion(scopeId: Value('scope')));
+  for (final row in await (db.select(
+    db.projects,
+  )..where((p) => p.scopeId.equals('scope'))).get()) {
+    await db
+        .into(db.sharedEntities)
+        .insert(
+          SharedEntitiesCompanion.insert(
+            scopeId: 'scope',
+            entityType: 'project',
+            entityId: row.id,
+            dataJson: jsonEncode(row.toJson()),
+          ),
+        );
+  }
+  for (final row in await db.select(db.tasks).get()) {
+    await db
+        .into(db.sharedEntities)
+        .insert(
+          SharedEntitiesCompanion.insert(
+            scopeId: 'scope',
+            entityType: 'task',
+            entityId: row.id,
+            dataJson: jsonEncode(row.toJson()),
+          ),
+        );
+  }
   await db
       .into(db.sharedScopes)
       .insertOnConflictUpdate(
@@ -235,6 +370,7 @@ Future<void> _localSharedState(AppDatabase db, String root) async {
 
 class _Account implements AccountClient {
   var revision = 0;
+  List<List<AccountSyncEntity>>? pages;
   String? serverName;
 
   /// Set when the server unshares a root: the subtree comes back as personal
@@ -266,6 +402,14 @@ class _Account implements AccountClient {
     required int sinceRevision,
     int limit = 500,
   }) async {
+    if (pages != null) {
+      final index = sinceRevision;
+      return AccountSyncPullResult(
+        nextCursor: index < pages!.length ? index + 1 : index,
+        hasMore: index + 1 < pages!.length,
+        changes: index < pages!.length ? pages![index] : const [],
+      );
+    }
     final root = unsharedRoot;
     final child = unsharedChild;
     final task = unsharedTask;
@@ -300,7 +444,13 @@ class _Account implements AccountClient {
               if (id != task) 'isArchived': false,
               if (id != task && id == child) 'parentId': root,
               if (id == task) 'content': 'Task',
-              if (id == task) 'isCompleted': false,
+              if (id == task) ...{
+                'priority': 4,
+                'status': 'open',
+                'completedFocusIntervals': 0,
+                'totalFocusSeconds': 0,
+                'isCollapsed': false,
+              },
               'isDeleted': false,
               'orderKey': 'a',
               'createdAt': DateTime.utc(2026).toIso8601String(),
@@ -310,6 +460,7 @@ class _Account implements AccountClient {
       ],
     );
   }
+
   @override
   Future<void> broadcastSyncHint({
     required String appId,

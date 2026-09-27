@@ -3428,10 +3428,7 @@ void main() {
     // Its affordance is a keyed semantic label, not rendered text.
     final switchMode = find.byKey(const Key('focus-switch-view-mode'));
     expect(switchMode, findsOneWidget);
-    expect(
-      tester.getSemantics(switchMode).label,
-      'Switch to Full',
-    );
+    expect(tester.getSemantics(switchMode).label, 'Switch to Full');
 
     await tester.tap(find.bySemanticsLabel('Pause'));
     await tester.pump();
@@ -3974,9 +3971,7 @@ Future<void> _pumpFocusScreen(
       child: MaterialApp(
         builder: testAppBuilder,
         theme: AppTheme.light(),
-        home: const ScaffoldMessenger(
-          child: Scaffold(body: FocusScreen()),
-        ),
+        home: const ScaffoldMessenger(child: Scaffold(body: FocusScreen())),
       ),
     ),
   );
@@ -4446,6 +4441,10 @@ class _FakeTaskRepository implements TaskRepository {
   final placedProjectIds = <String>[];
   final duplicatedTaskIds = <Set<String>>[];
   final duplicateIncludeSubtasks = <bool>[];
+
+  @override
+  Future<Result<void>> removeLabels(String id, List<String> names) =>
+      Result.capture<void>(() async {});
 
   @override
   Stream<List<TaskItem>> watchTasks(TaskQuery query) {
@@ -4929,19 +4928,33 @@ class _FakeLabelRepository implements LabelRepository {
   ]);
 
   @override
+  Stream<Map<String, int>> watchOpenTaskCounts() => Stream.value(const {});
+
+  @override
   Future<Result<LabelItem?>> findByName(String name) =>
       Result.capture<LabelItem?>(() async => null);
 
   @override
-  Future<Result<String>> createLabel(String name, {String? icon}) =>
-      Result.capture<String>(() async {
-        createdLabelNames.add(name);
-        return 'label-${createdLabelNames.length}';
-      });
+  Future<Result<String>> createLabel(
+    String name, {
+    String? icon,
+    String? color,
+  }) => Result.capture<String>(() async {
+    createdLabelNames.add(name);
+    return 'label-${createdLabelNames.length}';
+  });
 
   @override
   Future<Result<void>> updateLabelIcon(String id, String icon) =>
       Result.capture<void>(() async {});
+
+  @override
+  Future<Result<void>> updateLabel(
+    String id, {
+    required String name,
+    required String color,
+    required String icon,
+  }) => Result.capture<void>(() async {});
 
   @override
   Future<Result<void>> deleteLabel(String id) => Result.capture<void>(() async {

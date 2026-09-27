@@ -3630,4 +3630,41 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get settingsBottomNavigationRemove => 'Убрать';
+
+  @override
+  String get editLabel => 'Редактировать метку';
+
+  @override
+  String get labelNameTaken => 'Метка с таким названием уже существует';
+
+  @override
+  String get labelBulkAdd => 'Добавить к задачам';
+
+  @override
+  String get labelBulkRemove => 'Снять с задач';
+
+  @override
+  String get labelColor => 'Цвет метки';
+
+  @override
+  String get taskParentUnavailable => 'Подзадача · родитель недоступен';
+
+  @override
+  String get taskExpandSubtasks => 'Раскрыть подзадачи';
+
+  @override
+  String get taskCollapseSubtasks => 'Свернуть подзадачи';
+
+  @override
+  String taskAllSubtasksProgress(int completed, int total) {
+    return 'Все вложенные задачи: выполнено $completed из $total';
+  }
+
+  @override
+  String get taskOpenFullBranch => 'Открыть все подзадачи';
+
+  @override
+  String taskParentPath(String path) {
+    return 'Часть задачи: $path';
+  }
 }

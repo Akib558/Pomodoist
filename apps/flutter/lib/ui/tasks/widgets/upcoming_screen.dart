@@ -1,5 +1,6 @@
 import 'package:pomodoist/ui/tasks/view_models/task_subtask_progress.dart';
 import 'dart:async';
+import 'package:pomodoist/ui/tasks/widgets/task_branch_widgets.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -66,9 +67,11 @@ class _UpcomingScreenState extends ConsumerState<UpcomingScreen> {
         final allItems = List<TaskItem>.unmodifiable(
           mergeTasks(viewState.tasks, motion.retainedTasks),
         );
+        final liveIds = {for (final task in viewState.tasks) task.id};
         final visibleTasks = [
-          for (final group in viewState.groups)
-            for (final row in group.rows) row.task,
+          for (final group in groups)
+            for (final row in group.rows)
+              if (liveIds.contains(row.task.id)) row.task,
         ];
         return SafeArea(
           bottom: false,
@@ -117,6 +120,14 @@ class _UpcomingScreenState extends ConsumerState<UpcomingScreen> {
                               defaultDate: selectedDay ?? today,
                               onTaskCreated: (taskIds) {
                                 motion.created(taskIds.toSet());
+                                unawaited(
+                                  revealCreatedTaskBranches(
+                                    context,
+                                    ref,
+                                    'upcoming',
+                                    taskIds,
+                                  ),
+                                );
                                 unawaited(playHaptic(AppHapticCue.light));
                               },
                             ),
@@ -325,62 +336,75 @@ class _UpcomingDayCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.appColors;
-    return Column(
+    final heading = Semantics(
+      header: true,
+      child: Text(
+        _upcomingDayHeaderLabel(context, group.date, today),
+        style: Theme.of(
+          context,
+        ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+      ),
+    );
+    final tasks = Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Semantics(
-          header: true,
-          child: Padding(
-            padding: const EdgeInsetsDirectional.only(start: 14, bottom: 8),
+        if (group.rows.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16),
             child: Text(
-              _upcomingDayHeaderLabel(context, group.date, today),
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: colors.accent,
-                fontWeight: FontWeight.w700,
+              context.l10n.noTasksForDay,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: context.appColors.secondaryText,
               ),
             ),
           ),
-        ),
-        DecoratedBox(
-          key: ValueKey('upcoming-day-card-${_routeDate(group.date)}'),
-          decoration: BoxDecoration(
-            color: colors.surface,
-            border: Border.all(color: colors.border),
-            borderRadius: BorderRadius.circular(10),
+        for (var index = 0; index < group.rows.length; index++) ...[
+          if (index > 0)
+            TaskListDivider(
+              previousDepth: group.rows[index - 1].depth,
+              nextDepth: group.rows[index].depth,
+              nextRow: group.rows[index],
+            ),
+          TaskListItem(
+            key: ValueKey(group.rows[index].task.id),
+            task: group.rows[index].task,
+            depth: group.rows[index].displayDepth,
+            hierarchy: group.rows[index],
+            branchScope: 'upcoming',
+            subtaskProgress: progressById[group.rows[index].task.id],
+            presentation: TaskListItemPresentation.agenda,
+            project: projectsById[group.rows[index].task.projectId],
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (group.rows.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Text(
-                    context.l10n.noTasksForDay,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium?.copyWith(color: colors.mutedText),
-                  ),
-                )
-              else
-                for (var index = 0; index < group.rows.length; index++) ...[
-                  if (index > 0)
-                    TaskListDivider(
-                      previousDepth: group.rows[index - 1].depth,
-                      nextDepth: group.rows[index].depth,
-                    ),
-                  TaskListItem(
-                    task: group.rows[index].task,
-                    depth: group.rows[index].depth,
-                    subtaskProgress: progressById[group.rows[index].task.id],
-                    presentation: TaskListItemPresentation.agenda,
-                    project: projectsById[group.rows[index].task.projectId],
-                  ),
-                ],
-            ],
-          ),
-        ),
+        ],
       ],
+    );
+    return LayoutBuilder(
+      key: ValueKey('upcoming-day-card-${_routeDate(group.date)}'),
+      builder: (context, constraints) {
+        if (constraints.maxWidth >= 760) {
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 112,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: heading,
+                ),
+              ),
+              const SizedBox(width: 24),
+              Expanded(child: tasks),
+            ],
+          );
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(padding: const EdgeInsets.only(bottom: 8), child: heading),
+            tasks,
+          ],
+        );
+      },
     );
   }
 }

@@ -120,11 +120,18 @@ void main() {
     });
 
     test('preserves nesting when parent and child share a day', () {
-      final groups = buildUpcomingDayGroups([
-        _task('child', parentId: 'parent', schedule: _allDay(2026, 7, 10)),
-        _task('parent', schedule: _allDay(2026, 7, 10)),
-        _task('grandchild', parentId: 'child', schedule: _allDay(2026, 7, 10)),
-      ]);
+      final groups = buildUpcomingDayGroups(
+        [
+          _task('child', parentId: 'parent', schedule: _allDay(2026, 7, 10)),
+          _task('parent', schedule: _allDay(2026, 7, 10)),
+          _task(
+            'grandchild',
+            parentId: 'child',
+            schedule: _allDay(2026, 7, 10),
+          ),
+        ],
+        expansion: {'child': true},
+      );
 
       expect(
         groups.single.rows.map((row) => (row.task.id, row.depth)).toList(),

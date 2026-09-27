@@ -1,0 +1,183 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:pomodoist/domain/models/tasks/task_models.dart';
+import 'package:pomodoist/ui/tasks/view_models/task_list_view_model.dart';
+import 'package:pomodoist/ui/tasks/view_models/task_subtask_progress.dart';
+
+void main() {
+  test('opens roots and collapses nested branches by default', () {
+    final tasks = [
+      _task('root'),
+      _task('child', parentId: 'root'),
+      _task('grandchild', parentId: 'child'),
+    ];
+    expect(visibleTaskRows(tasks, tasks).map((r) => r.task.id), [
+      'root',
+      'child',
+    ]);
+  });
+
+  test(
+    'stored expansion applies independently without leaking hidden rows',
+    () {
+      final tasks = [
+        _task('r'),
+        _task('a', parentId: 'r'),
+        _task('b', parentId: 'a'),
+        _task('other'),
+      ];
+      expect(
+        visibleTaskRows(
+          tasks,
+          tasks,
+          expansion: {'a': true},
+        ).map((r) => r.task.id),
+        ['other', 'r', 'a', 'b'],
+      );
+      expect(
+        visibleTaskRows(
+          tasks,
+          tasks,
+          expansion: {'r': false, 'a': true},
+        ).map((r) => r.task.id),
+        ['other', 'r'],
+      );
+      final filtered = visibleTaskRows(
+        tasks,
+        [tasks[2]],
+        expansion: {'r': false, 'a': false},
+      );
+      expect(filtered.single.task.id, 'b');
+      expect(filtered.single.visibleParentId, isNull);
+      expect(filtered.single.ancestors.map((t) => t.id), ['r', 'a']);
+    },
+  );
+
+  test('deep nesting keeps ancestry while capping only visual indentation', () {
+    final tasks = [
+      for (var i = 0; i < 5; i++)
+        _task('$i', parentId: i == 0 ? null : '${i - 1}'),
+    ];
+    final rows = visibleTaskRows(
+      tasks,
+      tasks,
+      expansion: {for (final t in tasks) t.id: true},
+    );
+    expect(rows.last.depth, 4);
+    expect(rows.last.displayDepth, 2);
+    expect(rows.last.needsAncestorContext, isTrue);
+    expect(rows.last.ancestors.map((t) => t.id), ['0', '1', '2', '3']);
+    expect(descendantTaskIds('0', tasks), {'1', '2', '3', '4'});
+  });
+
+  test('connector continuations follow visible siblings and survive Undo', () {
+    final tasks = [
+      _task('r'),
+      _task('a', parentId: 'r'),
+      _task('leaf', parentId: 'a'),
+      _task('z', parentId: 'r'),
+    ];
+    const expansion = {'a': true};
+    final rows = visibleTaskRows(tasks, tasks, expansion: expansion);
+    expect(rows[2].ancestorContinuations, [false, true]);
+    expect(rows[2].isLastSibling, isTrue);
+    expect(rows.last.isLastSibling, isTrue);
+    final removed = visibleTaskRows(
+      tasks,
+      tasks.where((t) => t.id != 'z').toList(),
+      expansion: expansion,
+    );
+    expect(removed.last.ancestorContinuations, [false, false]);
+    expect(
+      visibleTaskRows(tasks, tasks, expansion: expansion).map((r) => r.task.id),
+      rows.map((r) => r.task.id),
+    );
+  });
+
+  test(
+    'missing parent has no fabricated path and collapsed cycles stay closed',
+    () {
+      final orphan = _task('orphan', parentId: 'missing');
+      expect(visibleTaskRows([orphan], [orphan]).single.ancestors, isEmpty);
+      final cycle = [_task('a', parentId: 'b'), _task('b', parentId: 'a')];
+      expect(
+        visibleTaskRows(cycle, cycle, expansion: {'a': false, 'b': false}),
+        hasLength(1),
+      );
+    },
+  );
+
+  test('filtered parent does not leave phantom indentation', () {
+    final root = _task('root');
+    final child = _task('child', parentId: 'root');
+    final rows = visibleTaskRows([root, child], [child]);
+    expect(rows.single.depth, 0);
+  });
+
+  test('current eligible snapshot overrides ancestry metadata', () {
+    final stale = _task('child', parentId: 'root');
+    final current = _task('child', content: 'Current');
+    final rows = visibleTaskRows([_task('root'), stale], [current]);
+    expect(rows.single.task.content, 'Current');
+    expect(rows.single.depth, 0);
+  });
+
+  test('duplicates and cycles keep each eligible task once', () {
+    final tasks = [
+      _task('a', parentId: 'b'),
+      _task('b', parentId: 'a'),
+      _task('self', parentId: 'self'),
+      _task('orphan', parentId: 'missing'),
+    ];
+    final rows = visibleTaskRows(tasks, [...tasks, tasks.first]);
+    expect(rows.map((r) => r.task.id).toSet(), {'a', 'b', 'self', 'orphan'});
+    expect(rows, hasLength(4));
+  });
+
+  test('progress counts all descendants without counting self in a cycle', () {
+    final progress = taskSubtaskProgressById([
+      _task('a', parentId: 'b', completed: true),
+      _task('b', parentId: 'a'),
+      _task('c', parentId: 'b', completed: true),
+      _task('self', parentId: 'self'),
+    ]);
+    expect(progress['a']!.label, '1/2');
+    expect(progress['b']!.label, '2/2');
+    expect(progress.containsKey('self'), isFalse);
+  });
+
+  test('current visible snapshots replace retained snapshots', () {
+    final retained = _task('retained', content: 'Stale', completed: true);
+    final current = _task('retained', content: 'Current');
+    final state = TaskListState(
+      tasks: AsyncData([current, _task('filtered', completed: true)]),
+      allTasks: [],
+    );
+    final visible = state.visibleTasks([retained], (t) => !t.isCompleted);
+    expect(visible.map((t) => t.content), ['Current']);
+  });
+}
+
+TaskItem _task(
+  String id, {
+  String? parentId,
+  String? content,
+  bool completed = false,
+  int? dayOrder,
+  String? orderKey,
+}) => TaskItem(
+  id: id,
+  userId: 'user',
+  content: content ?? id,
+  projectId: 'project',
+  parentId: parentId,
+  priority: 4,
+  status: completed ? 'completed' : 'open',
+  completedFocusIntervals: 0,
+  totalFocusSeconds: 0,
+  orderKey: orderKey ?? id,
+  dayOrder: dayOrder,
+  isDeleted: false,
+  createdAt: DateTime.utc(2026),
+  updatedAt: DateTime.utc(2026),
+);

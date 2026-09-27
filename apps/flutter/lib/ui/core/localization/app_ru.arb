@@ -1142,5 +1142,16 @@
   "settingsBottomNavigationDefaults": "По умолчанию",
   "settingsBottomNavigationLoadError": "Не удалось загрузить настройки навигации. Попробуйте ещё раз.",
   "settingsBottomNavigationEdit": "Настроить",
-  "settingsBottomNavigationRemove": "Убрать"
+  "settingsBottomNavigationRemove": "Убрать",
+  "editLabel": "Редактировать метку",
+  "labelNameTaken": "Метка с таким названием уже существует",
+  "labelBulkAdd": "Добавить к задачам",
+  "labelBulkRemove": "Снять с задач",
+  "labelColor": "Цвет метки",
+  "taskParentUnavailable": "Подзадача · родитель недоступен",
+  "taskExpandSubtasks": "Раскрыть подзадачи",
+  "taskCollapseSubtasks": "Свернуть подзадачи",
+  "taskAllSubtasksProgress": "Все вложенные задачи: выполнено {completed} из {total}",
+  "taskOpenFullBranch": "Открыть все подзадачи",
+  "taskParentPath": "Часть задачи: {path}"
 }

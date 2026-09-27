@@ -26,6 +26,7 @@ import 'package:pomodoist/ui/tasks/widgets/project_context_menu.dart';
 import 'package:pomodoist/ui/tasks/widgets/project_icon.dart';
 import 'package:pomodoist/ui/tasks/widgets/project_tree_controls.dart';
 import 'package:pomodoist/ui/tasks/widgets/label_icon.dart';
+import 'package:pomodoist/config/providers.dart';
 
 class ProjectsScreen extends ConsumerStatefulWidget {
   const ProjectsScreen({this.showLabels = false, super.key});
@@ -496,13 +497,14 @@ class _LabelListTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.appColors;
+    final count = ref.watch(labelTaskCountsProvider).value?[label.id] ?? 0;
     return AppContextMenuRegion(
       key: ValueKey('projects-screen-label-${label.id}'),
       items: [
         ShadContextMenuItem(
-          leading: Icon(labelIconData(label.icon), size: 16),
-          onPressed: () => editLabelIcon(context, ref, label),
-          child: Text(context.l10n.labelIcon),
+          leading: const Icon(LucideIcons.pencil, size: 16),
+          onPressed: () => showEditLabelDialog(context, label),
+          child: Text(context.l10n.editLabel),
         ),
         ShadContextMenuItem(
           leading: Icon(
@@ -524,7 +526,7 @@ class _LabelListTile extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
             child: Row(
               children: [
-                Icon(labelIconData(label.icon), color: colors.mutedText),
+                LabelIconView(label: label),
                 const SizedBox(width: 14),
                 Expanded(
                   child: Text(
@@ -537,9 +539,11 @@ class _LabelListTile extends ConsumerWidget {
                     ),
                   ),
                 ),
+                const SizedBox(width: 8),
+                Text('$count', style: Theme.of(context).textTheme.bodySmall),
                 IconButton(
-                  tooltip: context.l10n.labelIcon,
-                  onPressed: () => editLabelIcon(context, ref, label),
+                  tooltip: context.l10n.editLabel,
+                  onPressed: () => showEditLabelDialog(context, label),
                   icon: const Icon(LucideIcons.pencil, size: 16),
                 ),
               ],

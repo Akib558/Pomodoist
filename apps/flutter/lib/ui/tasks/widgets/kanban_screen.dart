@@ -1,3 +1,4 @@
+import 'package:pomodoist/ui/tasks/widgets/task_branch_widgets.dart';
 import 'package:pomodoist/ui/tasks/widgets/project_localizations.dart';
 import 'dart:async';
 
@@ -1130,7 +1131,7 @@ class _KanbanTaskCard extends ConsumerWidget {
                     _PriorityFlag(priority: task.priority),
                   ],
                 ),
-                if (task.schedule != null || card.totalSubtasks > 0) ...[
+                if (task.schedule != null) ...[
                   const SizedBox(height: 10),
                   Wrap(
                     spacing: 12,
@@ -1144,15 +1145,10 @@ class _KanbanTaskCard extends ConsumerWidget {
                           semanticLabel: taskTimeStatus,
                           taskId: task.id,
                         ),
-                      if (card.totalSubtasks > 0)
-                        _MetaLabel(
-                          icon: LucideIcons.gitBranch,
-                          text:
-                              '${card.completedSubtasks}/${card.totalSubtasks}',
-                        ),
                     ],
                   ),
                 ],
+                TaskHierarchySummary(task: task, compact: true),
                 if (active)
                   const _ActiveFocusProgress()
                 else if ((task.estimatedFocusIntervals ?? 0) > 0) ...[
@@ -1207,14 +1203,6 @@ class _KanbanTaskCard extends ConsumerWidget {
     }
     if (taskTimeStatus != null) {
       parts.add(taskTimeStatus);
-    }
-    if (card.totalSubtasks > 0) {
-      parts.add(
-        context.l10n.kanbanSubtasksProgress(
-          card.completedSubtasks,
-          card.totalSubtasks,
-        ),
-      );
     }
     if ((task.estimatedFocusIntervals ?? 0) > 0) {
       parts.add(

@@ -1142,5 +1142,16 @@
   "settingsBottomNavigationDefaults": "Valores predeterminados",
   "settingsBottomNavigationLoadError": "No se pudieron cargar los ajustes de navegación. Inténtalo de nuevo.",
   "settingsBottomNavigationEdit": "Personalizar",
-  "settingsBottomNavigationRemove": "Quitar"
+  "settingsBottomNavigationRemove": "Quitar",
+  "editLabel": "Editar etiqueta",
+  "labelNameTaken": "Ya existe una etiqueta con este nombre",
+  "labelBulkAdd": "Añadir a las tareas",
+  "labelBulkRemove": "Quitar de las tareas",
+  "labelColor": "Color de la etiqueta",
+  "taskParentUnavailable": "Subtarea · tarea principal no disponible",
+  "taskExpandSubtasks": "Expandir subtareas",
+  "taskCollapseSubtasks": "Contraer subtareas",
+  "taskAllSubtasksProgress": "Todas las subtareas: {completed} de {total} completadas",
+  "taskOpenFullBranch": "Abrir todas las subtareas",
+  "taskParentPath": "Parte de: {path}"
 }

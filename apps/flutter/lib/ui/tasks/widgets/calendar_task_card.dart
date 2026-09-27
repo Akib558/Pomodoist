@@ -610,21 +610,37 @@ class _CalendarTaskCardState extends ConsumerState<_CalendarTaskCard> {
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        task.content,
-                                        maxLines:
-                                            !compact &&
-                                                constraints.maxHeight >
-                                                    lineHeight * 5
-                                            ? 2
-                                            : 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.w500,
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              task.content,
+                                              maxLines:
+                                                  !compact &&
+                                                      constraints.maxHeight >
+                                                          lineHeight * 5
+                                                  ? 2
+                                                  : 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodySmall
+                                                  ?.copyWith(
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
                                             ),
+                                          ),
+                                          ConstrainedBox(
+                                            constraints: BoxConstraints(
+                                              maxWidth:
+                                                  constraints.maxWidth / 4,
+                                            ),
+                                            child: TaskHierarchySummary(
+                                              task: task,
+                                              compact: true,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                       if (!compact &&
                                           constraints.maxHeight >=

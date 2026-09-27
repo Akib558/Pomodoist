@@ -1,3 +1,6 @@
+import 'package:pomodoist/routing/task_detail_navigation.dart';
+import 'package:pomodoist/domain/models/tasks/task_models.dart';
+import 'package:pomodoist/ui/tasks/widgets/task_branch_widgets.dart';
 import 'package:pomodoist/ui/core/widgets/app_action_menu.dart';
 import 'dart:async';
 
@@ -41,27 +44,34 @@ class MiniFocusPlayer extends ConsumerWidget {
     final paused = interval.status == 'paused';
     final l10n = context.l10n;
     final colors = context.appColors;
+    final task = run.taskId == null ? null : state.task;
     if (dailyContext) {
-      final task = run.taskId == null ? null : state.task;
-      final title = Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            '${l10n.todayFocusingOn} · '
-            '${ready ? '${l10n.readyShort} · ' : ''}${_intervalLabel(context, interval)}',
-            style: Theme.of(
-              context,
-            ).textTheme.labelMedium?.copyWith(color: colors.secondaryText),
+      final title = InkWell(
+        onTap: task == null ? null : () => openTaskDetails(context, task.id),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: 44),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '${l10n.todayFocusingOn} · '
+                '${ready ? '${l10n.readyShort} · ' : ''}${_intervalLabel(context, interval)}',
+                style: Theme.of(
+                  context,
+                ).textTheme.labelMedium?.copyWith(color: colors.secondaryText),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                task?.content ?? l10n.navFocus,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+              if (task != null) TaskHierarchySummary(task: task, compact: true),
+            ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            task?.content ?? l10n.navFocus,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(context).textTheme.titleSmall,
-          ),
-        ],
+        ),
       );
       final controls = Wrap(
         spacing: 12,
@@ -121,6 +131,7 @@ class MiniFocusPlayer extends ConsumerWidget {
     if (viewMode == FocusViewMode.minimal) {
       return _MinimalMiniFocusPlayer(
         interval: interval,
+        task: task,
         remaining: remaining,
         preset: preset,
         onStart: viewModel.start,
@@ -148,18 +159,35 @@ class MiniFocusPlayer extends ConsumerWidget {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  '${ready ? '${l10n.readyShort} · ' : ''}'
-                  '${_intervalLabel(context, interval)} · '
-                  '${formatDurationCompact(remaining)}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleMedium
-                      ?.merge(AppTheme.monoTextStyle)
-                      .copyWith(
-                        color: colors.primaryText,
-                        fontWeight: FontWeight.w600,
-                      ),
+                child: InkWell(
+                  onTap: task == null
+                      ? null
+                      : () => openTaskDetails(context, task.id),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(minHeight: 44),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${ready ? '${l10n.readyShort} · ' : ''}'
+                          '${_intervalLabel(context, interval)} · '
+                          '${formatDurationCompact(remaining)}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.merge(AppTheme.monoTextStyle)
+                              .copyWith(
+                                color: colors.primaryText,
+                                fontWeight: FontWeight.w600,
+                              ),
+                        ),
+                        if (task != null)
+                          TaskHierarchySummary(task: task, compact: true),
+                      ],
+                    ),
+                  ),
                 ),
               ),
               IconButton(
@@ -216,6 +244,7 @@ class MiniFocusPlayer extends ConsumerWidget {
 class _MinimalMiniFocusPlayer extends StatelessWidget {
   const _MinimalMiniFocusPlayer({
     required this.interval,
+    required this.task,
     required this.remaining,
     required this.preset,
     required this.onStart,
@@ -227,6 +256,7 @@ class _MinimalMiniFocusPlayer extends StatelessWidget {
   });
 
   final FocusIntervalItem interval;
+  final TaskItem? task;
   final Duration remaining;
   final FocusPresetItem? preset;
   final Future<void> Function() onStart;
@@ -238,6 +268,7 @@ class _MinimalMiniFocusPlayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final task = this.task;
     final l10n = context.l10n;
     final colors = context.appColors;
     return _MiniFocusPlayerFrame(
@@ -257,17 +288,34 @@ class _MinimalMiniFocusPlayer extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: Text(
-                  '${ready ? '${l10n.readyShort} · ' : ''}'
-                  '${formatDurationCompact(remaining)}',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleMedium
-                      ?.merge(AppTheme.monoTextStyle)
-                      .copyWith(
-                        color: colors.primaryText,
-                        fontWeight: FontWeight.w700,
-                      ),
+                child: InkWell(
+                  onTap: task == null
+                      ? null
+                      : () => openTaskDetails(context, task.id),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(minHeight: 44),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${ready ? '${l10n.readyShort} · ' : ''}'
+                          '${formatDurationCompact(remaining)}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.merge(AppTheme.monoTextStyle)
+                              .copyWith(
+                                color: colors.primaryText,
+                                fontWeight: FontWeight.w700,
+                              ),
+                        ),
+                        if (task != null)
+                          TaskHierarchySummary(task: task, compact: true),
+                      ],
+                    ),
+                  ),
                 ),
               ),
               IconButton(

@@ -1142,5 +1142,16 @@
   "settingsBottomNavigationDefaults": "恢复默认",
   "settingsBottomNavigationLoadError": "无法加载导航设置。请重试。",
   "settingsBottomNavigationEdit": "自定义",
-  "settingsBottomNavigationRemove": "移除"
+  "settingsBottomNavigationRemove": "移除",
+  "editLabel": "编辑标签",
+  "labelNameTaken": "已存在同名标签",
+  "labelBulkAdd": "添加到任务",
+  "labelBulkRemove": "从任务中移除",
+  "labelColor": "标签颜色",
+  "taskParentUnavailable": "子任务 · 父任务不可用",
+  "taskExpandSubtasks": "展开子任务",
+  "taskCollapseSubtasks": "折叠子任务",
+  "taskAllSubtasksProgress": "所有下级任务：已完成 {completed}/{total}",
+  "taskOpenFullBranch": "打开所有子任务",
+  "taskParentPath": "所属任务：{path}"
 }

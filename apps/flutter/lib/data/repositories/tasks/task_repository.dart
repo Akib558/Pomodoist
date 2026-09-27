@@ -10,6 +10,7 @@ abstract interface class TaskRepository {
     required bool includeSubtasks,
   });
   Future<Result<void>> updateTask(String id, UpdateTaskPatch patch);
+  Future<Result<void>> removeLabels(String id, List<String> names);
   Future<Result<void>> materializeDueRecurringTasks({DateTime? now});
   Future<Result<void>> moveTask(
     String id, {

@@ -18,6 +18,7 @@ import 'package:pomodoist/domain/models/tasks/task_models.dart';
 import 'package:pomodoist/ui/tasks/widgets/task_completion_feedback.dart';
 import 'package:pomodoist/domain/use_cases/tasks/task_scheduling.dart';
 import 'package:pomodoist/ui/tasks/widgets/task_motion.dart';
+import 'package:pomodoist/ui/tasks/widgets/label_icon.dart';
 
 /// View-side adapter: owns dialogs and widget context, not selection state.
 class TaskSelectionController {
@@ -362,12 +363,14 @@ class _TaskSelectionRegionState extends ConsumerState<TaskSelectionRegion> {
   Future<void> _showLabels(BuildContext context) async {
     if (!_controller.hasSelection) return;
     final labels = ref.read(taskSelectionViewModelProvider(_identity)).labels;
-    final selected = await showTaskLabelPanel(context, labels);
-    if (selected == null || selected.isEmpty || !mounted) return;
-    final failed = await _viewModel.setLabels(
-      _controller.selectedIds,
-      selected,
-    );
+    final selection = await showTaskLabelPanel(context, labels);
+    if (selection == null || selection.names.isEmpty || !mounted) return;
+    final failed = selection.remove
+        ? await _viewModel.removeLabels(
+            _controller.selectedIds,
+            selection.names,
+          )
+        : await _viewModel.setLabels(_controller.selectedIds, selection.names);
     if (mounted) _finishNonDestructive(failed);
   }
 
@@ -643,15 +646,15 @@ Future<TaskDueResult?> showTaskDuePanel(BuildContext context, WidgetRef ref) {
   );
 }
 
-Future<List<String>?> showTaskLabelPanel(
+Future<({List<String> names, bool remove})?> showTaskLabelPanel(
   BuildContext context,
   List<LabelItem> labels,
 ) {
-  return showAdaptiveTaskPanel<List<String>>(
+  return showAdaptiveTaskPanel<({List<String> names, bool remove})>(
     context,
     builder: (panelContext) => _TaskLabelPanel(
       labels: labels,
-      onDone: (names) => Navigator.of(panelContext).pop(names),
+      onDone: (selection) => Navigator.of(panelContext).pop(selection),
     ),
   );
 }
@@ -861,7 +864,7 @@ class _TaskLabelPanel extends StatefulWidget {
   const _TaskLabelPanel({required this.labels, required this.onDone});
 
   final List<LabelItem> labels;
-  final ValueChanged<List<String>> onDone;
+  final ValueChanged<({List<String> names, bool remove})> onDone;
 
   @override
   State<_TaskLabelPanel> createState() => _TaskLabelPanelState();
@@ -887,16 +890,34 @@ class _TaskLabelPanelState extends State<_TaskLabelPanel> {
           CheckboxListTile(
             value: _selected.contains(label.name),
             title: Text(label.name),
+            secondary: LabelIconView(label: label),
             onChanged: (_) => setState(() {
               if (!_selected.remove(label.name)) _selected.add(label.name);
             }),
           ),
-        Align(
-          alignment: AlignmentDirectional.centerEnd,
-          child: FilledButton(
-            onPressed: () => widget.onDone(_selected.toList()),
-            child: Text(context.l10n.commonDone),
-          ),
+        Wrap(
+          alignment: WrapAlignment.end,
+          spacing: 8,
+          children: [
+            OutlinedButton(
+              onPressed: _selected.isEmpty
+                  ? null
+                  : () => widget.onDone((
+                      names: _selected.toList(),
+                      remove: true,
+                    )),
+              child: Text(context.l10n.labelBulkRemove),
+            ),
+            FilledButton(
+              onPressed: _selected.isEmpty
+                  ? null
+                  : () => widget.onDone((
+                      names: _selected.toList(),
+                      remove: false,
+                    )),
+              child: Text(context.l10n.labelBulkAdd),
+            ),
+          ],
         ),
       ],
     );

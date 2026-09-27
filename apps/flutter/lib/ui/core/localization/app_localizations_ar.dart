@@ -3565,4 +3565,41 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get settingsBottomNavigationRemove => 'إزالة';
+
+  @override
+  String get editLabel => 'تعديل التسمية';
+
+  @override
+  String get labelNameTaken => 'يوجد تصنيف بهذا الاسم بالفعل';
+
+  @override
+  String get labelBulkAdd => 'إضافة إلى المهام';
+
+  @override
+  String get labelBulkRemove => 'إزالة من المهام';
+
+  @override
+  String get labelColor => 'لون التسمية';
+
+  @override
+  String get taskParentUnavailable => 'مهمة فرعية · المهمة الأصلية غير متاحة';
+
+  @override
+  String get taskExpandSubtasks => 'توسيع المهام الفرعية';
+
+  @override
+  String get taskCollapseSubtasks => 'طي المهام الفرعية';
+
+  @override
+  String taskAllSubtasksProgress(int completed, int total) {
+    return 'جميع المهام المتفرعة: اكتمل $completed من $total';
+  }
+
+  @override
+  String get taskOpenFullBranch => 'فتح جميع المهام الفرعية';
+
+  @override
+  String taskParentPath(String path) {
+    return 'جزء من: $path';
+  }
 }

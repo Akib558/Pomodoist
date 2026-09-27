@@ -1753,5 +1753,16 @@
   "settingsBottomNavigationDefaults": "기본값으로",
   "settingsBottomNavigationLoadError": "탐색 설정을 불러오지 못했습니다. 다시 시도하세요.",
   "settingsBottomNavigationEdit": "맞춤 설정",
-  "settingsBottomNavigationRemove": "제거"
+  "settingsBottomNavigationRemove": "제거",
+  "editLabel": "라벨 편집",
+  "labelNameTaken": "같은 이름의 라벨이 이미 있습니다",
+  "labelBulkAdd": "작업에 추가",
+  "labelBulkRemove": "작업에서 제거",
+  "labelColor": "라벨 색상",
+  "taskParentUnavailable": "하위 작업 · 상위 작업을 사용할 수 없음",
+  "taskExpandSubtasks": "하위 작업 펼치기",
+  "taskCollapseSubtasks": "하위 작업 접기",
+  "taskAllSubtasksProgress": "모든 하위 작업: {total}개 중 {completed}개 완료",
+  "taskOpenFullBranch": "모든 하위 작업 열기",
+  "taskParentPath": "상위 작업: {path}"
 }

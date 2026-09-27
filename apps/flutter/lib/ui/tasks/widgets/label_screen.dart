@@ -7,6 +7,7 @@ import 'package:pomodoist/ui/core/localization/app_l10n.dart';
 import 'package:pomodoist/ui/tasks/view_models/project_view_model.dart';
 import 'package:pomodoist/domain/models/tasks/task_models.dart';
 import 'package:pomodoist/ui/tasks/widgets/label_icon.dart';
+import 'package:pomodoist/ui/tasks/widgets/create_project_dialog.dart';
 import 'package:pomodoist/ui/tasks/widgets/task_list_view.dart';
 import 'package:pomodoist/ui/tasks/widgets/task_view_state.dart';
 
@@ -37,9 +38,9 @@ class LabelScreen extends ConsumerWidget {
           title: '@${current.name}',
           subtitle: context.l10n.labelTasksSubtitle,
           titleLeading: IconButton(
-            tooltip: context.l10n.labelIcon,
-            onPressed: () => editLabelIcon(context, ref, current),
-            icon: Icon(labelIconData(current.icon)),
+            tooltip: context.l10n.editLabel,
+            onPressed: () => showEditLabelDialog(context, current),
+            icon: LabelIconView(label: current),
           ),
           query: TaskQuery(kind: TaskQueryKind.label, labelId: labelId),
         );

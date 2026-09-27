@@ -23,6 +23,7 @@ import 'package:pomodoist/ui/tasks/widgets/quick_add_details.dart';
 import 'package:pomodoist/ui/tasks/widgets/voice_panel_motion.dart';
 import 'package:pomodoist/ui/tasks/widgets/voice_panel_clearance.dart';
 import 'package:pomodoist/ui/tasks/widgets/voice_quick_add_session.dart';
+import 'package:pomodoist/ui/tasks/widgets/label_icon.dart';
 
 part 'quick_add_input.dart';
 part 'quick_add_composer.dart';

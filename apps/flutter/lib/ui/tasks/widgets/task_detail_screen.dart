@@ -1,5 +1,8 @@
 import 'package:pomodoist/ui/tasks/view_models/task_subtask_progress.dart';
 import 'dart:async';
+import 'package:pomodoist/ui/tasks/view_models/task_branch_view_model.dart';
+import 'package:pomodoist/ui/tasks/view_models/task_branch_rows.dart';
+import 'package:pomodoist/ui/tasks/widgets/task_branch_widgets.dart';
 
 import 'package:flutter/material.dart';
 import 'package:shadcn_ui/shadcn_ui.dart'
@@ -880,10 +883,38 @@ class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
     final l10n = context.l10n;
     final subtasks = ref.watch(subtasksViewModelProvider(widget.task.id));
     final tasks = subtasks.tasks;
+    final scope = 'details:${widget.task.id}';
+    final expansion = ref.watch(taskBranchViewModelProvider(scope));
+    final progressById = taskSubtaskProgressById(subtasks.allTasks);
+    final rootProgress = progressById[widget.task.id];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(l10n.subtasks, style: Theme.of(context).textTheme.titleLarge),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                l10n.subtasks,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
+            if (rootProgress != null)
+              TaskBranchProgressButton(
+                taskId: widget.task.id,
+                progress: rootProgress,
+                expanded: expansion[widget.task.id] ?? true,
+                onToggle: () => unawaited(
+                  setTaskBranchExpanded(
+                    context,
+                    ref,
+                    scope,
+                    widget.task.id,
+                    !(expansion[widget.task.id] ?? true),
+                  ),
+                ),
+              ),
+          ],
+        ),
         const SizedBox(height: 8),
         ShadInput(
           key: const Key('add-subtask-field'),
@@ -915,9 +946,12 @@ class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
         const SizedBox(height: 12),
         tasks.when(
           data: (items) {
-            final progressById = taskSubtaskProgressById(subtasks.allTasks);
-            final children = items;
-            if (children.isEmpty) {
+            final children = visibleTaskRows(
+              subtasks.allTasks,
+              [widget.task, ...items],
+              expansion: expansion,
+            ).where((row) => row.task.id != widget.task.id).toList();
+            if (items.isEmpty) {
               return Text(
                 l10n.noSubtasks,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -929,11 +963,18 @@ class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
               children: [
                 for (var index = 0; index < children.length; index++) ...[
                   if (index > 0)
-                    const TaskListDivider(previousDepth: 1, nextDepth: 1),
+                    TaskListDivider(
+                      previousDepth: children[index - 1].depth,
+                      nextDepth: children[index].depth,
+                      nextRow: children[index],
+                    ),
                   TaskListItem(
-                    task: children[index],
-                    depth: 1,
-                    subtaskProgress: progressById[children[index].id],
+                    key: ValueKey(children[index].task.id),
+                    task: children[index].task,
+                    depth: children[index].displayDepth,
+                    hierarchy: children[index],
+                    branchScope: scope,
+                    subtaskProgress: progressById[children[index].task.id],
                   ),
                 ],
               ],
@@ -957,6 +998,15 @@ class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
           .createSubtask(widget.task, input);
       if (!saved) throw StateError('Could not create subtask');
       _controller.clear();
+      if (mounted) {
+        await setTaskBranchExpanded(
+          context,
+          ref,
+          'details:${widget.task.id}',
+          widget.task.id,
+          true,
+        );
+      }
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(

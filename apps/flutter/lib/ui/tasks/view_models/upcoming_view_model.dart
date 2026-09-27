@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pomodoist/config/providers.dart';
 import 'package:pomodoist/domain/models/tasks/task_models.dart';
 import 'upcoming_day_groups.dart';
+import 'package:pomodoist/config/task_preferences_dependencies.dart';
 
 typedef UpcomingState = ({
   DateTime today,
@@ -42,6 +43,9 @@ class UpcomingViewModel extends Notifier<UpcomingState> {
       completed.value ?? const [],
     );
     final scheduled = scheduledTasks(tasks);
+    final expansion =
+        ref.watch(taskBranchExpansionProvider)['upcoming'] ??
+        const <String, bool>{};
     return (
       today: today,
       selectedDay: selectedDay,
@@ -50,6 +54,8 @@ class UpcomingViewModel extends Notifier<UpcomingState> {
       groups: List.unmodifiable(
         buildUpcomingDayGroups(
           scheduled,
+          allItems: tasks,
+          expansion: expansion,
           selectedDate: selectedDay,
           visibleFromDate: selectedDay ?? today,
         ),
@@ -69,6 +75,8 @@ class UpcomingViewModel extends Notifier<UpcomingState> {
     }
     return buildUpcomingDayGroups(
       scheduledTasks(mergeTasks(state.tasks, retained)),
+      allItems: mergeTasks(state.tasks, retained),
+      expansion: ref.read(taskBranchExpansionProvider)['upcoming'] ?? const {},
       selectedDate: state.selectedDay,
       visibleFromDate: state.selectedDay ?? state.today,
     );

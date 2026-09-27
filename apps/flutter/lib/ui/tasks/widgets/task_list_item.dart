@@ -2,6 +2,9 @@ import 'package:pomodoist/ui/core/widgets/app_context_menu_region.dart';
 import 'package:pomodoist/ui/core/widgets/app_action_menu.dart';
 import 'package:pomodoist/ui/tasks/view_models/task_subtask_progress.dart';
 import 'package:pomodoist/ui/tasks/widgets/project_localizations.dart';
+import 'package:pomodoist/ui/tasks/view_models/task_branch_rows.dart';
+import 'package:pomodoist/ui/tasks/view_models/task_branch_view_model.dart';
+import 'package:pomodoist/ui/tasks/widgets/task_branch_widgets.dart';
 import 'dart:async';
 import 'dart:math' as math;
 
@@ -152,6 +155,8 @@ class TaskListItem extends ConsumerWidget {
   const TaskListItem({
     required this.task,
     this.depth = 0,
+    this.hierarchy,
+    this.branchScope,
     this.subtaskProgress,
     this.enableSubtaskDrop = true,
     this.presentation = TaskListItemPresentation.standard,
@@ -161,6 +166,8 @@ class TaskListItem extends ConsumerWidget {
 
   final TaskItem task;
   final int depth;
+  final VisibleTaskRow? hierarchy;
+  final String? branchScope;
   final TaskSubtaskProgress? subtaskProgress;
   final bool enableSubtaskDrop;
   final TaskListItemPresentation presentation;
@@ -169,6 +176,16 @@ class TaskListItem extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
+    final hierarchyData = ref.watch(taskHierarchyViewModelProvider);
+    final progress = hierarchyData.progress[task.id] ?? subtaskProgress;
+    final rowDepth = hierarchy?.displayDepth ?? math.min(depth, 2);
+    final showParent =
+        task.parentId != null &&
+        (hierarchy == null ||
+            hierarchy!.visibleParentId == null ||
+            hierarchy!.depth > 2);
+    final ancestors =
+        hierarchy?.ancestors ?? hierarchyAncestors(task, hierarchyData);
     final selection = TaskSelectionScope.maybeOf(context);
     final viewState = ref.watch(taskItemViewModelProvider(task));
     final viewModel = ref.read(taskItemViewModelProvider(task).notifier);
@@ -180,7 +197,7 @@ class TaskListItem extends ConsumerWidget {
     final defaultTimedBlockMinutes = viewState.timedMinutes;
     final description = task.description?.trim();
     final hasDescription = description != null && description.isNotEmpty;
-    final hasMeta = _hasListMeta(task, focusEstimate, subtaskProgress);
+    final hasMeta = _hasListMeta(task, focusEstimate);
     final isAgenda = presentation == TaskListItemPresentation.agenda;
     final isModern = viewState.listStyle == TaskListStyle.modern;
     final verticalPadding = switch (viewState.rowSpacing) {
@@ -300,7 +317,7 @@ class TaskListItem extends ConsumerWidget {
               TaskListItemPresentation.agenda => overflowAction(),
             };
       Widget buildContent(ValueChanged<bool>? onTaskDraggingChanged) {
-        final content = Material(
+        final rowContent = Material(
           color: accepting || (selection?.isSelected(task.id) ?? false)
               ? colors.accentTint
               : Colors.transparent,
@@ -325,8 +342,8 @@ class TaskListItem extends ConsumerWidget {
                   ? () => selection!.toggle(task.id)
                   : null,
               child: Padding(
-                padding: EdgeInsets.fromLTRB(
-                  depth * 18,
+                padding: EdgeInsetsDirectional.fromSTEB(
+                  0,
                   verticalPadding,
                   4,
                   verticalPadding,
@@ -366,37 +383,64 @@ class TaskListItem extends ConsumerWidget {
                     ),
                     const SizedBox(width: 4),
                     Expanded(
-                      child: _TaskTextDragSource(
-                        task: task,
-                        onDraggingChanged: onTaskDraggingChanged,
-                        enabled: !(selection?.active ?? false),
-                        child: isAgenda || isModern
-                            ? _AgendaTaskContent(
-                                task: task,
-                                project: rowProject,
-                                modern: isModern,
-                                withinDate: isAgenda,
-                                description: isAgenda ? null : description,
-                                focusEstimate: focusEstimate,
-                                subtaskProgress: subtaskProgress,
-                                allowMetadataWrap: !agendaDesktop,
-                                taskTimeState: taskTimeState,
-                                timeDisplayMode: timeDisplayMode,
-                                defaultTimedBlockMinutes:
-                                    defaultTimedBlockMinutes,
-                              )
-                            : _TaskContent(
-                                task: task,
-                                description: description,
-                                hasDescription: hasDescription,
-                                hasMeta: hasMeta,
-                                focusEstimate: focusEstimate,
-                                subtaskProgress: subtaskProgress,
-                                taskTimeState: taskTimeState,
-                                timeDisplayMode: timeDisplayMode,
-                                defaultTimedBlockMinutes:
-                                    defaultTimedBlockMinutes,
-                              ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (showParent)
+                            TaskParentContext(task: task, ancestors: ancestors),
+                          if (isAgenda || isModern)
+                            _AgendaTaskContent(
+                              task: task,
+                              project: rowProject,
+                              modern: isModern,
+                              withinDate: isAgenda,
+                              description: isAgenda ? null : description,
+                              focusEstimate: focusEstimate,
+                              subtaskProgress: progress,
+                              allowMetadataWrap: !agendaDesktop,
+                              taskTimeState: taskTimeState,
+                              timeDisplayMode: timeDisplayMode,
+                              defaultTimedBlockMinutes:
+                                  defaultTimedBlockMinutes,
+                              dragEnabled: !(selection?.active ?? false),
+                              onDraggingChanged: onTaskDraggingChanged,
+                            )
+                          else
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: _TaskTextDragSource(
+                                    task: task,
+                                    onDraggingChanged: onTaskDraggingChanged,
+                                    enabled: !(selection?.active ?? false),
+                                    child: _TaskContent(
+                                      task: task,
+                                      description: description,
+                                      hasDescription: hasDescription,
+                                      hasMeta: hasMeta,
+                                      focusEstimate: focusEstimate,
+                                      taskTimeState: taskTimeState,
+                                      timeDisplayMode: timeDisplayMode,
+                                      defaultTimedBlockMinutes:
+                                          defaultTimedBlockMinutes,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: MediaQuery.textScalerOf(
+                                    context,
+                                  ).scale(72),
+                                  child: progress != null && progress.total > 0
+                                      ? TaskBranchProgressButton(
+                                          taskId: task.id,
+                                          progress: progress,
+                                        )
+                                      : null,
+                                ),
+                              ],
+                            ),
+                        ],
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -407,6 +451,44 @@ class TaskListItem extends ConsumerWidget {
             ),
           ),
         );
+        final rowWithDisclosure = Row(
+          children: [
+            if (hierarchy != null)
+              SizedBox(
+                width: taskBranchGutterWidth,
+                child:
+                    hierarchy?.hasVisibleChildren == true &&
+                        branchScope != null &&
+                        progress != null &&
+                        progress.total > 0
+                    ? TaskBranchProgressButton(
+                        taskId: task.id,
+                        progress: progress,
+                        expanded: hierarchy!.expanded,
+                        showProgress: false,
+                        onToggle: () => unawaited(
+                          setTaskBranchExpanded(
+                            context,
+                            ref,
+                            branchScope!,
+                            task.id,
+                            !hierarchy!.expanded,
+                          ),
+                        ),
+                      )
+                    : null,
+              ),
+            Expanded(
+              child: Padding(
+                padding: EdgeInsetsDirectional.only(start: rowDepth * 28),
+                child: rowContent,
+              ),
+            ),
+          ],
+        );
+        final content = hierarchy == null
+            ? rowWithDisclosure
+            : TaskBranchLines(row: hierarchy!, child: rowWithDisclosure);
         final contextualContent = selection?.active ?? false
             ? content
             : AppContextMenuRegion(
@@ -477,7 +559,9 @@ class TaskListItem extends ConsumerWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final isDesktop = isModern
-              ? constraints.maxWidth - depth * 18 >=
+              ? constraints.maxWidth -
+                        (hierarchy == null ? 0 : taskBranchGutterWidth) -
+                        56 >=
                     840 * MediaQuery.textScalerOf(context).scale(14) / 14
               : constraints.maxWidth >= 760;
           return _AgendaInteractionRegion(
@@ -509,14 +593,8 @@ class TaskListItem extends ConsumerWidget {
     };
   }
 
-  bool _hasListMeta(
-    TaskItem task,
-    int? focusEstimate,
-    TaskSubtaskProgress? subtaskProgress,
-  ) {
-    return task.schedule != null ||
-        focusEstimate != null ||
-        (subtaskProgress?.total ?? 0) > 0;
+  bool _hasListMeta(TaskItem task, int? focusEstimate) {
+    return task.schedule != null || focusEstimate != null;
   }
 
   List<Widget> _quickActionItems(
@@ -825,6 +903,11 @@ class TaskListItem extends ConsumerWidget {
           .nestTask(draggedTaskId);
       if (context.mounted) {
         TaskMotionScope.maybeOf(context)?.landed({draggedTaskId});
+        if (branchScope != null) {
+          await revealCreatedTaskBranches(context, ref, branchScope!, [
+            draggedTaskId,
+          ]);
+        }
         await playHaptic(AppHapticCue.light);
       }
     } catch (_) {
@@ -905,19 +988,32 @@ class TaskListDivider extends StatelessWidget {
   const TaskListDivider({
     this.previousDepth = 0,
     this.nextDepth = 0,
+    this.nextRow,
     super.key,
   });
 
   final int previousDepth;
   final int nextDepth;
+  final VisibleTaskRow? nextRow;
 
   @override
-  Widget build(BuildContext context) => Divider(
-    height: _usesTouchTaskInteraction ? 12 : 1,
-    thickness: 1,
-    indent: 38 + 18.0 * math.min(previousDepth, nextDepth),
-    color: context.appColors.border,
-  );
+  Widget build(BuildContext context) {
+    final indent =
+        (nextRow == null ? 0 : taskBranchGutterWidth) +
+        38 +
+        28.0 * math.min(math.min(previousDepth, nextDepth), 2);
+    final divider = Padding(
+      padding: EdgeInsetsDirectional.only(start: indent),
+      child: Divider(
+        height: _usesTouchTaskInteraction ? 12 : 1,
+        thickness: 1,
+        color: context.appColors.border,
+      ),
+    );
+    return nextRow == null
+        ? divider
+        : TaskBranchLines(row: nextRow!, divider: true, child: divider);
+  }
 }
 
 class _AgendaTaskContent extends StatelessWidget {
@@ -925,8 +1021,10 @@ class _AgendaTaskContent extends StatelessWidget {
     required this.task,
     required this.project,
     required this.focusEstimate,
-    required this.subtaskProgress,
     required this.allowMetadataWrap,
+    required this.subtaskProgress,
+    required this.dragEnabled,
+    required this.onDraggingChanged,
     required this.taskTimeState,
     required this.timeDisplayMode,
     required this.defaultTimedBlockMinutes,
@@ -938,8 +1036,10 @@ class _AgendaTaskContent extends StatelessWidget {
   final TaskItem task;
   final ProjectItem? project;
   final int? focusEstimate;
-  final TaskSubtaskProgress? subtaskProgress;
   final bool allowMetadataWrap;
+  final TaskSubtaskProgress? subtaskProgress;
+  final bool dragEnabled;
+  final ValueChanged<bool>? onDraggingChanged;
   final TaskTimeState? taskTimeState;
   final TaskTimeDisplayMode timeDisplayMode;
   final int defaultTimedBlockMinutes;
@@ -950,7 +1050,6 @@ class _AgendaTaskContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final progress = subtaskProgress;
     final schedule = task.schedule;
     final scheduleLabel = schedule == null
         ? null
@@ -962,40 +1061,42 @@ class _AgendaTaskContent extends StatelessWidget {
             displayMode: timeDisplayMode,
             defaultTimedBlockMinutes: defaultTimedBlockMinutes,
           );
-    final metadata = <Widget>[];
-    void addMetadata(Widget? child, double width) {
-      if (modern && !allowMetadataWrap) {
-        metadata.add(SizedBox(width: width, child: child));
-      } else if (child != null) {
-        metadata.add(child);
-      }
-    }
-
-    addMetadata(
-      progress != null && progress.total > 0
-          ? _FixedMetaText(
-              flexible: modern,
-              icon: LucideIcons.gitBranch,
-              label: progress.label,
-              tooltip: '${context.l10n.subtasks} ${progress.label}',
-            )
-          : null,
-      48,
+    Widget dragSource(Widget child) => _TaskTextDragSource(
+      task: task,
+      enabled: dragEnabled,
+      onDraggingChanged: onDraggingChanged,
+      child: child,
     );
-    addMetadata(
-      project != null ? _AgendaProjectLabel(project: project!) : null,
-      120,
-    );
-    addMetadata(
-      focusEstimate != null
-          ? _FixedMetaText(
-              flexible: modern,
-              icon: LucideIcons.timer,
-              label: '${task.completedFocusIntervals}/$focusEstimate',
-            )
-          : null,
-      56,
-    );
+    final textScaler = MediaQuery.textScalerOf(context);
+    final metadata = <Widget>[
+      SizedBox(
+        width: textScaler.scale(120),
+        child: project == null
+            ? null
+            : dragSource(_AgendaProjectLabel(project: project!)),
+      ),
+      SizedBox(
+        width: textScaler.scale(56),
+        child: focusEstimate == null
+            ? null
+            : dragSource(
+                _FixedMetaText(
+                  flexible: true,
+                  icon: LucideIcons.timer,
+                  label: '${task.completedFocusIntervals}/$focusEstimate',
+                ),
+              ),
+      ),
+      SizedBox(
+        width: textScaler.scale(72),
+        child: subtaskProgress != null && subtaskProgress!.total > 0
+            ? TaskBranchProgressButton(
+                taskId: task.id,
+                progress: subtaskProgress!,
+              )
+            : null,
+      ),
+    ];
     final title = AnimatedDefaultTextStyle(
       duration: modern
           ? AppMotion.duration(context, AppMotion.state)
@@ -1017,42 +1118,41 @@ class _AgendaTaskContent extends StatelessWidget {
     );
 
     final hasDescription = modern && (description?.isNotEmpty ?? false);
-    final heading = hasDescription || scheduleLabel != null
-        ? Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              title,
-              if (hasDescription) ...[
-                const SizedBox(height: 2),
-                Text(
-                  description!,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(color: colors.mutedText),
-                ),
+    final heading = dragSource(
+      hasDescription || scheduleLabel != null
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                title,
+                if (hasDescription) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    description!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: colors.mutedText),
+                  ),
+                ],
+                if (scheduleLabel != null) ...[
+                  const SizedBox(height: 4),
+                  _TaskTimeMetaText(
+                    taskId: task.id,
+                    label: scheduleLabel,
+                    state: taskTimeState,
+                    color: taskTimeState == null
+                        ? colors.mutedText
+                        : colors.taskTimeColor(taskTimeState!),
+                    textStyle: Theme.of(context).textTheme.labelMedium,
+                    key: const Key('agenda-schedule-label'),
+                  ),
+                ],
               ],
-              if (scheduleLabel != null) ...[
-                const SizedBox(height: 4),
-                _TaskTimeMetaText(
-                  taskId: task.id,
-                  label: scheduleLabel,
-                  state: taskTimeState,
-                  color: taskTimeState == null
-                      ? colors.mutedText
-                      : colors.taskTimeColor(taskTimeState!),
-                  textStyle: Theme.of(context).textTheme.labelMedium,
-                  key: const Key('agenda-schedule-label'),
-                ),
-              ],
-            ],
-          )
-        : title;
-    if (metadata.isEmpty) {
-      return heading;
-    }
+            )
+          : title,
+    );
     if (allowMetadataWrap) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1060,33 +1160,25 @@ class _AgendaTaskContent extends StatelessWidget {
         children: [
           heading,
           const SizedBox(height: 4),
-          Align(
-            alignment: modern
-                ? AlignmentDirectional.centerStart
-                : AlignmentDirectional.centerEnd,
-            child: !modern
-                ? Wrap(
-                    spacing: 10,
-                    runSpacing: 4,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: metadata,
-                  )
-                : LayoutBuilder(
-                    builder: (context, constraints) => Wrap(
-                      spacing: 10,
-                      runSpacing: 4,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        for (final item in metadata)
-                          ConstrainedBox(
-                            constraints: BoxConstraints(
-                              maxWidth: constraints.maxWidth,
-                            ),
-                            child: item,
-                          ),
-                      ],
+          LayoutBuilder(
+            builder: (context, constraints) => Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: Wrap(
+                alignment: WrapAlignment.end,
+                spacing: 12,
+                runSpacing: 4,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  for (final item in metadata)
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: constraints.maxWidth,
+                      ),
+                      child: item,
                     ),
-                  ),
+                ],
+              ),
+            ),
           ),
         ],
       );
@@ -1151,7 +1243,6 @@ class _TaskContent extends StatelessWidget {
     required this.hasDescription,
     required this.hasMeta,
     required this.focusEstimate,
-    required this.subtaskProgress,
     required this.taskTimeState,
     required this.timeDisplayMode,
     required this.defaultTimedBlockMinutes,
@@ -1162,7 +1253,6 @@ class _TaskContent extends StatelessWidget {
   final bool hasDescription;
   final bool hasMeta;
   final int? focusEstimate;
-  final TaskSubtaskProgress? subtaskProgress;
   final TaskTimeState? taskTimeState;
   final TaskTimeDisplayMode timeDisplayMode;
   final int defaultTimedBlockMinutes;
@@ -1170,15 +1260,7 @@ class _TaskContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.appColors;
-    final progress = subtaskProgress;
-    final progressLabel = progress?.label;
     final metaItems = <Widget>[
-      if (progress != null && progress.total > 0)
-        _FixedMetaText(
-          icon: LucideIcons.gitBranch,
-          label: progress.label,
-          tooltip: '${context.l10n.subtasks} $progressLabel',
-        ),
       if (task.schedule != null)
         Flexible(
           child: _TaskTimeMetaText(
@@ -1347,13 +1429,11 @@ class _FixedMetaText extends StatelessWidget {
   const _FixedMetaText({
     required this.icon,
     required this.label,
-    this.tooltip,
     this.flexible = false,
   });
 
   final IconData icon;
   final String label;
-  final String? tooltip;
   final bool flexible;
 
   @override
@@ -1374,14 +1454,7 @@ class _FixedMetaText extends StatelessWidget {
         if (flexible) Flexible(child: text) else text,
       ],
     );
-    final message = tooltip;
-    if (message == null) {
-      return content;
-    }
-    return Tooltip(
-      message: message,
-      child: Semantics(label: message, child: content),
-    );
+    return content;
   }
 }
 

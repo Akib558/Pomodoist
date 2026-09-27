@@ -52,6 +52,96 @@ void main() {
       expect(operations.last.payload['kind'], labelKindUser);
     });
 
+    test('label rename and color are included in outbound sync', () async {
+      final labels = DriftLabelRepository(db, queue);
+      final id = await labels
+          .createLabel('Review', icon: 'tag', color: '#3B82F6')
+          .then((result) => result.getOrThrow());
+      await labels
+          .updateLabel(id, name: 'Deep Work', color: '#E44332', icon: 'bolt')
+          .then((result) => result.getOrThrow());
+      await engine.pushPending();
+      final updated = account.pushed
+          .where((op) => op.entityType == 'label' && op.entityId == id)
+          .last;
+      expect(updated.payload['name'], 'Deep Work');
+      expect(updated.payload['color'], '#E44332');
+      expect(updated.payload['icon'], 'bolt');
+    });
+
+    test('remote label edits keep the linked task', () async {
+      final labels = DriftLabelRepository(db, queue);
+      final id = await labels.createLabel('Review').then((r) => r.getOrThrow());
+      final taskId = await tasks
+          .createTask(CreateTaskInput(content: 'Read', labelNames: ['Review']))
+          .then((r) => r.getOrThrow());
+      await db.delete(db.syncCommands).go();
+      final row = await (db.select(
+        db.labels,
+      )..where((label) => label.id.equals(id))).getSingle();
+      final remote = row.toJson()
+        ..['name'] = 'Deep Work'
+        ..['color'] = '#3B82F6'
+        ..['icon'] = 'bolt'
+        ..['updatedAt'] = DateTime.now()
+            .toUtc()
+            .add(const Duration(minutes: 1))
+            .toIso8601String();
+      account.pullResults.add(
+        AccountSyncPullResult(
+          nextCursor: 1,
+          hasMore: false,
+          changes: [
+            AccountSyncEntity(
+              entityType: 'label',
+              entityId: id,
+              serverRevision: 1,
+              data: remote,
+            ),
+          ],
+        ),
+      );
+      await engine.pullLatest();
+      expect(
+        (await labels.findByName('Deep Work').then((r) => r.getOrThrow()))?.id,
+        id,
+      );
+      expect(
+        (await labels.findByName('Deep Work').then((r) => r.getOrThrow()))
+            ?.color,
+        '#3B82F6',
+      );
+      expect(
+        (await tasks
+                .watchTasks(TaskQuery(kind: TaskQueryKind.label, labelId: id))
+                .first)
+            .map((task) => task.id),
+        contains(taskId),
+      );
+    });
+
+    test('removing a task label pushes a relation deletion', () async {
+      final labels = DriftLabelRepository(db, queue);
+      final labelId = await labels
+          .createLabel('Review')
+          .then((r) => r.getOrThrow());
+      final taskId = await tasks
+          .createTask(CreateTaskInput(content: 'Read', labelNames: ['Review']))
+          .then((r) => r.getOrThrow());
+      await engine.pushPending();
+      await tasks.removeLabels(taskId, ['Review']).then((r) => r.getOrThrow());
+      await engine.pushPending();
+      expect(
+        account.pushed.where(
+          (operation) =>
+              operation.entityType == 'task_label' &&
+              operation.entityId == '$taskId:$labelId' &&
+              operation.operation == 'delete',
+        ),
+        hasLength(1),
+      );
+    });
+
     test(
       'snapshot separates user labels, stable status assignment, and settings',
       () async {

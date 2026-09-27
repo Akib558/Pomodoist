@@ -3514,4 +3514,41 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get settingsBottomNavigationRemove => '外す';
+
+  @override
+  String get editLabel => 'ラベルを編集';
+
+  @override
+  String get labelNameTaken => '同じ名前のラベルが既にあります';
+
+  @override
+  String get labelBulkAdd => 'タスクに追加';
+
+  @override
+  String get labelBulkRemove => 'タスクから削除';
+
+  @override
+  String get labelColor => 'ラベルの色';
+
+  @override
+  String get taskParentUnavailable => 'サブタスク · 親タスクを表示できません';
+
+  @override
+  String get taskExpandSubtasks => 'サブタスクを展開';
+
+  @override
+  String get taskCollapseSubtasks => 'サブタスクを折りたたむ';
+
+  @override
+  String taskAllSubtasksProgress(int completed, int total) {
+    return 'すべてのサブタスク：$total件中$completed件完了';
+  }
+
+  @override
+  String get taskOpenFullBranch => 'すべてのサブタスクを開く';
+
+  @override
+  String taskParentPath(String path) {
+    return '親タスク：$path';
+  }
 }

@@ -3433,4 +3433,41 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settingsBottomNavigationRemove => '移除';
+
+  @override
+  String get editLabel => '编辑标签';
+
+  @override
+  String get labelNameTaken => '已存在同名标签';
+
+  @override
+  String get labelBulkAdd => '添加到任务';
+
+  @override
+  String get labelBulkRemove => '从任务中移除';
+
+  @override
+  String get labelColor => '标签颜色';
+
+  @override
+  String get taskParentUnavailable => '子任务 · 父任务不可用';
+
+  @override
+  String get taskExpandSubtasks => '展开子任务';
+
+  @override
+  String get taskCollapseSubtasks => '折叠子任务';
+
+  @override
+  String taskAllSubtasksProgress(int completed, int total) {
+    return '所有下级任务：已完成 $completed/$total';
+  }
+
+  @override
+  String get taskOpenFullBranch => '打开所有子任务';
+
+  @override
+  String taskParentPath(String path) {
+    return '所属任务：$path';
+  }
 }

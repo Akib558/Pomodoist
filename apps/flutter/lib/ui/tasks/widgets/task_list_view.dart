@@ -1,5 +1,7 @@
 import 'package:pomodoist/ui/tasks/view_models/task_subtask_progress.dart';
 import 'dart:async';
+import 'package:pomodoist/ui/tasks/view_models/task_branch_view_model.dart';
+import 'package:pomodoist/ui/tasks/widgets/task_branch_widgets.dart';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -51,6 +53,8 @@ class TaskListView extends ConsumerWidget {
     final l10n = context.l10n;
     final viewState = ref.watch(taskListViewModelProvider(query));
     final tasks = viewState.tasks;
+    final branchScope = taskBranchScopeKey(query);
+    final expansion = ref.watch(taskBranchViewModelProvider(branchScope));
     final emptyTitle =
         emptyMessage ??
         switch (query.kind) {
@@ -89,19 +93,35 @@ class TaskListView extends ConsumerWidget {
           motion.retainedTasks,
           taskFilter,
         );
+        final rows = viewState.rows(visibleItems, expansion: expansion);
+        final liveIds = {
+          for (final task in tasks.value ?? const <TaskItem>[]) task.id,
+        };
+        final selectable = rows
+            .map((row) => row.task)
+            .where(
+              (task) =>
+                  liveIds.contains(task.id) &&
+                  (taskFilter == null || taskFilter!(task)),
+            );
         final subtaskIds = {
-          for (final task in visibleItems)
+          for (final task in selectable)
             if (task.parentId != null) task.id,
         };
         return SafeArea(
           bottom: false,
           child: TaskSelectionRegion(
-            visibleTasks: visibleItems,
+            visibleTasks: selectable,
             scopeKey: query,
             child: CustomScrollView(
               slivers: [
                 SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
+                  padding: EdgeInsets.fromLTRB(
+                    24,
+                    query.kind == TaskQueryKind.today ? 32 : 20,
+                    24,
+                    8,
+                  ),
                   sliver: SliverToBoxAdapter(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -148,6 +168,14 @@ class TaskListView extends ConsumerWidget {
                             labelId: query.labelId,
                             onTaskCreated: (taskIds) {
                               motion.created(taskIds.toSet());
+                              unawaited(
+                                revealCreatedTaskBranches(
+                                  context,
+                                  ref,
+                                  branchScope,
+                                  taskIds,
+                                ),
+                              );
                               unawaited(playHaptic(AppHapticCue.light));
                             },
                           ),
@@ -210,7 +238,6 @@ class TaskListView extends ConsumerWidget {
                     }
                     final allItems = [...viewState.allTasks, ...visibleItems];
                     final progressById = taskSubtaskProgressById(allItems);
-                    final rows = viewState.rows(visibleItems);
                     return SliverPadding(
                       padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
                       sliver: SliverList.separated(
@@ -218,8 +245,11 @@ class TaskListView extends ConsumerWidget {
                         itemBuilder: (context, index) {
                           final row = rows[index];
                           return TaskListItem(
+                            key: ValueKey(row.task.id),
                             task: row.task,
-                            depth: row.depth,
+                            depth: row.displayDepth,
+                            hierarchy: row,
+                            branchScope: branchScope,
                             subtaskProgress: progressById[row.task.id],
                           );
                         },
@@ -228,6 +258,7 @@ class TaskListView extends ConsumerWidget {
                           final divider = TaskListDivider(
                             previousDepth: rows[index].depth,
                             nextDepth: rows[index + 1].depth,
+                            nextRow: rows[index + 1],
                           );
                           if (!supportsRootDrop) {
                             return divider;

@@ -1142,5 +1142,16 @@
   "settingsBottomNavigationDefaults": "Valeurs par défaut",
   "settingsBottomNavigationLoadError": "Impossible de charger les réglages de navigation. Réessayez.",
   "settingsBottomNavigationEdit": "Personnaliser",
-  "settingsBottomNavigationRemove": "Retirer"
+  "settingsBottomNavigationRemove": "Retirer",
+  "editLabel": "Modifier l’étiquette",
+  "labelNameTaken": "Une étiquette portant ce nom existe déjà",
+  "labelBulkAdd": "Ajouter aux tâches",
+  "labelBulkRemove": "Retirer des tâches",
+  "labelColor": "Couleur de l’étiquette",
+  "taskParentUnavailable": "Sous-tâche · tâche parente indisponible",
+  "taskExpandSubtasks": "Développer les sous-tâches",
+  "taskCollapseSubtasks": "Réduire les sous-tâches",
+  "taskAllSubtasksProgress": "Toutes les sous-tâches : {completed} sur {total} terminées",
+  "taskOpenFullBranch": "Ouvrir toutes les sous-tâches",
+  "taskParentPath": "Fait partie de : {path}"
 }

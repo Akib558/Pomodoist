@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:pomodoist/utils/result.dart';
 import 'package:pomodoist/data/repositories/projects/project_repository.dart';
 import 'package:collection/collection.dart';
@@ -8,6 +9,8 @@ import 'package:pomodoist/data/services/local/database/app_database.dart';
 import 'package:pomodoist/data/services/collaboration/collaboration_api.dart';
 import 'package:pomodoist/data/services/local/project_local_service.dart';
 import 'package:pomodoist/data/services/local/shared_access.dart';
+import 'package:pomodoist/data/services/local/shared_scope_cleanup.dart';
+import 'package:pomodoist/data/services/local/sync_owner_store.dart';
 import 'package:pomodoist/domain/models/collaboration/collaboration_models.dart';
 import 'package:pomodoist/data/services/local/outbox_service.dart';
 import 'package:pomodoist/domain/models/tasks/project_colors.dart';
@@ -331,33 +334,71 @@ class DriftProjectRepository implements ProjectRepository {
       if (id == inboxProjectId) {
         return;
       }
+      if (await _removeRevokedProject(id)) return;
       // Read the scope up front: authorising the delete and deleting the shared
       // root both need it, and the scope row is gone once the server unshares.
       final scopeId = await _access.projectScope(id);
       final scope = await _access.scope(scopeId);
       final isSharedRoot = scope?.rootProjectId == id;
+      if (isSharedRoot && !scope!.canDeleteRoot(await _access.actorId())) {
+        throw const CollaborationException('forbidden');
+      }
       if (!isSharedRoot) {
         await _access.project(id, deleting: true);
       }
-      await _deleteSharedRoot(id, scopeId, isSharedRoot);
+      await _deleteSharedRoot(scopeId, isSharedRoot);
       await _deleteLocalProject(id);
+    },
+  );
+
+  Future<bool> _removeRevokedProject(String id) => SyncOwnerStore.serialized(
+    _db,
+    () async {
+      final scopeId = await _access.projectScope(id);
+      if (scopeId == null) return false;
+      final scope = await _access.scope(scopeId);
+      if (scope != null) {
+        final api = _collaboration;
+        if (api == null) throw const CollaborationException('unauthenticated');
+        final scopes = collaborationScopes((await api.state())['scopes']);
+        final current = scopes.where((row) => row['id'] == scopeId).firstOrNull;
+        if (current != null) {
+          // Use current roles when normal deletion continues below.
+          await (_db.update(
+            _db.sharedScopes,
+          )..where((row) => row.id.equals(scopeId))).write(
+            SharedScopesCompanion(
+              dataJson: Value(jsonEncode({...scope.data, ...current})),
+            ),
+          );
+          return false;
+        }
+      }
+      await _db.transaction(() async {
+        await removeSharedScope(_db, scopeId);
+        await _projects.repairKanbanSettings(now: DateTime.now().toUtc());
+      });
+      return true;
     },
   );
 
   /// A shared root lives on the server, so the scope must be deleted there
   /// before the local row. Deleting it here keeps the project menu working the
   /// same way the share dialog does.
-  Future<void> _deleteSharedRoot(
-    String id,
-    String? scopeId,
-    bool isSharedRoot,
-  ) async {
+  Future<void> _deleteSharedRoot(String? scopeId, bool isSharedRoot) async {
     if (scopeId == null || !isSharedRoot) return;
     final api = _collaboration;
     if (api == null) {
       throw const CollaborationException('unauthenticated');
     }
     await api.deleteScope(scopeId);
+    await SyncOwnerStore.serialized(
+      _db,
+      () => _db.transaction(() async {
+        await removeSharedScope(_db, scopeId);
+        await _projects.repairKanbanSettings(now: DateTime.now().toUtc());
+      }),
+    );
     try {
       await _synchronize?.call();
     } catch (_) {

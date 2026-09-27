@@ -1753,5 +1753,16 @@
   "settingsBottomNavigationDefaults": "初期設定に戻す",
   "settingsBottomNavigationLoadError": "ナビゲーション設定を読み込めませんでした。もう一度お試しください。",
   "settingsBottomNavigationEdit": "カスタマイズ",
-  "settingsBottomNavigationRemove": "外す"
+  "settingsBottomNavigationRemove": "外す",
+  "editLabel": "ラベルを編集",
+  "labelNameTaken": "同じ名前のラベルが既にあります",
+  "labelBulkAdd": "タスクに追加",
+  "labelBulkRemove": "タスクから削除",
+  "labelColor": "ラベルの色",
+  "taskParentUnavailable": "サブタスク · 親タスクを表示できません",
+  "taskExpandSubtasks": "サブタスクを展開",
+  "taskCollapseSubtasks": "サブタスクを折りたたむ",
+  "taskAllSubtasksProgress": "すべてのサブタスク：{total}件中{completed}件完了",
+  "taskOpenFullBranch": "すべてのサブタスクを開く",
+  "taskParentPath": "親タスク：{path}"
 }

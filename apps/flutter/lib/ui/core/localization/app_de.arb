@@ -1142,5 +1142,16 @@
   "settingsBottomNavigationDefaults": "Standard wiederherstellen",
   "settingsBottomNavigationLoadError": "Die Navigationseinstellungen konnten nicht geladen werden. Bitte versuche es erneut.",
   "settingsBottomNavigationEdit": "Anpassen",
-  "settingsBottomNavigationRemove": "Entfernen"
+  "settingsBottomNavigationRemove": "Entfernen",
+  "editLabel": "Label bearbeiten",
+  "labelNameTaken": "Ein Label mit diesem Namen existiert bereits",
+  "labelBulkAdd": "Zu Aufgaben hinzufügen",
+  "labelBulkRemove": "Von Aufgaben entfernen",
+  "labelColor": "Labelfarbe",
+  "taskParentUnavailable": "Unteraufgabe · übergeordnete Aufgabe nicht verfügbar",
+  "taskExpandSubtasks": "Unteraufgaben aufklappen",
+  "taskCollapseSubtasks": "Unteraufgaben einklappen",
+  "taskAllSubtasksProgress": "Alle Unteraufgaben: {completed} von {total} erledigt",
+  "taskOpenFullBranch": "Alle Unteraufgaben öffnen",
+  "taskParentPath": "Teil von: {path}"
 }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:pomodoist/data/repositories/settings/task_preferences_repository.dart';
 import 'package:pomodoist/data/services/local/preferences_service.dart';
@@ -11,6 +12,8 @@ class LocalTaskPreferencesRepository implements TaskPreferencesRepository {
   final PreferencesService _preferences;
   final _states = StreamController<TaskPreferences>.broadcast(sync: true);
   final _edited = <String>{};
+  Future<Result<void>>? _loadFuture;
+  Future<Result<void>> _branchWrites = Future.value(const Result.ok(null));
   bool _disposed = false;
   TaskPreferences _state = TaskPreferences();
 
@@ -27,13 +30,19 @@ class LocalTaskPreferencesRepository implements TaskPreferencesRepository {
   }
 
   @override
-  Future<Result<void>> load() => Result.capture(() async {
+  Future<Result<void>> load() => _loadFuture ??= _load().then((result) {
+    if (result is Failure<void>) _loadFuture = null;
+    return result;
+  });
+
+  Future<Result<void>> _load() => Result.capture(() async {
     final values = (await _preferences.read(const [
       reengagementNotificationsEnabledPreferenceKey,
       quickAddDefaultTimedBlockMinutesPreferenceKey,
       taskTimeDisplayModePreferenceKey,
       taskListStylePreferenceKey,
       taskRowSpacingPreferenceKey,
+      taskBranchExpansionPreferenceKey,
       timelineVisibleStartMinutesPreferenceKey,
       timelineVisibleEndMinutesPreferenceKey,
       timelineHourWidthPreferenceKey,
@@ -46,6 +55,12 @@ class LocalTaskPreferencesRepository implements TaskPreferencesRepository {
     final end = values[timelineVisibleEndMinutesPreferenceKey];
     final width = values[timelineHourWidthPreferenceKey];
     final collapsed = values[timelineCollapsedProjectIdsPreferenceKey];
+    final branches = _readBranchExpansion(
+      values[taskBranchExpansionPreferenceKey],
+    );
+    for (final entry in _state.branchExpansion.entries) {
+      branches[entry.key] = {...?branches[entry.key], ...entry.value};
+    }
     _publish(
       _state.copyWith(
         reengagementEnabled:
@@ -78,9 +93,69 @@ class LocalTaskPreferencesRepository implements TaskPreferencesRepository {
         collapsedProjectIds: collapsed is List<String>
             ? Set.unmodifiable(collapsed)
             : null,
+        branchExpansion: branches,
       ),
     );
   });
+
+  Map<String, Map<String, bool>> _readBranchExpansion(Object? value) {
+    if (value is! String) return {};
+    try {
+      final decoded = jsonDecode(value);
+      if (decoded is! Map ||
+          decoded['version'] != 1 ||
+          decoded['scopes'] is! Map) {
+        return {};
+      }
+      return {
+        for (final scope in (decoded['scopes'] as Map).entries)
+          if (scope.key is String &&
+              (scope.key as String).isNotEmpty &&
+              scope.value is Map)
+            scope.key as String: {
+              for (final task in (scope.value as Map).entries)
+                if (task.key is String &&
+                    (task.key as String).isNotEmpty &&
+                    task.value is bool)
+                  task.key as String: task.value as bool,
+            },
+      };
+    } on FormatException {
+      return {};
+    }
+  }
+
+  @override
+  Future<Result<void>> setBranchExpanded(
+    String scopeKey,
+    String taskId,
+    bool expanded,
+  ) {
+    if (_disposed || scopeKey.isEmpty || taskId.isEmpty) {
+      return Future.value(const Result.ok(null));
+    }
+    _publish(
+      state.copyWith(
+        branchExpansion: {
+          ...state.branchExpansion,
+          scopeKey: {...?state.branchExpansion[scopeKey], taskId: expanded},
+        },
+      ),
+    );
+    // Load untouched scopes before writing, and keep rapid toggles in order.
+    return _branchWrites = _branchWrites.then(
+      (_) => Result.capture(() async {
+        (await load()).getOrThrow();
+        if (_disposed) return;
+        (await _preferences.write({
+          taskBranchExpansionPreferenceKey: jsonEncode({
+            'version': 1,
+            'scopes': state.branchExpansion,
+          }),
+        })).getOrThrow();
+      }),
+    );
+  }
 
   Future<Result<void>> _save(
     TaskPreferences next,

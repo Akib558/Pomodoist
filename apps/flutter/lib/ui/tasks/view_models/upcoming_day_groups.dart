@@ -1,4 +1,5 @@
 import 'package:pomodoist/domain/models/tasks/task_models.dart';
+import 'package:pomodoist/ui/tasks/view_models/task_branch_rows.dart';
 
 class UpcomingDayGroup {
   const UpcomingDayGroup({
@@ -12,23 +13,24 @@ class UpcomingDayGroup {
   final bool isSynthetic;
 }
 
-class UpcomingTaskRow {
-  const UpcomingTaskRow({required this.task, required this.depth});
-
-  final TaskItem task;
-  final int depth;
-}
+typedef UpcomingTaskRow = VisibleTaskRow;
 
 List<UpcomingDayGroup> buildUpcomingDayGroups(
   Iterable<TaskItem> tasks, {
+  Iterable<TaskItem>? allItems,
+  Map<String, bool> expansion = const {},
   DateTime? selectedDate,
   DateTime? visibleFromDate,
 }) {
+  final currentTasks = {
+    for (final task in tasks) task.id: task,
+  }.values.toList();
+  final metadata = [...?allItems, ...currentTasks];
   final tasksByDate = <DateTime, List<TaskItem>>{};
   final firstVisibleDay = visibleFromDate == null
       ? null
       : _localDateOnly(visibleFromDate);
-  for (final task in tasks) {
+  for (final task in currentTasks) {
     final schedule = task.schedule;
     if (schedule == null) {
       continue;
@@ -53,56 +55,17 @@ List<UpcomingDayGroup> buildUpcomingDayGroups(
       final dayTasks = tasksByDate[date]!;
       return UpcomingDayGroup(
         date: date,
-        rows: _buildRows(dayTasks),
+        rows: visibleTaskRows(
+          metadata,
+          dayTasks,
+          expansion: expansion,
+          compare: _compareTaskOrder,
+          compareRoots: _compareRootOrder,
+        ),
         isSynthetic: dayTasks.isEmpty && date == selectedDay,
       );
     }),
   );
-}
-
-List<UpcomingTaskRow> _buildRows(List<TaskItem> tasks) {
-  final byId = <String, TaskItem>{for (final task in tasks) task.id: task};
-  final childrenByParent = <String, List<TaskItem>>{};
-  final roots = <TaskItem>[];
-
-  for (final task in tasks) {
-    final parentId = task.parentId;
-    if (parentId == null || !byId.containsKey(parentId)) {
-      roots.add(task);
-    } else {
-      childrenByParent.putIfAbsent(parentId, () => []).add(task);
-    }
-  }
-  roots.sort(_compareRootOrder);
-  for (final children in childrenByParent.values) {
-    children.sort(_compareTaskOrder);
-  }
-
-  final rows = <UpcomingTaskRow>[];
-  final visited = <String>{};
-
-  void addSubtree(TaskItem task, int depth) {
-    if (!visited.add(task.id)) {
-      return;
-    }
-    rows.add(UpcomingTaskRow(task: task, depth: depth));
-    for (final child in childrenByParent[task.id] ?? const <TaskItem>[]) {
-      addSubtree(child, depth + 1);
-    }
-  }
-
-  for (final root in roots) {
-    addSubtree(root, 0);
-  }
-
-  final remaining = tasks.toList()..sort(_compareRootOrder);
-  for (final task in remaining) {
-    if (!visited.contains(task.id)) {
-      addSubtree(task, 0);
-    }
-  }
-
-  return List.unmodifiable(rows);
 }
 
 int _compareTaskOrder(TaskItem a, TaskItem b) {

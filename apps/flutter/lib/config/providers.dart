@@ -384,6 +384,10 @@ final labelsProvider = StreamProvider<List<LabelItem>>((ref) {
   return ref.watch(labelRepositoryProvider).watchLabels();
 });
 
+final labelTaskCountsProvider = StreamProvider<Map<String, int>>((ref) {
+  return ref.watch(labelRepositoryProvider).watchOpenTaskCounts();
+});
+
 final activeFocusRunProvider = StreamProvider<FocusRunItem?>((ref) {
   return ref.watch(focusRepositoryProvider).watchActiveRun();
 });

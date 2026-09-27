@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'task_branch_rows.dart';
 import 'package:pomodoist/config/account_providers.dart';
 import 'package:pomodoist/config/providers.dart';
 import 'package:pomodoist/config/focus_dependencies.dart';
@@ -316,13 +317,26 @@ class SubtasksViewModel extends Notifier<SubtasksState> {
     final completed = ref.watch(
       tasksByQueryProvider(const TaskQuery.completed()),
     );
+    final byId = <String, TaskItem>{};
+    for (final task in [...?tasks.value, ...?completed.value]) {
+      if (!task.isDeleted) byId.putIfAbsent(task.id, () => task);
+    }
+    final all = byId.values.toList();
+    final ids = descendantTaskIds(parentId, all);
+    final descendants = all.where((task) => ids.contains(task.id)).toList()
+      ..sort(compareTaskOrder);
     return (
-      tasks: tasks.whenData((items) {
-        final children = items.where((t) => t.parentId == parentId).toList()
-          ..sort((a, b) => a.orderKey.compareTo(b.orderKey));
-        return List.unmodifiable(children);
-      }),
-      allTasks: List.unmodifiable([...?tasks.value, ...?completed.value]),
+      tasks: tasks.hasError
+          ? AsyncError(tasks.error!, tasks.stackTrace ?? StackTrace.current)
+          : completed.hasError
+          ? AsyncError(
+              completed.error!,
+              completed.stackTrace ?? StackTrace.current,
+            )
+          : tasks.hasValue && completed.hasValue
+          ? AsyncData(List.unmodifiable(descendants))
+          : const AsyncLoading(),
+      allTasks: List.unmodifiable(all),
     );
   }
 }

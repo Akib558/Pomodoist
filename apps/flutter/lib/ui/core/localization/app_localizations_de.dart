@@ -3648,4 +3648,42 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsBottomNavigationRemove => 'Entfernen';
+
+  @override
+  String get editLabel => 'Label bearbeiten';
+
+  @override
+  String get labelNameTaken => 'Ein Label mit diesem Namen existiert bereits';
+
+  @override
+  String get labelBulkAdd => 'Zu Aufgaben hinzufügen';
+
+  @override
+  String get labelBulkRemove => 'Von Aufgaben entfernen';
+
+  @override
+  String get labelColor => 'Labelfarbe';
+
+  @override
+  String get taskParentUnavailable =>
+      'Unteraufgabe · übergeordnete Aufgabe nicht verfügbar';
+
+  @override
+  String get taskExpandSubtasks => 'Unteraufgaben aufklappen';
+
+  @override
+  String get taskCollapseSubtasks => 'Unteraufgaben einklappen';
+
+  @override
+  String taskAllSubtasksProgress(int completed, int total) {
+    return 'Alle Unteraufgaben: $completed von $total erledigt';
+  }
+
+  @override
+  String get taskOpenFullBranch => 'Alle Unteraufgaben öffnen';
+
+  @override
+  String taskParentPath(String path) {
+    return 'Teil von: $path';
+  }
 }

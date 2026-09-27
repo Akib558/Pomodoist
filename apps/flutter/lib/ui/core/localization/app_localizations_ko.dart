@@ -3524,4 +3524,41 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get settingsBottomNavigationRemove => '제거';
+
+  @override
+  String get editLabel => '라벨 편집';
+
+  @override
+  String get labelNameTaken => '같은 이름의 라벨이 이미 있습니다';
+
+  @override
+  String get labelBulkAdd => '작업에 추가';
+
+  @override
+  String get labelBulkRemove => '작업에서 제거';
+
+  @override
+  String get labelColor => '라벨 색상';
+
+  @override
+  String get taskParentUnavailable => '하위 작업 · 상위 작업을 사용할 수 없음';
+
+  @override
+  String get taskExpandSubtasks => '하위 작업 펼치기';
+
+  @override
+  String get taskCollapseSubtasks => '하위 작업 접기';
+
+  @override
+  String taskAllSubtasksProgress(int completed, int total) {
+    return '모든 하위 작업: $total개 중 $completed개 완료';
+  }
+
+  @override
+  String get taskOpenFullBranch => '모든 하위 작업 열기';
+
+  @override
+  String taskParentPath(String path) {
+    return '상위 작업: $path';
+  }
 }

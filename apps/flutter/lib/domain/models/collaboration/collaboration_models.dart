@@ -91,6 +91,20 @@ List<Map<String, dynamic>> collaborationMaps(Object? value) => value is List
           .toList()
     : const [];
 
+/// Scope absence authorizes cache removal, so malformed state must fail closed.
+List<Map<String, dynamic>> collaborationScopes(Object? value) {
+  if (value is! List ||
+      value.any(
+        (row) =>
+            row is! Map ||
+            row['id'] is! String ||
+            (row['id'] as String).isEmpty,
+      )) {
+    throw const CollaborationException('invalid_response');
+  }
+  return collaborationMaps(value);
+}
+
 List<String> collaborationIds(String json) =>
     (jsonDecode(json) as List).whereType<String>().toList();
 

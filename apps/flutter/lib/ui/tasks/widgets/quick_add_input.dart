@@ -155,6 +155,11 @@ class _QuickAddInputState extends ConsumerState<QuickAddInput> {
                 itemCount: items.length,
                 itemBuilder: (context, index) {
                   final option = items[index];
+                  final label = option.marker == '@'
+                      ? inputState.labels
+                            .where((item) => item.name == option.name)
+                            .firstOrNull
+                      : null;
                   final highlighted =
                       AutocompleteHighlightedOption.of(context) == index;
                   return ListTile(
@@ -162,7 +167,12 @@ class _QuickAddInputState extends ConsumerState<QuickAddInput> {
                       'quick-add-suggestion-${option.marker}${option.name}',
                     ),
                     dense: true,
-                    leading: Text(option.marker),
+                    leading: label == null
+                        ? Text(option.marker)
+                        : Semantics(
+                            label: option.marker,
+                            child: LabelIconView(label: label, size: 18),
+                          ),
                     title: Text(option.name),
                     tileColor: highlighted
                         ? Theme.of(context).colorScheme.secondaryContainer

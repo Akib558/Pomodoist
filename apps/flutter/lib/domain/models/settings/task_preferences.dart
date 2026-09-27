@@ -7,6 +7,7 @@ const quickAddDefaultTimedBlockMinutesPreferenceKey =
 const taskTimeDisplayModePreferenceKey = 'tasks.timeDisplayMode';
 const taskListStylePreferenceKey = 'tasks.listStyle';
 const taskRowSpacingPreferenceKey = 'tasks.rowSpacing';
+const taskBranchExpansionPreferenceKey = 'tasks.branchExpansion.v1';
 const timelineVisibleStartMinutesPreferenceKey = 'timeline.visibleStartMinutes';
 const timelineVisibleEndMinutesPreferenceKey = 'timeline.visibleEndMinutes';
 const timelineHourWidthPreferenceKey = 'timeline.hourWidth';
@@ -58,7 +59,12 @@ class TaskPreferences {
     ),
     this.hourWidth = defaultTimelineHourWidth,
     Set<String> collapsedProjectIds = const {},
-  }) : collapsedProjectIds = Set.unmodifiable(collapsedProjectIds);
+    Map<String, Map<String, bool>> branchExpansion = const {},
+  }) : collapsedProjectIds = Set.unmodifiable(collapsedProjectIds),
+       branchExpansion = Map.unmodifiable({
+         for (final entry in branchExpansion.entries)
+           entry.key: Map<String, bool>.unmodifiable(entry.value),
+       });
   final bool reengagementEnabled;
   final int quickAddMinutes;
   final TaskTimeDisplayMode timeDisplayMode;
@@ -67,6 +73,7 @@ class TaskPreferences {
   final TimelineVisibleHours visibleHours;
   final int hourWidth;
   final Set<String> collapsedProjectIds;
+  final Map<String, Map<String, bool>> branchExpansion;
   TaskPreferences copyWith({
     bool? reengagementEnabled,
     int? quickAddMinutes,
@@ -76,6 +83,7 @@ class TaskPreferences {
     TimelineVisibleHours? visibleHours,
     int? hourWidth,
     Set<String>? collapsedProjectIds,
+    Map<String, Map<String, bool>>? branchExpansion,
   }) => TaskPreferences(
     reengagementEnabled: reengagementEnabled ?? this.reengagementEnabled,
     quickAddMinutes: quickAddMinutes ?? this.quickAddMinutes,
@@ -85,5 +93,6 @@ class TaskPreferences {
     visibleHours: visibleHours ?? this.visibleHours,
     hourWidth: hourWidth ?? this.hourWidth,
     collapsedProjectIds: collapsedProjectIds ?? this.collapsedProjectIds,
+    branchExpansion: branchExpansion ?? this.branchExpansion,
   );
 }

@@ -1853,5 +1853,35 @@
         "type": "int"
       }
     }
+  },
+  "editLabel": "Edit label",
+  "labelNameTaken": "A label with this name already exists",
+  "labelBulkAdd": "Add to tasks",
+  "labelBulkRemove": "Remove from tasks",
+  "labelColor": "Label color",
+  "taskParentUnavailable": "Subtask · parent unavailable",
+  "taskExpandSubtasks": "Expand subtasks",
+  "taskCollapseSubtasks": "Collapse subtasks",
+  "taskAllSubtasksProgress": "All descendants: {completed} of {total} complete",
+  "taskOpenFullBranch": "Open all subtasks",
+  "taskParentPath": "Part of: {path}",
+  "@taskAllSubtasksProgress": {
+    "description": "Progress across all descendant levels, including filtered tasks.",
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "@taskParentPath": {
+    "description": "Known ancestor task titles separated by slashes.",
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
   }
 }

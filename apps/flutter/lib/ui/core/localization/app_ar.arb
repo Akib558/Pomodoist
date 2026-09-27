@@ -1142,5 +1142,16 @@
   "settingsBottomNavigationDefaults": "الإعدادات الافتراضية",
   "settingsBottomNavigationLoadError": "تعذر تحميل إعدادات التنقل. حاول مجددًا.",
   "settingsBottomNavigationEdit": "تخصيص",
-  "settingsBottomNavigationRemove": "إزالة"
+  "settingsBottomNavigationRemove": "إزالة",
+  "editLabel": "تعديل التسمية",
+  "labelNameTaken": "يوجد تصنيف بهذا الاسم بالفعل",
+  "labelBulkAdd": "إضافة إلى المهام",
+  "labelBulkRemove": "إزالة من المهام",
+  "labelColor": "لون التسمية",
+  "taskParentUnavailable": "مهمة فرعية · المهمة الأصلية غير متاحة",
+  "taskExpandSubtasks": "توسيع المهام الفرعية",
+  "taskCollapseSubtasks": "طي المهام الفرعية",
+  "taskAllSubtasksProgress": "جميع المهام المتفرعة: اكتمل {completed} من {total}",
+  "taskOpenFullBranch": "فتح جميع المهام الفرعية",
+  "taskParentPath": "جزء من: {path}"
 }

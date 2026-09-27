@@ -6196,6 +6196,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove'**
   String get settingsBottomNavigationRemove;
+
+  /// No description provided for @editLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit label'**
+  String get editLabel;
+
+  /// No description provided for @labelNameTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'A label with this name already exists'**
+  String get labelNameTaken;
+
+  /// No description provided for @labelBulkAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to tasks'**
+  String get labelBulkAdd;
+
+  /// No description provided for @labelBulkRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from tasks'**
+  String get labelBulkRemove;
+
+  /// No description provided for @labelColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Label color'**
+  String get labelColor;
+
+  /// No description provided for @taskParentUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtask · parent unavailable'**
+  String get taskParentUnavailable;
+
+  /// No description provided for @taskExpandSubtasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand subtasks'**
+  String get taskExpandSubtasks;
+
+  /// No description provided for @taskCollapseSubtasks.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse subtasks'**
+  String get taskCollapseSubtasks;
+
+  /// Progress across all descendant levels, including filtered tasks.
+  ///
+  /// In en, this message translates to:
+  /// **'All descendants: {completed} of {total} complete'**
+  String taskAllSubtasksProgress(int completed, int total);
+
+  /// No description provided for @taskOpenFullBranch.
+  ///
+  /// In en, this message translates to:
+  /// **'Open all subtasks'**
+  String get taskOpenFullBranch;
+
+  /// Known ancestor task titles separated by slashes.
+  ///
+  /// In en, this message translates to:
+  /// **'Part of: {path}'**
+  String taskParentPath(String path);
 }
 
 class _AppLocalizationsDelegate

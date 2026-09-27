@@ -8,6 +8,7 @@ import 'package:pomodoist/data/services/local/database/app_database.dart';
 import 'package:pomodoist/data/services/local/label_local_service.dart';
 import 'package:pomodoist/data/services/local/outbox_service.dart';
 import 'package:pomodoist/domain/models/tasks/task_models.dart';
+import 'package:pomodoist/domain/models/tasks/project_colors.dart';
 
 class DriftLabelRepository implements LabelRepository {
   DriftLabelRepository(AppDatabase db, this._syncQueue, {Uuid? uuid})
@@ -28,6 +29,10 @@ class DriftLabelRepository implements LabelRepository {
   }
 
   @override
+  Stream<Map<String, int>> watchOpenTaskCounts() =>
+      _labels.watchOpenTaskCounts();
+
+  @override
   Future<Result<LabelItem?>> findByName(String name) =>
       Result.capture<LabelItem?>(() async {
         final normalizedName = name.trim().toLowerCase();
@@ -38,38 +43,45 @@ class DriftLabelRepository implements LabelRepository {
       });
 
   @override
-  Future<Result<String>> createLabel(String name, {String? icon}) =>
-      Result.capture<String>(() async {
-        if (icon != null) _validateIcon(icon);
-        final existing = await findByName(
-          name,
-        ).then((result) => result.getOrThrow());
-        if (existing != null) {
-          return existing.id;
-        }
-        final now = DateTime.now().toUtc();
-        final id = _uuid.v4();
-        await _db.transaction(() async {
-          await _labels.insertLabel(
-            LabelsCompanion.insert(
-              id: id,
-              userId: localUserId,
-              name: name.trim(),
-              icon: Value(icon),
-              kind: const Value(labelKindUser),
-              orderKey: now.microsecondsSinceEpoch.toString().padLeft(20, '0'),
-              createdAt: now,
-              updatedAt: now,
-            ),
-          );
-          await _syncQueue.enqueue(
-            type: 'label.create',
-            clientId: id,
-            payload: {'id': id, 'name': name.trim(), 'icon': ?icon},
-          );
-        });
-        return id;
-      });
+  Future<Result<String>> createLabel(
+    String name, {
+    String? icon,
+    String? color,
+  }) => Result.capture<String>(() async {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) throw ArgumentError.value(name, 'name');
+    if (icon != null) _validateIcon(icon);
+    if (color != null) _validateColor(color);
+    final existing = await findByName(
+      trimmed,
+    ).then((result) => result.getOrThrow());
+    if (existing != null) {
+      return existing.id;
+    }
+    final now = DateTime.now().toUtc();
+    final id = _uuid.v4();
+    await _db.transaction(() async {
+      await _labels.insertLabel(
+        LabelsCompanion.insert(
+          id: id,
+          userId: localUserId,
+          name: trimmed,
+          color: Value(color),
+          icon: Value(icon),
+          kind: const Value(labelKindUser),
+          orderKey: now.microsecondsSinceEpoch.toString().padLeft(20, '0'),
+          createdAt: now,
+          updatedAt: now,
+        ),
+      );
+      await _syncQueue.enqueue(
+        type: 'label.create',
+        clientId: id,
+        payload: {'id': id, 'name': trimmed, 'icon': ?icon, 'color': ?color},
+      );
+    });
+    return id;
+  });
 
   void _validateIcon(String icon) {
     if (!LabelIcon.values.any((value) => value.name == icon)) {
@@ -77,15 +89,65 @@ class DriftLabelRepository implements LabelRepository {
     }
   }
 
+  void _validateColor(String color) {
+    if (!isPaletteProjectColor(color)) {
+      throw ArgumentError.value(color, 'color', 'Unknown label color');
+    }
+  }
+
+  @override
+  Future<Result<void>> updateLabel(
+    String id, {
+    required String name,
+    required String color,
+    required String icon,
+  }) => Result.capture<void>(() async {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) throw ArgumentError.value(name, 'name');
+    _validateColor(color);
+    _validateIcon(icon);
+    await _db.transaction(() async {
+      final current = await _labels.findActiveUserLabel(id);
+      if (current == null) throw StateError('Label no longer exists');
+      final duplicate = (await _labels.activeUserLabels()).any(
+        (label) =>
+            label.id != id &&
+            label.name.trim().toLowerCase() == trimmed.toLowerCase(),
+      );
+      if (duplicate) throw LabelNameTakenException();
+      if (current.name == trimmed &&
+          current.color == color &&
+          current.icon == icon) {
+        return;
+      }
+      await _labels.updateLabel(
+        id,
+        LabelsCompanion(
+          name: Value(trimmed),
+          color: Value(color),
+          icon: Value(icon),
+          updatedAt: Value(DateTime.now().toUtc()),
+        ),
+      );
+      await _syncQueue.enqueue(
+        type: 'label.update',
+        clientId: id,
+        payload: {'id': id, 'name': trimmed, 'color': color, 'icon': icon},
+      );
+    });
+  });
+
   @override
   Future<Result<void>> updateLabelIcon(String id, String icon) =>
       Result.capture<void>(() async {
         _validateIcon(icon);
         await _db.transaction(() async {
-          final changed = await _labels.updateIcon(
+          final changed = await _labels.updateLabel(
             id,
-            icon,
-            DateTime.now().toUtc(),
+            LabelsCompanion(
+              icon: Value(icon),
+              updatedAt: Value(DateTime.now().toUtc()),
+            ),
           );
           if (changed == 0) throw StateError('Label no longer exists');
           await _syncQueue.enqueue(

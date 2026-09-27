@@ -2,8 +2,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pomodoist/config/providers.dart';
 import 'package:pomodoist/domain/models/tasks/task_models.dart';
 import 'package:pomodoist/domain/models/tasks/project_colors.dart';
+import 'package:pomodoist/data/repositories/labels/label_repository.dart';
 
-enum NamedItemKind { project, label, renameProject }
+enum NamedItemKind { project, label, renameProject, editLabel }
 
 typedef ProjectCreationState = ({List<ProjectItem> projects, String color});
 final projectCreationViewModelProvider =
@@ -51,9 +52,26 @@ class NamedItemViewModel extends Notifier<AsyncValue<void>> {
                   .createProject(name.trim(), color: color, parentId: parentId))
               .getOrThrow();
         case NamedItemKind.label:
+          final labels = ref.read(labelRepositoryProvider);
+          if ((await labels
+                  .findByName(name)
+                  .then((result) => result.getOrThrow())) !=
+              null) {
+            throw LabelNameTakenException();
+          }
           (await ref
                   .read(labelRepositoryProvider)
-                  .createLabel(name.trim(), icon: icon))
+                  .createLabel(name.trim(), icon: icon, color: color))
+              .getOrThrow();
+        case NamedItemKind.editLabel:
+          (await ref
+                  .read(labelRepositoryProvider)
+                  .updateLabel(
+                    projectId!,
+                    name: name,
+                    color: color!,
+                    icon: icon!,
+                  ))
               .getOrThrow();
         case NamedItemKind.renameProject:
           (await ref

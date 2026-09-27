@@ -3656,6 +3656,44 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get settingsBottomNavigationRemove => 'Remover';
+
+  @override
+  String get editLabel => 'Editar etiqueta';
+
+  @override
+  String get labelNameTaken => 'Já existe uma etiqueta com este nome';
+
+  @override
+  String get labelBulkAdd => 'Adicionar às tarefas';
+
+  @override
+  String get labelBulkRemove => 'Remover das tarefas';
+
+  @override
+  String get labelColor => 'Cor da etiqueta';
+
+  @override
+  String get taskParentUnavailable =>
+      'Subtarefa · tarefa principal indisponível';
+
+  @override
+  String get taskExpandSubtasks => 'Expandir subtarefas';
+
+  @override
+  String get taskCollapseSubtasks => 'Recolher subtarefas';
+
+  @override
+  String taskAllSubtasksProgress(int completed, int total) {
+    return 'Todas as subtarefas: $completed de $total concluídas';
+  }
+
+  @override
+  String get taskOpenFullBranch => 'Abrir todas as subtarefas';
+
+  @override
+  String taskParentPath(String path) {
+    return 'Parte de: $path';
+  }
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
@@ -3845,4 +3883,42 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get settingsBottomNavigationRemove => 'Remover';
+
+  @override
+  String get editLabel => 'Editar etiqueta';
+
+  @override
+  String get labelNameTaken => 'Já existe uma etiqueta com este nome';
+
+  @override
+  String get labelBulkAdd => 'Adicionar às tarefas';
+
+  @override
+  String get labelBulkRemove => 'Remover das tarefas';
+
+  @override
+  String get labelColor => 'Cor da etiqueta';
+
+  @override
+  String get taskParentUnavailable =>
+      'Subtarefa · tarefa principal indisponível';
+
+  @override
+  String get taskExpandSubtasks => 'Expandir subtarefas';
+
+  @override
+  String get taskCollapseSubtasks => 'Recolher subtarefas';
+
+  @override
+  String taskAllSubtasksProgress(int completed, int total) {
+    return 'Todas as subtarefas: $completed de $total concluídas';
+  }
+
+  @override
+  String get taskOpenFullBranch => 'Abrir todas as subtarefas';
+
+  @override
+  String taskParentPath(String path) {
+    return 'Parte de: $path';
+  }
 }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:pomodoist/ui/tasks/view_models/task_branch_rows.dart';
+import 'package:pomodoist/ui/tasks/view_models/task_branch_view_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:pomodoist/ui/core/localization/formatters.dart';
@@ -21,16 +23,21 @@ class TodayScreen extends ConsumerWidget {
     final l10n = context.l10n;
     final query = TaskQuery(kind: TaskQueryKind.today, now: today);
     final hasCompleted = viewState.hasCompleted;
-    return TaskListView(
-      title: l10n.navToday,
-      subtitle: MaterialLocalizations.of(context).formatFullDate(today),
-      query: query,
-      emptyMessage: hasCompleted ? l10n.todayEmptyCompletedTitle : null,
-      emptyDescription: hasCompleted
-          ? l10n.todayEmptyCompletedDescription
-          : null,
-      headerAddon: _TodayContext(query: query),
-      footerAddon: _CompletedToday(day: today),
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 1200),
+        child: TaskListView(
+          title: l10n.navToday,
+          subtitle: MaterialLocalizations.of(context).formatFullDate(today),
+          query: query,
+          emptyMessage: hasCompleted ? l10n.todayEmptyCompletedTitle : null,
+          emptyDescription: hasCompleted
+              ? l10n.todayEmptyCompletedDescription
+              : null,
+          headerAddon: _TodayContext(query: query),
+          footerAddon: _CompletedToday(day: today),
+        ),
+      ),
     );
   }
 }
@@ -68,29 +75,62 @@ class _TodayContext extends ConsumerWidget {
   }
 }
 
-class _CompletedToday extends ConsumerWidget {
+class _CompletedToday extends ConsumerStatefulWidget {
   const _CompletedToday({required this.day});
-
   final DateTime day;
+  @override
+  ConsumerState<_CompletedToday> createState() => _CompletedTodayState();
+}
+
+class _CompletedTodayState extends ConsumerState<_CompletedToday> {
+  bool _expanded = false;
+  @override
+  void didUpdateWidget(covariant _CompletedToday oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.day != widget.day) _expanded = false;
+  }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
+    final day = widget.day;
     final tasks = ref.watch(completedTodayViewModelProvider(day));
+    const scope = 'today:completed';
+    final expansion = ref.watch(taskBranchViewModelProvider(scope));
+    final data = ref.watch(taskHierarchyViewModelProvider);
+    final rows = visibleTaskRows(
+      data.byId.values.toList(),
+      tasks,
+      expansion: expansion,
+    );
     if (tasks.isEmpty) {
       return const SizedBox.shrink();
     }
     return TaskSelectionRegion(
       scopeKey: ('completed-today', day),
       shrinkWrap: true,
-      visibleTasks: tasks,
+      visibleTasks: _expanded
+          ? rows.map((row) => row.task)
+          : const <TaskItem>[],
       child: ExpansionTile(
         key: ValueKey(day),
         title: Text(context.l10n.todayCompletedTasks(tasks.length)),
         initiallyExpanded: false,
+        onExpansionChanged: (value) => setState(() => _expanded = value),
         children: [
-          for (var index = 0; index < tasks.length; index++) ...[
-            if (index > 0) const TaskListDivider(),
-            TaskListItem(task: tasks[index]),
+          for (var index = 0; index < rows.length; index++) ...[
+            if (index > 0)
+              TaskListDivider(
+                previousDepth: rows[index - 1].depth,
+                nextDepth: rows[index].depth,
+                nextRow: rows[index],
+              ),
+            TaskListItem(
+              key: ValueKey(rows[index].task.id),
+              task: rows[index].task,
+              hierarchy: rows[index],
+              branchScope: scope,
+              depth: rows[index].displayDepth,
+            ),
           ],
         ],
       ),

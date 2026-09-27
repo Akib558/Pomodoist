@@ -15,7 +15,7 @@ extension SharedAccountSync on AccountSyncEngine {
       }
       rethrow;
     }
-    final scopes = collaborationMaps(state['scopes']);
+    final scopes = collaborationScopes(state['scopes']);
     if (state['personalHistory'] is Map) {
       await _db
           .into(_db.sharedEntities)
@@ -30,17 +30,13 @@ extension SharedAccountSync on AccountSyncEngine {
     }
     final ids = scopes.map((scope) => scope['id'] as String).toSet();
     final oldScopes = await _db.select(_db.sharedScopes).get();
-    final revoked = oldScopes
-        .where((scope) => !ids.contains(scope.id))
-        .map((scope) => scope.id)
-        .toList();
-    // `unshare` restores the subtree as personal rows and drops the scope, so
-    // pull the personal side before removing the shared copy. Otherwise the
-    // removal deletes rows the server just handed back, and the user loses the
-    // project they only meant to unshare.
-    for (final scopeId in revoked) {
-      await pullLatest();
-      await _removeSharedScope(scopeId);
+    final revoked = (await localSharedScopeIds(_db)).difference(ids);
+    // Clean revoked copies in the same transaction as the first personal page.
+    // Later pages can then restore the owner's rows without stale cache guards.
+    final types = <String>{};
+    if (revoked.isNotEmpty) {
+      types.addAll(await pullLatest(revokedScopeIds: revoked));
+      types.addAll({'project', 'task', 'section', 'label', 'task_completion'});
     }
     await _db.transaction(() async {
       for (final scope in scopes) {
@@ -84,7 +80,6 @@ extension SharedAccountSync on AccountSyncEngine {
         }
       }
     });
-    final types = <String>{};
     for (final scopeData in scopes) {
       final scope = SharedScope.fromJson(scopeData);
       try {
@@ -107,12 +102,19 @@ extension SharedAccountSync on AccountSyncEngine {
               );
         }
       } on CollaborationException catch (error) {
-        if (error.code == '42501') {
+        if (error.code == '42501' || error.code == 'forbidden') {
           final current = await _callCollaboration('state');
-          if (!collaborationMaps(
+          if (!collaborationScopes(
             current['scopes'],
           ).any((item) => item['id'] == scope.id)) {
-            await _removeSharedScope(scope.id);
+            types.addAll(await pullLatest(revokedScopeIds: {scope.id}));
+            types.addAll({
+              'project',
+              'task',
+              'section',
+              'label',
+              'task_completion',
+            });
             continue;
           }
         }
@@ -660,94 +662,5 @@ extension SharedAccountSync on AccountSyncEngine {
         },
       );
     }
-  }
-
-  /// [keepEntityType], [keepEntityIds] and [keepProjectIds] are the rows the
-  /// server has already handed back as personal data in the same pull. They are
-  /// spared so that unsharing restores the subtree instead of deleting it.
-  Future<void> _removeSharedScope(
-    String scopeId, {
-    String? keepEntityType,
-    Set<String> keepEntityIds = const {},
-    Set<String> keepProjectIds = const {},
-  }) async {
-    await _db.transaction(() async {
-      final tasks = await (_db.select(
-        _db.tasks,
-      )..where((row) => row.scopeId.equals(scopeId))).get();
-      final ids = tasks.map((row) => row.id).toList();
-      final projects = await (_db.select(
-        _db.projects,
-      )..where((row) => row.scopeId.equals(scopeId))).get();
-      final projectIds = [
-        for (final project in projects)
-          if (!(keepEntityType == 'project' &&
-              keepProjectIds.contains(project.id)))
-            project.id,
-      ];
-      await (_db.delete(
-        _db.taskLabels,
-      )..where((row) => row.taskId.isIn(ids))).go();
-      await (_db.delete(
-        _db.taskCompletions,
-      )..where((row) => row.taskId.isIn(ids))).go();
-      await (_db.delete(
-        _db.reminders,
-      )..where((row) => row.taskId.isIn(ids))).go();
-      // A kept project is also where the server reassigned the tasks it handed
-      // back, so only the projects that are actually going away lose sections.
-      await (_db.delete(
-        _db.sections,
-      )..where((row) => row.projectId.isIn(projectIds))).go();
-      await (_db.delete(
-        _db.tasks,
-      )..where((row) => row.scopeId.equals(scopeId))).go();
-      await (_db.delete(_db.projects)..where(
-            (row) => row.scopeId.equals(scopeId) & row.id.isNotIn(projectIds),
-          ))
-          .go();
-      // Keep only the user's unsent text; do not retain cached shared snapshots.
-      final pending = await (_db.select(
-        _db.syncCommands,
-      )..where((row) => row.scopeId.equals(scopeId))).get();
-      for (final command in pending) {
-        final payload = jsonDecode(command.payloadJson) as Map<String, dynamic>;
-        final ownText = <String, dynamic>{
-          for (final key in ['content', 'description', 'body'])
-            if (payload[key] is String) key: payload[key],
-        };
-        if (ownText.isEmpty) {
-          await (_db.delete(
-            _db.syncCommands,
-          )..where((row) => row.id.equals(command.id))).go();
-        } else {
-          await (_db.update(
-            _db.syncCommands,
-          )..where((row) => row.id.equals(command.id))).write(
-            SyncCommandsCompanion(
-              status: const Value('revoked'),
-              payloadJson: Value(jsonEncode(ownText)),
-              lastError: const Value('access_revoked'),
-            ),
-          );
-        }
-      }
-      await (_db.delete(
-        _db.labels,
-      )..where((row) => row.scopeId.equals(scopeId))).go();
-      // The handed-back rows keep their shared entity marker; dropping it here
-      // would let the shared-entity guard in the pull accept a later change for
-      // the same id, so the same guard clears it when the row is applied.
-      await (_db.delete(_db.sharedEntities)..where(
-            (row) =>
-                row.scopeId.equals(scopeId) &
-                row.entityType.equals(keepEntityType ?? '') &
-                row.entityId.isIn(keepEntityIds),
-          ))
-          .go();
-      await (_db.delete(
-        _db.sharedScopes,
-      )..where((row) => row.id.equals(scopeId))).go();
-    });
   }
 }

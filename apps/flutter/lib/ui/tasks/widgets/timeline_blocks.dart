@@ -127,15 +127,32 @@ class _TimelineCompactTaskBlock extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
-                              task.content,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                    color: colors.primaryText,
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    task.content,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          fontWeight: FontWeight.w700,
+                                          color: colors.primaryText,
+                                        ),
                                   ),
+                                ),
+                                ConstrainedBox(
+                                  constraints: BoxConstraints(
+                                    maxWidth: constraints.maxWidth / 4,
+                                  ),
+                                  child: TaskHierarchySummary(
+                                    task: task,
+                                    compact: true,
+                                  ),
+                                ),
+                              ],
                             ),
                             if (timeLabel != null &&
                                 (!schedule!.isTimed ||

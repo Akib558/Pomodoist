@@ -241,6 +241,16 @@ class TaskLocalService {
     return _db.into(_db.taskLabels).insertOnConflictUpdate(link);
   }
 
+  Future<int> deleteUserTaskLabel(String taskId, String labelId) {
+    return (_db.delete(_db.taskLabels)..where(
+          (row) =>
+              row.taskId.equals(taskId) &
+              row.labelId.equals(labelId) &
+              row.kind.equals(labelKindUser),
+        ))
+        .go();
+  }
+
   Future<void> deleteTaskLabels(Iterable<String> taskIds) {
     return (_db.delete(
       _db.taskLabels,

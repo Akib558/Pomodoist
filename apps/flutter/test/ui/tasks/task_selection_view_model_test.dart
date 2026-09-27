@@ -222,6 +222,25 @@ void main() {
     expect(repository.completedIds, ['a']);
   });
 
+  test('bulk label removal reports only failed tasks', () async {
+    final repository = _FakeTaskRepository()..failUpdates.add('b');
+    final container = _container(repository: repository);
+    addTearDown(container.dispose);
+    final selection = container.read(
+      taskSelectionViewModelProvider(Object()).notifier,
+    );
+    selection.updateVisible([_task('a'), _task('b')]);
+    selection.begin('a');
+    selection.toggle('b');
+    final failed = await selection.removeLabels(selection.selectedIds, [
+      'Review',
+    ]);
+    expect(repository.removedLabelIds, ['a']);
+    expect(failed, ['b']);
+    selection.retainVisible(failed);
+    expect(selection.selectedIds, {'b'});
+  });
+
   test(
     'delete reports failed ids and batches for mixed recurring rows',
     () async {
@@ -324,6 +343,7 @@ class _FakeTaskRepository implements TaskRepository {
   final List<String> priorityIds = [];
   final List<String> clearedScheduleIds = [];
   final List<String> labelIds = [];
+  final List<String> removedLabelIds = [];
   final List<String> movedIds = [];
   final List<bool> clearedSections = [];
   final List<String> completedIds = [];
@@ -348,6 +368,13 @@ class _FakeTaskRepository implements TaskRepository {
         if (patch.clearSchedule) clearedScheduleIds.add(id);
         if (patch.priority != null) priorityIds.add(id);
         if (patch.labelNames != null) labelIds.add(id);
+      });
+
+  @override
+  Future<Result<void>> removeLabels(String id, List<String> names) =>
+      Result.capture(() async {
+        if (failUpdates.contains(id)) throw StateError('remove $id failed');
+        removedLabelIds.add(id);
       });
 
   @override

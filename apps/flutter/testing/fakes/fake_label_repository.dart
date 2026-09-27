@@ -26,7 +26,7 @@ class FakeLabelRepository extends StrictFake implements LabelRepository {
 
   final watchLabelsCalls = <void>[];
   final findByNameCalls = <String>[];
-  final createLabelCalls = <({String name, String? icon})>[];
+  final createLabelCalls = <({String name, String? icon, String? color})>[];
   final updateLabelIconCalls = <({String id, String icon})>[];
   final deleteLabelCalls = <String>[];
 
@@ -37,6 +37,9 @@ class FakeLabelRepository extends StrictFake implements LabelRepository {
   }
 
   @override
+  Stream<Map<String, int>> watchOpenTaskCounts() => Stream.value(const {});
+
+  @override
   Future<Result<LabelItem?>> findByName(String name) async {
     findByNameCalls.add(name);
     final error = findByNameError;
@@ -45,8 +48,12 @@ class FakeLabelRepository extends StrictFake implements LabelRepository {
   }
 
   @override
-  Future<Result<String>> createLabel(String name, {String? icon}) async {
-    createLabelCalls.add((name: name, icon: icon));
+  Future<Result<String>> createLabel(
+    String name, {
+    String? icon,
+    String? color,
+  }) async {
+    createLabelCalls.add((name: name, icon: icon, color: color));
     final error = createLabelError;
     if (error != null) return Result.error(error, StackTrace.current);
     return Result.ok(createdLabelId);
@@ -59,6 +66,14 @@ class FakeLabelRepository extends StrictFake implements LabelRepository {
     if (error != null) return Result.error(error, StackTrace.current);
     return const Result.ok(null);
   }
+
+  @override
+  Future<Result<void>> updateLabel(
+    String id, {
+    required String name,
+    required String color,
+    required String icon,
+  }) async => const Result.ok(null);
 
   @override
   Future<Result<void>> deleteLabel(String id) async {
