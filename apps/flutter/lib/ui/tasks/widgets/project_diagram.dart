@@ -7,7 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shadcn_ui/shadcn_ui.dart'
     show LucideIcons, ShadDialog, ShadInput, ShadButton, ShadContextMenuItem;
-import 'package:pomodoist/domain/models/settings/task_preferences.dart';
 import 'package:pomodoist/domain/models/tasks/project_hierarchy.dart';
 import 'package:pomodoist/domain/models/tasks/task_models.dart';
 import 'package:pomodoist/ui/core/localization/app_l10n.dart';
@@ -54,14 +53,8 @@ Size projectDiagramNodeSize(
 }
 
 class ProjectDiagram extends ConsumerStatefulWidget {
-  const ProjectDiagram({
-    this.projectId,
-    required this.mode,
-    this.isActive = true,
-    super.key,
-  });
+  const ProjectDiagram({this.projectId, this.isActive = true, super.key});
   final String? projectId;
-  final ProjectViewMode mode;
   final bool isActive;
   @override
   ConsumerState<ProjectDiagram> createState() => _ProjectDiagramState();
@@ -183,7 +176,7 @@ class _ProjectDiagramState extends ConsumerState<ProjectDiagram> {
           Directionality.of(context),
         ),
     };
-    final layout = layoutProjectTree(tree, widget.mode, sizes, rtl: rtl);
+    final layout = layoutProjectTree(tree, sizes, rtl: rtl);
     final selectedId = GoRouterState.of(context).uri.queryParameters['task'];
     final tasks = [
       for (final key in tree.visibleKeys)
@@ -236,27 +229,12 @@ class _ProjectDiagramState extends ConsumerState<ProjectDiagram> {
                                       child: CustomPaint(
                                         painter: _Connections(
                                           layout,
-                                          widget.mode,
                                           colors.border,
                                           rtl,
                                         ),
                                       ),
                                     ),
                                   ),
-                                  if (layout.ownTasksHeader case final rect?)
-                                    Positioned.fromRect(
-                                      rect: rect,
-                                      child: Align(
-                                        alignment:
-                                            AlignmentDirectional.centerStart,
-                                        child: Text(
-                                          l10n.projectOwnTasks,
-                                          style: Theme.of(
-                                            context,
-                                          ).textTheme.titleSmall,
-                                        ),
-                                      ),
-                                    ),
                                   for (final entry in layout.rects.entries)
                                     Positioned.fromRect(
                                       rect: entry.value,
@@ -670,9 +648,8 @@ class _DiagramNodeState extends ConsumerState<_DiagramNode> {
 }
 
 class _Connections extends CustomPainter {
-  _Connections(this.layout, this.mode, this.color, this.rtl);
+  _Connections(this.layout, this.color, this.rtl);
   final ProjectTreeLayout layout;
-  final ProjectViewMode mode;
   final Color color;
   final bool rtl;
   @override
@@ -685,39 +662,21 @@ class _Connections extends CustomPainter {
       final a = layout.rects[parent], b = layout.rects[child];
       if (a == null || b == null) continue;
       final path = Path();
-      if (mode == ProjectViewMode.map) {
-        final start = rtl ? a.centerLeft : a.centerRight,
-            end = rtl ? b.centerRight : b.centerLeft;
-        final mid = (start.dx + end.dx) / 2;
-        path
-          ..moveTo(start.dx, start.dy)
-          ..lineTo(mid, start.dy)
-          ..lineTo(mid, end.dy)
-          ..lineTo(end.dx, end.dy);
-      } else if (a.top < 40) {
-        path
-          ..moveTo(a.center.dx, a.bottom)
-          ..lineTo(a.center.dx, a.bottom + 24)
-          ..lineTo(b.center.dx, a.bottom + 24)
-          ..lineTo(b.center.dx, b.top);
-      } else {
-        final x = rtl ? a.right + 12 : a.left - 12;
-        path
-          ..moveTo(rtl ? a.right : a.left, a.center.dy)
-          ..lineTo(x, a.center.dy)
-          ..lineTo(x, b.center.dy)
-          ..lineTo(rtl ? b.right : b.left, b.center.dy);
-      }
+      final start = rtl ? a.centerLeft : a.centerRight,
+          end = rtl ? b.centerRight : b.centerLeft;
+      final mid = (start.dx + end.dx) / 2;
+      path
+        ..moveTo(start.dx, start.dy)
+        ..lineTo(mid, start.dy)
+        ..lineTo(mid, end.dy)
+        ..lineTo(end.dx, end.dy);
       canvas.drawPath(path, paint);
     }
   }
 
   @override
   bool shouldRepaint(_Connections old) =>
-      old.layout != layout ||
-      old.color != color ||
-      old.mode != mode ||
-      old.rtl != rtl;
+      old.layout != layout || old.color != color || old.rtl != rtl;
 }
 
 class _DiagramSubtaskDialog extends ConsumerStatefulWidget {

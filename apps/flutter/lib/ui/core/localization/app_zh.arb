@@ -1156,8 +1156,6 @@
   "taskParentPath": "所属任务：{path}",
   "projectViewList": "列表",
   "projectViewMap": "地图",
-  "projectViewBranches": "分支",
-  "projectOwnTasks": "项目任务",
   "projectShowCompleted": "显示已完成",
   "projectExpandBranch": "展开分支",
   "projectCollapseBranch": "折叠分支",

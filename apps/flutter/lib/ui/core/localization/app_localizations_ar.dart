@@ -3610,12 +3610,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get projectViewMap => 'خريطة';
 
   @override
-  String get projectViewBranches => 'فروع';
-
-  @override
-  String get projectOwnTasks => 'مهام المشروع';
-
-  @override
   String get projectShowCompleted => 'إظهار المكتملة';
 
   @override

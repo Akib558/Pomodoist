@@ -1156,8 +1156,6 @@
   "taskParentPath": "Parte de: {path}",
   "projectViewList": "Lista",
   "projectViewMap": "Mapa",
-  "projectViewBranches": "Ramas",
-  "projectOwnTasks": "Tareas del proyecto",
   "projectShowCompleted": "Mostrar completadas",
   "projectExpandBranch": "Expandir rama",
   "projectCollapseBranch": "Contraer rama",

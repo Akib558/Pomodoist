@@ -3478,12 +3478,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get projectViewMap => '地图';
 
   @override
-  String get projectViewBranches => '分支';
-
-  @override
-  String get projectOwnTasks => '项目任务';
-
-  @override
   String get projectShowCompleted => '显示已完成';
 
   @override

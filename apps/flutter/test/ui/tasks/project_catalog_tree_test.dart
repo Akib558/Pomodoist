@@ -2,7 +2,6 @@ import 'dart:ui';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pomodoist/domain/models/tasks/task_models.dart';
 import 'package:pomodoist/domain/models/tasks/project_hierarchy.dart';
-import 'package:pomodoist/domain/models/settings/task_preferences.dart';
 import 'package:pomodoist/ui/tasks/view_models/project_tree_data.dart';
 import 'package:pomodoist/ui/tasks/view_models/project_tree_layout.dart';
 import '../../../testing/models/task_fixtures.dart';
@@ -260,40 +259,36 @@ void main() {
           [buildTask(id: 't', projectId: 'p')],
         ),
       ]) {
-        for (final mode in [ProjectViewMode.map, ProjectViewMode.branches]) {
-          final layout = layoutProjectTree(tree, mode, {
-            for (final key in tree.visibleKeys) key: const Size(304, 180),
-          });
-          expect(layout.size.isFinite, true);
-          expect(layout.rects.keys.toSet(), tree.visibleKeys.toSet());
-        }
+        final layout = layoutProjectTree(tree, {
+          for (final key in tree.visibleKeys) key: const Size(304, 180),
+        });
+        expect(layout.size.isFinite, true);
+        expect(layout.rects.keys.toSet(), tree.visibleKeys.toSet());
       }
     },
   );
   test(
-    'catalog layouts cover every visible node without overlaps and mirror RTL',
+    'catalog map covers every visible node without overlaps and mirrors RTL',
     () {
       final tree = data(search: 'alpha');
       final sizes = {
         for (final key in tree.visibleKeys)
           key: Size(440, key.length * 20.0 + 150),
       };
-      for (final mode in [ProjectViewMode.map, ProjectViewMode.branches]) {
-        final layout = layoutProjectTree(tree, mode, sizes);
-        final rtl = layoutProjectTree(tree, mode, sizes, rtl: true);
-        expect(layout.rects.keys.toSet(), tree.visibleKeys.toSet());
-        final rects = layout.rects.values.toList();
-        for (var i = 0; i < rects.length; i++) {
-          for (var j = i + 1; j < rects.length; j++) {
-            expect(rects[i].overlaps(rects[j]), false);
-          }
+      final layout = layoutProjectTree(tree, sizes);
+      final rtl = layoutProjectTree(tree, sizes, rtl: true);
+      expect(layout.rects.keys.toSet(), tree.visibleKeys.toSet());
+      final rects = layout.rects.values.toList();
+      for (var i = 0; i < rects.length; i++) {
+        for (var j = i + 1; j < rects.length; j++) {
+          expect(rects[i].overlaps(rects[j]), false);
         }
-        for (final key in layout.rects.keys) {
-          expect(
-            rtl.rects[key]!.left,
-            closeTo(layout.size.width - layout.rects[key]!.right, .01),
-          );
-        }
+      }
+      for (final key in layout.rects.keys) {
+        expect(
+          rtl.rects[key]!.left,
+          closeTo(layout.size.width - layout.rects[key]!.right, .01),
+        );
       }
     },
   );

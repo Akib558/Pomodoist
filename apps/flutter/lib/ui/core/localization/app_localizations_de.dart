@@ -3694,12 +3694,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get projectViewMap => 'Karte';
 
   @override
-  String get projectViewBranches => 'Zweige';
-
-  @override
-  String get projectOwnTasks => 'Projektaufgaben';
-
-  @override
   String get projectShowCompleted => 'Erledigte anzeigen';
 
   @override

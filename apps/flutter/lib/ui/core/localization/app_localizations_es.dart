@@ -3690,12 +3690,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get projectViewMap => 'Mapa';
 
   @override
-  String get projectViewBranches => 'Ramas';
-
-  @override
-  String get projectOwnTasks => 'Tareas del proyecto';
-
-  @override
   String get projectShowCompleted => 'Mostrar completadas';
 
   @override

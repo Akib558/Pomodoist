@@ -3,7 +3,6 @@ import 'package:flutter/widgets.dart';
 import 'package:pomodoist/ui/tasks/widgets/project_diagram.dart';
 import 'package:pomodoist/ui/tasks/widgets/project_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:pomodoist/domain/models/settings/task_preferences.dart';
 import 'package:pomodoist/domain/models/tasks/project_hierarchy.dart';
 import 'package:pomodoist/ui/tasks/view_models/project_tree_data.dart';
 import 'package:pomodoist/ui/tasks/view_models/project_tree_layout.dart';
@@ -208,33 +207,31 @@ void main() {
     expect(const ProjectScreen(projectId: 'root').projectId, 'root');
   });
   test(
-    'both layouts use measured sizes, have no overlaps and mirror in RTL',
+    'map layout uses measured sizes, has no overlaps and mirrors in RTL',
     () {
       final tree = data(
         completed: true,
         expansion: {'p:deep': true, 't:a': true, 't:b': true},
       );
-      for (final mode in [ProjectViewMode.map, ProjectViewMode.branches]) {
-        final sizes = {
-          for (final key in tree.visibleKeys)
-            key: Size(380, key == 't:a' ? 220 : 120),
-        };
-        final layout = layoutProjectTree(tree, mode, sizes);
-        final rtl = layoutProjectTree(tree, mode, sizes, rtl: true);
-        final entries = layout.rects.entries.toList();
-        for (var i = 0; i < entries.length; i++) {
-          expect(entries[i].value.size, sizes[entries[i].key]);
+      final sizes = {
+        for (final key in tree.visibleKeys)
+          key: Size(380, key == 't:a' ? 220 : 120),
+      };
+      final layout = layoutProjectTree(tree, sizes);
+      final rtl = layoutProjectTree(tree, sizes, rtl: true);
+      final entries = layout.rects.entries.toList();
+      for (var i = 0; i < entries.length; i++) {
+        expect(entries[i].value.size, sizes[entries[i].key]);
+        expect(
+          rtl.rects[entries[i].key]!.left,
+          closeTo(layout.size.width - entries[i].value.right, .01),
+        );
+        for (var j = i + 1; j < entries.length; j++) {
           expect(
-            rtl.rects[entries[i].key]!.left,
-            closeTo(layout.size.width - entries[i].value.right, .01),
+            entries[i].value.overlaps(entries[j].value),
+            false,
+            reason: '${entries[i].key} / ${entries[j].key}',
           );
-          for (var j = i + 1; j < entries.length; j++) {
-            expect(
-              entries[i].value.overlaps(entries[j].value),
-              false,
-              reason: '${entries[i].key} / ${entries[j].key} / $mode',
-            );
-          }
         }
       }
     },

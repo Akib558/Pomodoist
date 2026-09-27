@@ -1767,8 +1767,6 @@
   "taskParentPath": "親タスク：{path}",
   "projectViewList": "リスト",
   "projectViewMap": "マップ",
-  "projectViewBranches": "ブランチ",
-  "projectOwnTasks": "プロジェクトのタスク",
   "projectShowCompleted": "完了済みを表示",
   "projectExpandBranch": "ブランチを展開",
   "projectCollapseBranch": "ブランチを折りたたむ",

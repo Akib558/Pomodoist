@@ -3702,12 +3702,6 @@ class AppLocalizationsPt extends AppLocalizations {
   String get projectViewMap => 'Mapa';
 
   @override
-  String get projectViewBranches => 'Ramos';
-
-  @override
-  String get projectOwnTasks => 'Tarefas do projeto';
-
-  @override
   String get projectShowCompleted => 'Mostrar concluídas';
 
   @override
@@ -3960,12 +3954,6 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get projectViewMap => 'Mapa';
-
-  @override
-  String get projectViewBranches => 'Ramos';
-
-  @override
-  String get projectOwnTasks => 'Tarefas do projeto';
 
   @override
   String get projectShowCompleted => 'Mostrar concluídas';

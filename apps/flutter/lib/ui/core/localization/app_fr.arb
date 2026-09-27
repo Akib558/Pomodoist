@@ -1156,8 +1156,6 @@
   "taskParentPath": "Fait partie de : {path}",
   "projectViewList": "Liste",
   "projectViewMap": "Carte",
-  "projectViewBranches": "Branches",
-  "projectOwnTasks": "Tâches du projet",
   "projectShowCompleted": "Afficher les tâches terminées",
   "projectExpandBranch": "Déplier la branche",
   "projectCollapseBranch": "Replier la branche",

@@ -660,20 +660,18 @@ row density and drag semantics remain independent of disclosure. Interactive
 disclosure and parent links have at least 44 px touch targets; compact summaries rely
 on the containing task's accessible activation target.
 
-### Project map and branches
+### Project map
 
-An open project exposes List, Map and Branches directly in its heading. The last
+An open project exposes List and Map directly in its heading. The last
 choice is a single local preference for every project, initially List; it is not
 an Appearance setting or synchronized project data. Keep the shared Quick Add
 composer mounted, preserve detail routing and drafts, and retain each visited
 view's scroll position while the project remains open.
 
 Map lays out the current project horizontally through existing subprojects,
-tasks and subtasks. Branches gives each immediate subproject a column; tasks
-owned directly by the open project use a visual Project tasks column. This
-column is not a new entity. Both views share one hierarchy projection and local
-expansion scope per open project. Root and first-level branches begin expanded;
-deeper branches begin collapsed. Empty subprojects remain visible. Exclude
+tasks and subtasks. It uses a shared hierarchy projection and a local
+expansion scope per open project. Root and first-level nodes begin expanded;
+deeper nodes begin collapsed. Empty subprojects remain visible. Exclude
 archived/deleted descendant projects; hide completed tasks initially, with an
 inline Show completed control. Progress includes all accessible descendants,
 independently of filtering and disclosure. Order projects before tasks, retaining
@@ -691,12 +689,12 @@ the entire task subtree atomically with order and sync-queue changes. Projects
 can move only relative to other projects; the diagram root is not draggable.
 Reject cycles, unavailable destinations and forbidden scope changes. Invalid
 drop zones do not highlight. Dragging near the viewport edge scrolls the canvas.
-On touch, both views scroll normally and structure changes use menus instead
+On touch, Map scrolls normally and structure changes use menus instead
 of long-press dragging. The ordinary list and project catalog retain their
 existing hierarchy and interaction rules.
 
-The Projects catalog also offers List, Map and Branches directly in its heading.
-Its view preference and shared map/branches expansion scope are local and
+The Projects catalog also offers List and Map directly in its heading.
+Its view preference and map expansion scope are local and
 independent of the view inside individual projects. A display-only Projects root
 connects the project forest; it is never a stored project or a task destination.
 Exclude Inbox. Keep empty projects and promote projects whose parent is excluded

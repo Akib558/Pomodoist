@@ -1886,8 +1886,6 @@
   },
   "projectViewList": "List",
   "projectViewMap": "Map",
-  "projectViewBranches": "Branches",
-  "projectOwnTasks": "Project tasks",
   "projectShowCompleted": "Show completed",
   "projectExpandBranch": "Expand branch",
   "projectCollapseBranch": "Collapse branch",

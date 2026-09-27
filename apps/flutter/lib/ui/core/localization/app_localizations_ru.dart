@@ -3675,12 +3675,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get projectViewMap => 'Карта';
 
   @override
-  String get projectViewBranches => 'Ветки';
-
-  @override
-  String get projectOwnTasks => 'Задачи проекта';
-
-  @override
   String get projectShowCompleted => 'Показать завершённые';
 
   @override

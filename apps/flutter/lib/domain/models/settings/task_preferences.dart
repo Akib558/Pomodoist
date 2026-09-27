@@ -23,7 +23,7 @@ const defaultTimelineVisibleEndMinutes = 24 * 60;
 const defaultTimelineHourWidth = 192;
 const timelineHourWidthLevels = <int>[96, 144, 192, 288, 384];
 
-enum ProjectViewMode { list, map, branches }
+enum ProjectViewMode { list, map }
 
 enum TaskListStyle { modern, classic }
 

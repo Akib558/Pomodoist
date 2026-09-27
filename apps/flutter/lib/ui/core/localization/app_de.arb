@@ -1156,8 +1156,6 @@
   "taskParentPath": "Teil von: {path}",
   "projectViewList": "Liste",
   "projectViewMap": "Karte",
-  "projectViewBranches": "Zweige",
-  "projectOwnTasks": "Projektaufgaben",
   "projectShowCompleted": "Erledigte anzeigen",
   "projectExpandBranch": "Zweig aufklappen",
   "projectCollapseBranch": "Zweig einklappen",

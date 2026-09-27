@@ -3559,12 +3559,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get projectViewMap => 'マップ';
 
   @override
-  String get projectViewBranches => 'ブランチ';
-
-  @override
-  String get projectOwnTasks => 'プロジェクトのタスク';
-
-  @override
   String get projectShowCompleted => '完了済みを表示';
 
   @override

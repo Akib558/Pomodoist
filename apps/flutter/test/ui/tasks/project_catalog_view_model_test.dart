@@ -66,15 +66,15 @@ void main() {
       await container.pump();
       final catalog = container.read(catalogProvider.notifier);
       final project = container.read(projectProvider.notifier);
-      await catalog.setMode(ProjectViewMode.branches);
-      await project.setMode(ProjectViewMode.map);
+      await catalog.setMode(ProjectViewMode.map);
+      await project.setMode(ProjectViewMode.list);
       await catalog.expand('p:root', false);
       await container.pump();
       expect(
         container.read(projectCatalogViewModeProvider),
-        ProjectViewMode.branches,
+        ProjectViewMode.map,
       );
-      expect(container.read(projectViewModeProvider), ProjectViewMode.map);
+      expect(container.read(projectViewModeProvider), ProjectViewMode.list);
       expect(
         container.read(catalogProvider).tree.visibleKeys,
         isNot(contains('p:child')),

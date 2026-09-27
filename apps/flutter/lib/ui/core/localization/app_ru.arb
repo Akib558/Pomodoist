@@ -1156,8 +1156,6 @@
   "taskParentPath": "Часть задачи: {path}",
   "projectViewList": "Список",
   "projectViewMap": "Карта",
-  "projectViewBranches": "Ветки",
-  "projectOwnTasks": "Задачи проекта",
   "projectShowCompleted": "Показать завершённые",
   "projectExpandBranch": "Развернуть ветку",
   "projectCollapseBranch": "Свернуть ветку",

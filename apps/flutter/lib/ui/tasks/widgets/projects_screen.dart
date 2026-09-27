@@ -184,11 +184,6 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
                               height: tabHeight,
                               child: Text(l10n.projectViewMap),
                             ),
-                            ShadTab(
-                              value: ProjectViewMode.branches,
-                              height: tabHeight,
-                              child: Text(l10n.projectViewBranches),
-                            ),
                           ],
                         ),
                         if (catalogMode != ProjectViewMode.list)
@@ -431,18 +426,14 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
                         ),
                     ],
                   ),
-                  for (final view in [
-                    ProjectViewMode.map,
-                    ProjectViewMode.branches,
-                  ])
-                    if (_visitedViews.contains(view))
-                      ProjectDiagram(
-                        key: ValueKey('catalog:${view.name}'),
-                        mode: view,
-                        isActive: projectMode && catalogMode == view,
-                      )
-                    else
-                      const SizedBox.shrink(),
+                  if (_visitedViews.contains(ProjectViewMode.map))
+                    ProjectDiagram(
+                      key: const ValueKey('catalog:map'),
+                      isActive:
+                          projectMode && catalogMode == ProjectViewMode.map,
+                    )
+                  else
+                    const SizedBox.shrink(),
                 ],
               ),
             ),

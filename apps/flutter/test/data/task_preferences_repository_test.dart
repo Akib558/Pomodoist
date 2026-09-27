@@ -21,9 +21,7 @@ void main() {
       addTearDown(repository.dispose);
       expect(repository.state.projectCatalogViewMode, ProjectViewMode.list);
       final loading = repository.load();
-      final saving = repository.setProjectCatalogViewMode(
-        ProjectViewMode.branches,
-      );
+      final saving = repository.setProjectCatalogViewMode(ProjectViewMode.list);
       ready.complete(await SharedPreferences.getInstance());
       (await loading).getOrThrow();
       (await saving).getOrThrow();
@@ -31,7 +29,7 @@ void main() {
       final restored = LocalTaskPreferencesRepository(service);
       addTearDown(restored.dispose);
       (await restored.load()).getOrThrow();
-      expect(restored.state.projectCatalogViewMode, ProjectViewMode.branches);
+      expect(restored.state.projectCatalogViewMode, ProjectViewMode.list);
       expect(restored.state.projectViewMode, ProjectViewMode.map);
     },
   );
@@ -44,9 +42,7 @@ void main() {
       addTearDown(repository.dispose);
       final first = repository.setProjectCatalogViewMode(ProjectViewMode.map);
       await service.started.future;
-      final second = repository.setProjectCatalogViewMode(
-        ProjectViewMode.branches,
-      );
+      final second = repository.setProjectCatalogViewMode(ProjectViewMode.list);
       await Future<void>.delayed(Duration.zero);
       expect(service.writeCount, 1);
       service.release.complete();
@@ -56,7 +52,7 @@ void main() {
       final restored = LocalTaskPreferencesRepository(service);
       addTearDown(restored.dispose);
       (await restored.load()).getOrThrow();
-      expect(restored.state.projectCatalogViewMode, ProjectViewMode.branches);
+      expect(restored.state.projectCatalogViewMode, ProjectViewMode.list);
       expect(restored.state.projectViewMode, ProjectViewMode.list);
     },
   );
@@ -70,7 +66,7 @@ void main() {
       addTearDown(repository.dispose);
       final first = repository.setProjectViewMode(ProjectViewMode.map);
       await preferences.started.future;
-      final second = repository.setProjectViewMode(ProjectViewMode.branches);
+      final second = repository.setProjectViewMode(ProjectViewMode.list);
       await Future<void>.delayed(Duration.zero);
       expect(preferences.writeCount, 1);
       preferences.release.complete();
@@ -80,7 +76,7 @@ void main() {
       final restored = LocalTaskPreferencesRepository(preferences);
       addTearDown(restored.dispose);
       (await restored.load()).getOrThrow();
-      expect(restored.state.projectViewMode, ProjectViewMode.branches);
+      expect(restored.state.projectViewMode, ProjectViewMode.list);
     },
   );
 
@@ -88,7 +84,7 @@ void main() {
     'project view is global, survives reload, and wins against delayed hydration',
     () async {
       SharedPreferences.setMockInitialValues({
-        projectViewModePreferenceKey: 'map',
+        projectViewModePreferenceKey: 'list',
       });
       final ready = Completer<SharedPreferences?>();
       final preferences = PreferencesService(() => ready.future);
@@ -96,17 +92,31 @@ void main() {
       addTearDown(repository.dispose);
       expect(repository.state.projectViewMode, ProjectViewMode.list);
       final loading = repository.load();
-      final saving = repository.setProjectViewMode(ProjectViewMode.branches);
+      final saving = repository.setProjectViewMode(ProjectViewMode.map);
       ready.complete(await SharedPreferences.getInstance());
       (await loading).getOrThrow();
       (await saving).getOrThrow();
-      expect(repository.state.projectViewMode, ProjectViewMode.branches);
+      expect(repository.state.projectViewMode, ProjectViewMode.map);
       final restored = LocalTaskPreferencesRepository(preferences);
       addTearDown(restored.dispose);
       (await restored.load()).getOrThrow();
-      expect(restored.state.projectViewMode, ProjectViewMode.branches);
+      expect(restored.state.projectViewMode, ProjectViewMode.map);
     },
   );
+
+  test('retired view choices load as List in both scopes', () async {
+    SharedPreferences.setMockInitialValues({
+      projectViewModePreferenceKey: 'branches',
+      projectCatalogViewModePreferenceKey: 'branches',
+    });
+    final repository = LocalTaskPreferencesRepository(
+      PreferencesService(SharedPreferences.getInstance),
+    );
+    addTearDown(repository.dispose);
+    (await repository.load()).getOrThrow();
+    expect(repository.state.projectViewMode, ProjectViewMode.list);
+    expect(repository.state.projectCatalogViewMode, ProjectViewMode.list);
+  });
 
   test(
     'a late load preserves local edits and loads unrelated saved values',

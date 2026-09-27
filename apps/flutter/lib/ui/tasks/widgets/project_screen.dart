@@ -82,10 +82,6 @@ class _ProjectContentState extends ConsumerState<_ProjectContent> {
                       value: ProjectViewMode.map,
                       child: Text(l10n.projectViewMap),
                     ),
-                    ShadTab(
-                      value: ProjectViewMode.branches,
-                      child: Text(l10n.projectViewBranches),
-                    ),
                   ],
                 ),
                 if (diagram != null)
@@ -121,7 +117,7 @@ class _ProjectContentState extends ConsumerState<_ProjectContent> {
                 if (project?.canEdit == true &&
                     project?.isArchived == false) ...[
                   const SizedBox(height: 12),
-                  // This composer stays mounted across all three view changes.
+                  // This composer stays mounted across view changes.
                   QuickAddBar(projectId: widget.projectId),
                 ],
               ],
@@ -151,7 +147,6 @@ class _ProjectContentState extends ConsumerState<_ProjectContent> {
                     ProjectDiagram(
                       key: ValueKey('${widget.projectId}:${view.name}'),
                       projectId: widget.projectId,
-                      mode: view,
                       isActive: mode == view,
                     ),
               ],

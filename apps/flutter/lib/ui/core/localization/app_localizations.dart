@@ -6275,18 +6275,6 @@ abstract class AppLocalizations {
   /// **'Map'**
   String get projectViewMap;
 
-  /// No description provided for @projectViewBranches.
-  ///
-  /// In en, this message translates to:
-  /// **'Branches'**
-  String get projectViewBranches;
-
-  /// No description provided for @projectOwnTasks.
-  ///
-  /// In en, this message translates to:
-  /// **'Project tasks'**
-  String get projectOwnTasks;
-
   /// No description provided for @projectShowCompleted.
   ///
   /// In en, this message translates to:

@@ -1156,8 +1156,6 @@
   "taskParentPath": "جزء من: {path}",
   "projectViewList": "قائمة",
   "projectViewMap": "خريطة",
-  "projectViewBranches": "فروع",
-  "projectOwnTasks": "مهام المشروع",
   "projectShowCompleted": "إظهار المكتملة",
   "projectExpandBranch": "توسيع الفرع",
   "projectCollapseBranch": "طي الفرع",

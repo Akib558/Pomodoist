@@ -3569,12 +3569,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get projectViewMap => '지도';
 
   @override
-  String get projectViewBranches => '가지';
-
-  @override
-  String get projectOwnTasks => '프로젝트 작업';
-
-  @override
   String get projectShowCompleted => '완료된 작업 표시';
 
   @override
