@@ -7,7 +7,7 @@ import 'package:pomodoist/ui/core/themes/app_motion.dart';
 import 'package:pomodoist/ui/core/themes/app_theme.dart';
 import 'package:pomodoist/domain/models/billing/billing_models.dart';
 import 'package:pomodoist/ui/billing/view_models/billing_view_model.dart';
-import 'package:pomodoist/ui/onboarding/widgets/onboarding_gate.dart';
+import 'package:pomodoist/ui/billing/widgets/launch_offer_paywall.dart';
 import 'package:pomodoist/ui/settings/widgets/settings_components.dart';
 
 /// A failed or unfinished lookup is not evidence of a Free subscription.

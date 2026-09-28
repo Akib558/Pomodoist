@@ -17,7 +17,7 @@ import 'package:pomodoist/ui/core/localization/app_l10n.dart';
 import 'package:pomodoist/ui/core/widgets/app_date_time_picker.dart';
 import 'package:pomodoist/ui/core/themes/app_theme.dart';
 import 'package:pomodoist/ui/core/themes/app_motion.dart';
-import 'package:pomodoist/ui/onboarding/widgets/onboarding_gate.dart';
+import 'package:pomodoist/ui/billing/widgets/launch_offer_paywall.dart';
 import 'package:pomodoist/ui/tasks/view_models/quick_add_text_controller.dart';
 import 'package:pomodoist/ui/tasks/widgets/quick_add_details.dart';
 import 'package:pomodoist/ui/tasks/widgets/voice_panel_motion.dart';

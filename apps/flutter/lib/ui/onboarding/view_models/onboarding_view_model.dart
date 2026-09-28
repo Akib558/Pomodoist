@@ -7,7 +7,7 @@ import 'package:pomodoist/config/focus_dependencies.dart';
 import 'package:pomodoist/config/task_preferences_dependencies.dart';
 import 'package:pomodoist/domain/models/focus/focus_view_mode.dart';
 import 'package:pomodoist/domain/models/settings/app_language.dart';
-import 'package:pomodoist/ui/onboarding/view_models/learning_tour_view_model.dart';
+import 'package:pomodoist/domain/models/settings/task_preferences.dart';
 
 const onboardingCompletedPreferenceKey = 'onboarding.completed.v1';
 const launchOfferStartedAtPreferenceKey = 'launchOffer.startedAt.v1';
@@ -142,7 +142,6 @@ class OnboardingViewModel extends Notifier<OnboardingState> {
       onboardingCompletedPreferenceKey: true,
       learningTourInvitationPendingPreferenceKey: true,
     })).getOrThrow();
-    ref.invalidate(learningTourProvider);
     if (ref.mounted) state = state.copyWith(completed: true);
   }
 

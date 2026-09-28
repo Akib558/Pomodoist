@@ -15,7 +15,7 @@ import 'package:pomodoist/ui/onboarding/widgets/learning_tour_overlay.dart';
 import 'package:pomodoist/ui/onboarding/view_models/learning_tour_view_model.dart';
 import 'package:pomodoist/domain/models/billing/billing_models.dart';
 import 'package:pomodoist/ui/billing/view_models/billing_view_model.dart';
-import 'package:pomodoist/ui/billing/widgets/billing_paywall.dart';
+import 'package:pomodoist/ui/billing/widgets/launch_offer_paywall.dart';
 import 'package:pomodoist/ui/onboarding/view_models/onboarding_view_model.dart';
 export 'package:pomodoist/ui/onboarding/view_models/onboarding_view_model.dart';
 import 'package:pomodoist/ui/settings/widgets/pomodoist_account_actions.dart';
@@ -29,6 +29,12 @@ class OnboardingGate extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(onboardingViewModelProvider.select((state) => state.completed), (
+      _,
+      completed,
+    ) {
+      if (completed) ref.invalidate(learningTourProvider);
+    });
     ref.watch(billingAccessProvider);
     final state = ref.watch(onboardingViewModelProvider);
     final tour = ref.watch(learningTourProvider).value;
@@ -699,73 +705,6 @@ class _TimerStep extends ConsumerWidget {
           style: Theme.of(context).textTheme.bodySmall,
         ),
       ],
-    );
-  }
-}
-
-class LaunchOfferPaywall extends ConsumerStatefulWidget {
-  const LaunchOfferPaywall({
-    super.key,
-    this.compact = false,
-    this.onClose,
-    this.showPlansWhenActive = false,
-  });
-
-  final bool compact;
-  final bool showPlansWhenActive;
-  final VoidCallback? onClose;
-
-  @override
-  ConsumerState<LaunchOfferPaywall> createState() => _LaunchOfferPaywallState();
-}
-
-class _LaunchOfferPaywallState extends ConsumerState<LaunchOfferPaywall> {
-  Timer? _timer;
-
-  @override
-  void initState() {
-    super.initState();
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) {
-        setState(() {});
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final onboarding = ref.watch(onboardingViewModelProvider);
-    final billing = ref.watch(billingViewModelProvider);
-    final now = ref.read(onboardingViewModelProvider.notifier).now();
-    final serverOwned =
-        ref.watch(billingChannelProvider) == BillingChannel.stripe &&
-        ref.watch(billingSignedInProvider);
-    final remaining = serverOwned
-        ? stripeLaunchOfferRemaining(
-            now: now,
-            endsAt: billing.stripeLaunchOfferEndsAt,
-          )
-        : launchOfferRemaining(
-            now: now,
-            startedAt: onboarding.launchOfferStartedAt,
-          );
-    final offerActive =
-        remaining > Duration.zero &&
-        (!serverOwned || billing.stripeLaunchOfferEligible);
-    return BillingPaywall(
-      compact: widget.compact,
-      showPlansWhenActive: widget.showPlansWhenActive,
-      onClose: widget.onClose,
-      launchOfferMode: offerActive,
-      launchOfferTimerLabel: offerActive
-          ? formatLaunchOfferRemaining(remaining)
-          : null,
     );
   }
 }

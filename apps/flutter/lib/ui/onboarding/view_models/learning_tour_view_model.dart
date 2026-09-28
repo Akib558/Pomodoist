@@ -1,8 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pomodoist/config/task_preferences_dependencies.dart';
-
-const learningTourInvitationPendingPreferenceKey =
-    'learningTour.invitationPending.v1';
+import 'package:pomodoist/domain/models/settings/task_preferences.dart';
 
 enum LearningTourStep {
   inactive,

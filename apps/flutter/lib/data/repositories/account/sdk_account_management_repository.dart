@@ -78,8 +78,9 @@ class SdkAccountManagementRepository implements AccountManagementRepository {
     final value = name.trim();
     if (value.isEmpty) throw ArgumentError.value(name, 'nickname');
     final profile = _profile();
-    if (profile == null)
+    if (profile == null) {
       throw StateError('The profile service is unavailable.');
+    }
     (await profile.updateNickname(_userId!, value).timeout(_timeout))
         .getOrThrow();
   });

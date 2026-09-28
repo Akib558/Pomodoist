@@ -1,4 +1,5 @@
 import 'package:pomodoist/domain/models/settings/app_language.dart';
+import 'package:pomodoist/domain/models/settings/task_preferences.dart';
 import 'package:pomodoist/ui/core/localization/app_locale.dart';
 import 'package:pomodoist/data/repositories/focus/focus_preferences_repository.dart';
 import 'package:shadcn_ui/shadcn_ui.dart' show ShadButton;
@@ -31,7 +32,6 @@ import 'package:pomodoist/ui/billing/widgets/billing_paywall.dart';
 import 'package:pomodoist/ui/billing/widgets/purchase_success_screen.dart';
 import 'package:pomodoist/domain/models/focus/focus_view_mode.dart';
 import 'package:pomodoist/ui/onboarding/widgets/onboarding_gate.dart';
-import 'package:pomodoist/ui/onboarding/view_models/learning_tour_view_model.dart';
 import 'package:pomodoist/ui/core/localization/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -2510,10 +2510,14 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('onboarding-next-button')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('onboarding-next-button')));
-    await tester.pumpAndSettle();
+    for (
+      var step = OnboardingStep.language.index;
+      step < OnboardingStep.paywall.index;
+      step++
+    ) {
+      await tester.tap(find.byKey(const Key('onboarding-next-button')));
+      await tester.pumpAndSettle();
+    }
 
     expect(
       find.byKey(const ValueKey('onboarding-step-paywall')),

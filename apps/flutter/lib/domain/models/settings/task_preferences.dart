@@ -1,5 +1,8 @@
 import 'package:pomodoist/domain/models/tasks/task_time.dart';
 
+const learningTourInvitationPendingPreferenceKey =
+    'learningTour.invitationPending.v1';
+
 const reengagementNotificationsEnabledPreferenceKey =
     'notifications.reengagement.enabled';
 const quickAddDefaultTimedBlockMinutesPreferenceKey =
