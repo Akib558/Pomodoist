@@ -31,6 +31,7 @@ import 'package:pomodoist/ui/billing/widgets/billing_paywall.dart';
 import 'package:pomodoist/ui/billing/widgets/purchase_success_screen.dart';
 import 'package:pomodoist/domain/models/focus/focus_view_mode.dart';
 import 'package:pomodoist/ui/onboarding/widgets/onboarding_gate.dart';
+import 'package:pomodoist/ui/onboarding/view_models/learning_tour_view_model.dart';
 import 'package:pomodoist/ui/core/localization/app_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -2088,6 +2089,10 @@ void main() {
       ),
       isTrue,
     );
+    expect(find.text('Take a quick look around Pomodoist?'), findsOneWidget);
+    expect(find.byKey(const Key('launch-offer-mini-window')), findsNothing);
+    await tester.tap(find.text('Later'));
+    await tester.pumpAndSettle();
     if (pomodoistDevUnlock) {
       expect(find.byKey(const Key('launch-offer-mini-window')), findsNothing);
       return;
@@ -2263,10 +2268,45 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(prefs.getBool(onboardingCompletedPreferenceKey), isTrue);
+    expect(prefs.getBool(learningTourInvitationPendingPreferenceKey), isTrue);
+    expect(find.text('Посмотреть, как устроен Pomodoist?'), findsOneWidget);
     expect(
       find.byKey(const ValueKey('onboarding-step-language')),
       findsNothing,
     );
+  });
+
+  testWidgets('finishing the last onboarding slide offers the app tour', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          billingStoreProvider.overrideWithValue(_FakeBillingStore()),
+          applePurchasesSupportedProvider.overrideWithValue(true),
+          clockProvider.overrideWithValue(FixedClock(DateTime.utc(2026))),
+        ],
+        child: const _OnboardingHarness(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(OnboardingGate)),
+    );
+    container
+        .read(onboardingViewModelProvider.notifier)
+        .selectStep(OnboardingStep.account);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('onboarding-next-button')));
+    await tester.pumpAndSettle();
+
+    expect(
+      (await SharedPreferences.getInstance()).getBool(
+        learningTourInvitationPendingPreferenceKey,
+      ),
+      isTrue,
+    );
+    expect(find.text('Take a quick look around Pomodoist?'), findsOneWidget);
   });
 
   testWidgets('expired promo offer does not show mini timer', (tester) async {

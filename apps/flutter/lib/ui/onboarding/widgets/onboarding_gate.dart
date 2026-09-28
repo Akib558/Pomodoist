@@ -11,6 +11,8 @@ import 'package:pomodoist/ui/core/themes/app_theme.dart';
 import 'package:pomodoist/ui/core/themes/app_motion.dart';
 import 'package:pomodoist/ui/onboarding/widgets/onboarding_illustration.dart';
 import 'package:pomodoist/ui/onboarding/widgets/onboarding_appearance_steps.dart';
+import 'package:pomodoist/ui/onboarding/widgets/learning_tour_overlay.dart';
+import 'package:pomodoist/ui/onboarding/view_models/learning_tour_view_model.dart';
 import 'package:pomodoist/domain/models/billing/billing_models.dart';
 import 'package:pomodoist/ui/billing/view_models/billing_view_model.dart';
 import 'package:pomodoist/ui/billing/widgets/billing_paywall.dart';
@@ -29,14 +31,22 @@ class OnboardingGate extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(billingAccessProvider);
     final state = ref.watch(onboardingViewModelProvider);
+    final tour = ref.watch(learningTourProvider).value;
     return Stack(
+      fit: StackFit.expand,
       children: [
         ExcludeFocus(
-          excluding: !state.loading && !state.completed,
+          excluding:
+              !state.loading &&
+              (!state.completed || tour == LearningTourStep.invitation),
           child: child,
         ),
         if (!state.loading && !state.completed) const _OnboardingOverlay(),
-        if (!state.loading && state.completed) const _LaunchOfferMiniWindow(),
+        if (!state.loading &&
+            state.completed &&
+            tour == LearningTourStep.inactive)
+          const _LaunchOfferMiniWindow(),
+        if (!state.loading && state.completed) const LearningTourOverlay(),
       ],
     );
   }

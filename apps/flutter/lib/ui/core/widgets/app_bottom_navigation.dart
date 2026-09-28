@@ -7,6 +7,7 @@ import 'package:pomodoist/ui/core/themes/app_theme.dart';
 import 'package:pomodoist/ui/core/widgets/bottom_navigation_destination.dart';
 import 'package:pomodoist/ui/core/widgets/bottom_navigation_layout.dart';
 import 'package:pomodoist/ui/core/widgets/bottom_panel_surface.dart';
+import 'package:pomodoist/ui/onboarding/widgets/learning_tour_overlay.dart';
 
 /// The shell and settings preview use the same navigation geometry.
 class AppBottomNavigation extends StatelessWidget {
@@ -114,14 +115,38 @@ class AppBottomNavigation extends StatelessWidget {
                         )
                           SizedBox(
                             width: frame.widths[index],
-                            child: _DestinationButton(
-                              destination: destinations[index],
-                              selected: destinations[index] == active,
-                              labelProgress: frame.labels[index],
-                              labelsBelow: layout.labelsBelow,
-                              textStyle: textStyle,
-                              onTap: () => onSelected(destinations[index]),
-                            ),
+                            child:
+                                !preview &&
+                                    (destinations[index] ==
+                                            BottomNavigationDestination.focus ||
+                                        destinations[index] ==
+                                            BottomNavigationDestination
+                                                .projects)
+                                ? LearningTourAnchor(
+                                    id:
+                                        destinations[index] ==
+                                            BottomNavigationDestination.focus
+                                        ? LearningTourAnchorId.focusMobile
+                                        : LearningTourAnchorId.projectsMobile,
+                                    child: _DestinationButton(
+                                      destination: destinations[index],
+                                      selected: destinations[index] == active,
+                                      labelProgress: frame.labels[index],
+                                      labelsBelow: layout.labelsBelow,
+                                      textStyle: textStyle,
+                                      onTap: () =>
+                                          onSelected(destinations[index]),
+                                    ),
+                                  )
+                                : _DestinationButton(
+                                    destination: destinations[index],
+                                    selected: destinations[index] == active,
+                                    labelProgress: frame.labels[index],
+                                    labelsBelow: layout.labelsBelow,
+                                    textStyle: textStyle,
+                                    onTap: () =>
+                                        onSelected(destinations[index]),
+                                  ),
                           ),
                       ],
                     ),

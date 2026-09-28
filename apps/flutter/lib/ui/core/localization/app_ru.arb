@@ -1179,5 +1179,20 @@
   "onboardingSepiaDescription": "Тёплая бумага",
   "onboardingGraphiteDescription": "Только самое необходимое",
   "onboardingThemeHint": "Свою палитру и фон можно создать позже в настройках.",
-  "onboardingPreviewSubtask": "Записать первые идеи"
+  "onboardingPreviewSubtask": "Записать первые идеи",
+  "learningTourInvitationTitle": "Посмотреть, как устроен Pomodoist?",
+  "learningTourInvitationBody": "Узнайте, как добавлять задачи, работать с Фокусом и собирать проекты. Это займёт около минуты.",
+  "learningTourStart": "Начать",
+  "learningTourLater": "Позже",
+  "learningTourClose": "Закрыть обучение",
+  "learningTourSettings": "Пройти обучение",
+  "learningTourAddTask": "Нажмите «Добавить задачу», чтобы увидеть, где появляются новые задачи. Пробную задачу сохранять не нужно.",
+  "learningTourFocusNavigation": "Откройте Фокус, чтобы увидеть, как начинается рабочая сессия.",
+  "learningTourFocusReady": "Выберите задачу и работайте по интервалам. Сейчас запускать таймер не нужно.",
+  "learningTourProjectsNavigation": "Откройте Проекты, чтобы увидеть, где собирать связанные задачи.",
+  "learningTourProjectsReady": "Проекты объединяют задачи одной цели.",
+  "learningTourSkipStep": "Пропустить шаг",
+  "learningTourOpenAddTask": "Открыть добавление задачи",
+  "learningTourOpenFocus": "Открыть Фокус",
+  "learningTourOpenProjects": "Открыть Проекты"
 }

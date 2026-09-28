@@ -1,4 +1,5 @@
 import 'package:pomodoist/ui/tasks/widgets/task_branch_widgets.dart';
+import 'package:pomodoist/ui/onboarding/widgets/learning_tour_overlay.dart';
 import 'package:pomodoist/ui/core/widgets/app_action_menu.dart';
 import 'package:pomodoist/ui/focus/view_models/focus_view_model.dart';
 import 'dart:async';
@@ -88,11 +89,14 @@ class FocusIdleStage extends StatelessWidget {
     final rhythm = preset == null
         ? null
         : buildFocusRhythm(preset: preset, targetWorkIntervals: cadence);
-    final primary = _FocusPrimaryButton(
-      minimal: !full,
-      label: l10n.startFocus,
-      icon: LucideIcons.play,
-      onPressed: onStart,
+    final primary = LearningTourAnchor(
+      id: LearningTourAnchorId.focusStart,
+      child: _FocusPrimaryButton(
+        minimal: !full,
+        label: l10n.startFocus,
+        icon: LucideIcons.play,
+        onPressed: onStart,
+      ),
     );
     final presetMenu = _MinimalPresetMenu(
       presets: presets,

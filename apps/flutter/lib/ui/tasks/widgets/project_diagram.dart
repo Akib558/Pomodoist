@@ -457,6 +457,8 @@ class _DiagramNodeState extends ConsumerState<_DiagramNode> {
                   children: [
                     Expanded(
                       child: InkWell(
+                        borderRadius: BorderRadius.circular(8),
+                        hoverColor: Colors.transparent,
                         onTap: root
                             ? null
                             : () => context.go('/project/${project.id}'),

@@ -3749,4 +3749,56 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get onboardingPreviewSubtask => 'Записать первые идеи';
+
+  @override
+  String get learningTourInvitationTitle =>
+      'Посмотреть, как устроен Pomodoist?';
+
+  @override
+  String get learningTourInvitationBody =>
+      'Узнайте, как добавлять задачи, работать с Фокусом и собирать проекты. Это займёт около минуты.';
+
+  @override
+  String get learningTourStart => 'Начать';
+
+  @override
+  String get learningTourLater => 'Позже';
+
+  @override
+  String get learningTourClose => 'Закрыть обучение';
+
+  @override
+  String get learningTourSettings => 'Пройти обучение';
+
+  @override
+  String get learningTourAddTask =>
+      'Нажмите «Добавить задачу», чтобы увидеть, где появляются новые задачи. Пробную задачу сохранять не нужно.';
+
+  @override
+  String get learningTourFocusNavigation =>
+      'Откройте Фокус, чтобы увидеть, как начинается рабочая сессия.';
+
+  @override
+  String get learningTourFocusReady =>
+      'Выберите задачу и работайте по интервалам. Сейчас запускать таймер не нужно.';
+
+  @override
+  String get learningTourProjectsNavigation =>
+      'Откройте Проекты, чтобы увидеть, где собирать связанные задачи.';
+
+  @override
+  String get learningTourProjectsReady =>
+      'Проекты объединяют задачи одной цели.';
+
+  @override
+  String get learningTourSkipStep => 'Пропустить шаг';
+
+  @override
+  String get learningTourOpenAddTask => 'Открыть добавление задачи';
+
+  @override
+  String get learningTourOpenFocus => 'Открыть Фокус';
+
+  @override
+  String get learningTourOpenProjects => 'Открыть Проекты';
 }

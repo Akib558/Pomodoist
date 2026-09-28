@@ -32,6 +32,7 @@ import 'package:pomodoist/ui/tasks/widgets/project_icon.dart';
 import 'package:pomodoist/ui/tasks/widgets/project_tree_controls.dart';
 import 'package:pomodoist/ui/tasks/widgets/label_icon.dart';
 import 'package:pomodoist/config/providers.dart';
+import 'package:pomodoist/ui/onboarding/widgets/learning_tour_overlay.dart';
 
 class ProjectsScreen extends ConsumerStatefulWidget {
   const ProjectsScreen({this.showLabels = false, super.key});
@@ -144,24 +145,27 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
                               gap: 0,
                             ),
                           ),
-                          Tooltip(
-                            message: projectMode
-                                ? l10n.addProject
-                                : l10n.addLabel,
-                            child: ShadIconButton(
-                              key: Key(
-                                projectMode
-                                    ? 'projects-add-button'
-                                    : 'labels-add-button',
+                          LearningTourAnchor(
+                            id: LearningTourAnchorId.projectsAdd,
+                            child: Tooltip(
+                              message: projectMode
+                                  ? l10n.addProject
+                                  : l10n.addLabel,
+                              child: ShadIconButton(
+                                key: Key(
+                                  projectMode
+                                      ? 'projects-add-button'
+                                      : 'labels-add-button',
+                                ),
+                                onPressed: projectMode
+                                    ? () => showCreateProjectDialog(context)
+                                    : () => showCreateLabelDialog(context),
+                                icon: const Icon(LucideIcons.plus),
+                                foregroundColor: colors.accent,
+                                backgroundColor: colors.accentTint,
+                                height: 42,
+                                width: 42,
                               ),
-                              onPressed: projectMode
-                                  ? () => showCreateProjectDialog(context)
-                                  : () => showCreateLabelDialog(context),
-                              icon: const Icon(LucideIcons.plus),
-                              foregroundColor: colors.accent,
-                              backgroundColor: colors.accentTint,
-                              height: 42,
-                              width: 42,
                             ),
                           ),
                         ],

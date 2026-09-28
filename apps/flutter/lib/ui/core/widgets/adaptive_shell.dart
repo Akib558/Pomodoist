@@ -44,6 +44,8 @@ import 'package:pomodoist/ui/core/themes/macos_glass.dart';
 import 'package:pomodoist/ui/core/widgets/mini_focus_player.dart';
 import 'package:pomodoist/ui/core/widgets/app_context_menu_region.dart';
 import 'package:pomodoist/ui/core/widgets/task_details_host.dart';
+import 'package:pomodoist/ui/onboarding/widgets/learning_tour_overlay.dart';
+import 'package:pomodoist/ui/onboarding/view_models/learning_tour_view_model.dart';
 
 const double _wideLayoutBreakpoint = 820;
 const double _wideSidebarDefaultWidth = 280;
@@ -87,6 +89,19 @@ class _AdaptiveShellState extends ConsumerState<AdaptiveShell> {
   double _lastExpandedSidebarWidth = _wideSidebarDefaultWidth;
   bool _quickAddShortcutDialogOpen = false;
   bool _searchPaletteOpen = false;
+
+  @override
+  void didUpdateWidget(covariant AdaptiveShell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.location == widget.location) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final tour = ref.read(learningTourProvider.notifier);
+      if (widget.location == '/focus') tour.focusOpened();
+      if (widget.location == '/projects') tour.projectsOpened();
+    });
+  }
+
   int? _rawHandledPhysicalKeyId;
   late final ShellAppMenu? _appMenuController;
 
@@ -336,37 +351,42 @@ class _AdaptiveShellState extends ConsumerState<AdaptiveShell> {
                     builder: (context, voiceActive, _) =>
                         voiceActive || widget.location == '/calendar'
                         ? const SizedBox.shrink()
-                        : SizedBox.square(
-                            key: _addTaskButtonKey,
-                            dimension: 52,
-                            child: GestureDetector(
-                              excludeFromSemantics: true,
-                              onPanStart: (_) => setState(
-                                () => _addTaskDrag =
-                                    _visibleAddTaskPosition() ??
-                                    location.position,
-                              ),
-                              onPanUpdate: (details) => setState(
-                                () => _addTaskDrag = location.clamp(
-                                  (_addTaskDrag ?? location.position) +
-                                      details.delta,
+                        : LearningTourAnchor(
+                            id: LearningTourAnchorId.addMobile,
+                            child: SizedBox.square(
+                              key: _addTaskButtonKey,
+                              dimension: 52,
+                              child: GestureDetector(
+                                excludeFromSemantics: true,
+                                onPanStart: (_) => setState(
+                                  () => _addTaskDrag =
+                                      _visibleAddTaskPosition() ??
+                                      location.position,
                                 ),
-                              ),
-                              onPanEnd: finishDrag,
-                              onPanCancel: finishDrag,
-                              child: FloatingActionButton(
-                                key: const Key('compact-add-task'),
-                                heroTag: null,
-                                tooltip: context.l10n.addTask,
-                                backgroundColor: colors.accentFill,
-                                foregroundColor: colors.onAccent,
-                                focusColor: colors.onAccent.withValues(
-                                  alpha: 0.24,
+                                onPanUpdate: (details) => setState(
+                                  () => _addTaskDrag = location.clamp(
+                                    (_addTaskDrag ?? location.position) +
+                                        details.delta,
+                                  ),
                                 ),
-                                elevation: 3,
-                                shape: const CircleBorder(),
-                                onPressed: () => showQuickAddDialog(context),
-                                child: const Icon(LucideIcons.plus, size: 24),
+                                onPanEnd: finishDrag,
+                                onPanCancel: finishDrag,
+                                child: FloatingActionButton(
+                                  key: const Key('compact-add-task'),
+                                  heroTag: null,
+                                  tooltip: context.l10n.addTask,
+                                  backgroundColor: colors.accentFill,
+                                  foregroundColor: colors.onAccent,
+                                  focusColor: colors.onAccent.withValues(
+                                    alpha: 0.24,
+                                  ),
+                                  elevation: 3,
+                                  shape: const CircleBorder(),
+                                  onPressed: () => unawaited(
+                                    showLearningTourQuickAdd(context, ref),
+                                  ),
+                                  child: const Icon(LucideIcons.plus, size: 24),
+                                ),
                               ),
                             ),
                           ),
@@ -386,7 +406,7 @@ class _AdaptiveShellState extends ConsumerState<AdaptiveShell> {
                             selected: navigation.selectedFor(widget.location),
                             showMiniFocusPlayer: showMiniFocusPlayer,
                             onDestinationSelected: (destination) =>
-                                context.go(destination.path),
+                                _go(destination.path),
                           ),
                         ),
                 ),
@@ -469,8 +489,9 @@ class _AdaptiveShellState extends ConsumerState<AdaptiveShell> {
     if (_quickAddShortcutDialogOpen) return;
     _quickAddShortcutDialogOpen = true;
     unawaited(
-      showQuickAddDialog(
+      showLearningTourQuickAdd(
         context,
+        ref,
       ).whenComplete(() => _quickAddShortcutDialogOpen = false),
     );
   }
@@ -916,13 +937,22 @@ class _TodoistSidebarState extends ConsumerState<_TodoistSidebar> {
       '/upcoming': sidebar.upcomingCount,
     };
 
-    Widget destinationTile(String path) => _SidebarDestinationTile(
-      destination: destinations[path]!,
-      selected: _isSelected(widget.location, path),
-      count: counts[path],
-      shortcut: path == '/search' ? searchShortcut : null,
-      onTap: () => widget.onDestinationSelected(path),
-    );
+    Widget destinationTile(String path) {
+      final tile = _SidebarDestinationTile(
+        destination: destinations[path]!,
+        selected: _isSelected(widget.location, path),
+        count: counts[path],
+        shortcut: path == '/search' ? searchShortcut : null,
+        onTap: () => widget.onDestinationSelected(path),
+      );
+      return path == '/focus'
+          ? LearningTourAnchor(
+              id: LearningTourAnchorId.focusDesktop,
+              child: tile,
+            )
+          : tile;
+    }
+
     Widget groupLabel(String title) => Padding(
       padding: const EdgeInsets.fromLTRB(10, 16, 10, 6),
       child: Text(
@@ -966,7 +996,13 @@ class _TodoistSidebarState extends ConsumerState<_TodoistSidebar> {
                 const SizedBox(height: 16),
                 destinationTile('/search'),
                 const SizedBox(height: 4),
-                _AddTaskTile(onTap: () => showQuickAddDialog(context)),
+                LearningTourAnchor(
+                  id: LearningTourAnchorId.addDesktop,
+                  child: _AddTaskTile(
+                    onTap: () =>
+                        unawaited(showLearningTourQuickAdd(context, ref)),
+                  ),
+                ),
                 const SizedBox(height: 10),
                 Expanded(
                   child: ListView(
@@ -989,16 +1025,19 @@ class _TodoistSidebarState extends ConsumerState<_TodoistSidebar> {
                       ])
                         destinationTile(path),
                       const SizedBox(height: 20),
-                      _ProjectsHeader(
-                        count: projectCount,
-                        expanded: _projectsExpanded,
-                        selected: widget.location == '/projects',
-                        onTitleTap: () =>
-                            widget.onDestinationSelected('/projects'),
-                        onToggle: () => setState(
-                          () => _projectsExpanded = !_projectsExpanded,
+                      LearningTourAnchor(
+                        id: LearningTourAnchorId.projectsDesktop,
+                        child: _ProjectsHeader(
+                          count: projectCount,
+                          expanded: _projectsExpanded,
+                          selected: widget.location == '/projects',
+                          onTitleTap: () =>
+                              widget.onDestinationSelected('/projects'),
+                          onToggle: () => setState(
+                            () => _projectsExpanded = !_projectsExpanded,
+                          ),
+                          onAdd: () => showCreateProjectDialog(context),
                         ),
-                        onAdd: () => showCreateProjectDialog(context),
                       ),
                       if (_projectsExpanded) ...[
                         const SizedBox(height: 6),

@@ -32,6 +32,7 @@ import 'package:pomodoist/ui/settings/view_models/connected_agents_view_model.da
 import 'package:pomodoist/ui/settings/view_models/settings_view_model.dart';
 import 'package:pomodoist/ui/settings/view_models/auth_view_model.dart';
 import 'package:pomodoist/ui/settings/widgets/task_list_settings.dart';
+import 'package:pomodoist/ui/onboarding/view_models/learning_tour_view_model.dart';
 export 'package:pomodoist/ui/settings/widgets/login_screen.dart';
 export 'package:pomodoist/ui/settings/widgets/register_screen.dart';
 
@@ -325,6 +326,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
               subtitle: Text(l10n.settingsShortcutsSubtitle),
               trailing: const Icon(LucideIcons.chevronRight, size: 18),
               onTap: () => context.push('/settings/shortcuts'),
+            ),
+            ListTile(
+              key: const Key('settings-learning-tour-button'),
+              contentPadding: const EdgeInsets.symmetric(vertical: 12),
+              leading: const Icon(LucideIcons.compass, size: 20),
+              title: Text(l10n.learningTourSettings),
+              trailing: const Icon(LucideIcons.chevronRight, size: 18),
+              onTap: () {
+                ref.read(learningTourProvider.notifier).replay();
+                context.go('/today');
+              },
             ),
           ],
         );

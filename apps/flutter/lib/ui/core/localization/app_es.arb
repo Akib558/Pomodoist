@@ -1179,5 +1179,20 @@
   "onboardingSepiaDescription": "Papel cálido",
   "onboardingGraphiteDescription": "Solo lo esencial",
   "onboardingThemeHint": "Puedes crear tu propia paleta y fondo más tarde en Ajustes.",
-  "onboardingPreviewSubtask": "Anotar las primeras ideas"
+  "onboardingPreviewSubtask": "Anotar las primeras ideas",
+  "learningTourInvitationTitle": "¿Quieres conocer Pomodoist?",
+  "learningTourInvitationBody": "Descubre cómo añadir tareas, usar Enfoque y organizar proyectos. Tardarás un minuto.",
+  "learningTourStart": "Empezar",
+  "learningTourLater": "Más tarde",
+  "learningTourClose": "Cerrar recorrido",
+  "learningTourSettings": "Ver recorrido de la app",
+  "learningTourAddTask": "Toca Añadir tarea para ver dónde empiezan las tareas. No hace falta guardar una tarea de prueba.",
+  "learningTourFocusNavigation": "Abre Enfoque para ver dónde empieza una sesión de trabajo.",
+  "learningTourFocusReady": "Elige una tarea y trabaja por intervalos. No hace falta iniciar el temporizador ahora.",
+  "learningTourProjectsNavigation": "Abre Proyectos para ver dónde van las tareas relacionadas.",
+  "learningTourProjectsReady": "Los proyectos reúnen las tareas de un mismo objetivo.",
+  "learningTourSkipStep": "Saltar paso",
+  "learningTourOpenAddTask": "Abrir Añadir tarea",
+  "learningTourOpenFocus": "Abrir Enfoque",
+  "learningTourOpenProjects": "Abrir Proyectos"
 }

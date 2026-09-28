@@ -1179,5 +1179,20 @@
   "onboardingSepiaDescription": "Warmes Papier",
   "onboardingGraphiteDescription": "Nur das Wesentliche",
   "onboardingThemeHint": "Eine eigene Palette und einen Hintergrund kannst du später in den Einstellungen erstellen.",
-  "onboardingPreviewSubtask": "Erste Ideen aufschreiben"
+  "onboardingPreviewSubtask": "Erste Ideen aufschreiben",
+  "learningTourInvitationTitle": "Pomodoist kurz kennenlernen?",
+  "learningTourInvitationBody": "Erfahren Sie, wie Sie Aufgaben hinzufügen, Fokus nutzen und Projekte organisieren. Dauert etwa eine Minute.",
+  "learningTourStart": "Starten",
+  "learningTourLater": "Später",
+  "learningTourClose": "Tour schließen",
+  "learningTourSettings": "App-Tour starten",
+  "learningTourAddTask": "Tippen Sie auf „Aufgabe hinzufügen“. Sie müssen keine Testaufgabe speichern.",
+  "learningTourFocusNavigation": "Öffnen Sie Fokus, um den Beginn einer Arbeitssitzung zu sehen.",
+  "learningTourFocusReady": "Wählen Sie eine Aufgabe und arbeiten Sie in Intervallen. Sie müssen den Timer jetzt nicht starten.",
+  "learningTourProjectsNavigation": "Öffnen Sie Projekte, um zusammengehörige Aufgaben zu sehen.",
+  "learningTourProjectsReady": "Projekte halten Aufgaben für ein gemeinsames Ziel zusammen.",
+  "learningTourSkipStep": "Schritt überspringen",
+  "learningTourOpenAddTask": "Aufgabe hinzufügen öffnen",
+  "learningTourOpenFocus": "Fokus öffnen",
+  "learningTourOpenProjects": "Projekte öffnen"
 }

@@ -3548,4 +3548,49 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get onboardingPreviewSubtask => '记下最初的想法';
+
+  @override
+  String get learningTourInvitationTitle => '快速了解 Pomodoist？';
+
+  @override
+  String get learningTourInvitationBody => '用大约一分钟了解如何添加任务、使用专注和整理项目。';
+
+  @override
+  String get learningTourStart => '开始';
+
+  @override
+  String get learningTourLater => '稍后';
+
+  @override
+  String get learningTourClose => '关闭导览';
+
+  @override
+  String get learningTourSettings => '查看应用导览';
+
+  @override
+  String get learningTourAddTask => '点击“添加任务”，了解新任务从哪里开始。无需保存测试任务。';
+
+  @override
+  String get learningTourFocusNavigation => '打开专注，了解如何开始工作时段。';
+
+  @override
+  String get learningTourFocusReady => '选择任务，按时间段专注工作。现在无需启动计时器。';
+
+  @override
+  String get learningTourProjectsNavigation => '打开项目，了解相关任务放在哪里。';
+
+  @override
+  String get learningTourProjectsReady => '项目将同一目标的任务集中在一起。';
+
+  @override
+  String get learningTourSkipStep => '跳过此步';
+
+  @override
+  String get learningTourOpenAddTask => '打开添加任务';
+
+  @override
+  String get learningTourOpenFocus => '打开专注';
+
+  @override
+  String get learningTourOpenProjects => '打开项目';
 }

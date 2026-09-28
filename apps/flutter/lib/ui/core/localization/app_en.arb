@@ -1909,5 +1909,20 @@
   "onboardingSepiaDescription": "Warm paper",
   "onboardingGraphiteDescription": "Just the essentials",
   "onboardingThemeHint": "You can create your own palette and background later in Settings.",
-  "onboardingPreviewSubtask": "Write down your first ideas"
+  "onboardingPreviewSubtask": "Write down your first ideas",
+  "learningTourInvitationTitle": "Take a quick look around Pomodoist?",
+  "learningTourInvitationBody": "See how to add tasks, use Focus, and organize projects. About a minute.",
+  "learningTourStart": "Start",
+  "learningTourLater": "Later",
+  "learningTourClose": "Close tour",
+  "learningTourSettings": "Take the app tour",
+  "learningTourAddTask": "Tap Add task to see where new tasks begin. You do not need to save a test task.",
+  "learningTourFocusNavigation": "Open Focus to see where a work session starts.",
+  "learningTourFocusReady": "Choose a task and work in intervals. You do not need to start the timer now.",
+  "learningTourProjectsNavigation": "Open Projects to see where related tasks belong.",
+  "learningTourProjectsReady": "Projects keep tasks for one goal together.",
+  "learningTourSkipStep": "Skip step",
+  "learningTourOpenAddTask": "Open Add task",
+  "learningTourOpenFocus": "Open Focus",
+  "learningTourOpenProjects": "Open Projects"
 }

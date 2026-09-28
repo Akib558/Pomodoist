@@ -15,6 +15,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pomodoist/config/providers.dart';
 import 'package:pomodoist/ui/core/themes/app_theme.dart';
 import 'package:pomodoist/ui/core/widgets/adaptive_shell.dart';
+import 'package:pomodoist/ui/onboarding/view_models/learning_tour_view_model.dart';
 import 'package:pomodoist/ui/core/widgets/task_details_host.dart';
 import 'package:pomodoist/domain/models/focus/focus_models.dart';
 import 'package:pomodoist/data/repositories/calendar/google_calendar_repository.dart';
@@ -29,6 +30,28 @@ void main() {
   setUp(() {
     SharedPreferences.setMockInitialValues({});
   });
+
+  testWidgets(
+    'opening Focus advances the guided route without starting a run',
+    (tester) async {
+      await _pumpShell(tester, size: const Size(1200, 900));
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(AdaptiveShell)),
+      );
+      await container.read(learningTourProvider.future);
+      final tour = container.read(learningTourProvider.notifier);
+      tour.replay();
+      tour.quickAddOpened();
+      tour.quickAddClosed();
+
+      await tester.tap(find.byKey(const Key('go-focus')));
+      await _pumpShellFrame(tester);
+      expect(
+        container.read(learningTourProvider).value,
+        LearningTourStep.focusReady,
+      );
+    },
+  );
 
   for (final layout in const {
     'compact': Size(600, 800),

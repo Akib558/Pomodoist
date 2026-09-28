@@ -3777,6 +3777,57 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get onboardingPreviewSubtask => 'Anotar as primeiras ideias';
+
+  @override
+  String get learningTourInvitationTitle => 'Quer conhecer o Pomodoist?';
+
+  @override
+  String get learningTourInvitationBody =>
+      'Veja como adicionar tarefas, usar o Foco e organizar projetos. Leva cerca de um minuto.';
+
+  @override
+  String get learningTourStart => 'Começar';
+
+  @override
+  String get learningTourLater => 'Mais tarde';
+
+  @override
+  String get learningTourClose => 'Fechar apresentação';
+
+  @override
+  String get learningTourSettings => 'Fazer apresentação do app';
+
+  @override
+  String get learningTourAddTask =>
+      'Toque em Adicionar tarefa para ver onde as tarefas começam. Não é preciso salvar uma tarefa de teste.';
+
+  @override
+  String get learningTourFocusNavigation =>
+      'Abra Foco para ver onde uma sessão de trabalho começa.';
+
+  @override
+  String get learningTourFocusReady =>
+      'Escolha uma tarefa e trabalhe em intervalos. Não é preciso iniciar o cronômetro agora.';
+
+  @override
+  String get learningTourProjectsNavigation =>
+      'Abra Projetos para ver onde ficam as tarefas relacionadas.';
+
+  @override
+  String get learningTourProjectsReady =>
+      'Projetos reúnem tarefas de um mesmo objetivo.';
+
+  @override
+  String get learningTourSkipStep => 'Pular etapa';
+
+  @override
+  String get learningTourOpenAddTask => 'Abrir Adicionar tarefa';
+
+  @override
+  String get learningTourOpenFocus => 'Abrir Foco';
+
+  @override
+  String get learningTourOpenProjects => 'Abrir Projetos';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).

@@ -3768,4 +3768,55 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get onboardingPreviewSubtask => 'Erste Ideen aufschreiben';
+
+  @override
+  String get learningTourInvitationTitle => 'Pomodoist kurz kennenlernen?';
+
+  @override
+  String get learningTourInvitationBody =>
+      'Erfahren Sie, wie Sie Aufgaben hinzufügen, Fokus nutzen und Projekte organisieren. Dauert etwa eine Minute.';
+
+  @override
+  String get learningTourStart => 'Starten';
+
+  @override
+  String get learningTourLater => 'Später';
+
+  @override
+  String get learningTourClose => 'Tour schließen';
+
+  @override
+  String get learningTourSettings => 'App-Tour starten';
+
+  @override
+  String get learningTourAddTask =>
+      'Tippen Sie auf „Aufgabe hinzufügen“. Sie müssen keine Testaufgabe speichern.';
+
+  @override
+  String get learningTourFocusNavigation =>
+      'Öffnen Sie Fokus, um den Beginn einer Arbeitssitzung zu sehen.';
+
+  @override
+  String get learningTourFocusReady =>
+      'Wählen Sie eine Aufgabe und arbeiten Sie in Intervallen. Sie müssen den Timer jetzt nicht starten.';
+
+  @override
+  String get learningTourProjectsNavigation =>
+      'Öffnen Sie Projekte, um zusammengehörige Aufgaben zu sehen.';
+
+  @override
+  String get learningTourProjectsReady =>
+      'Projekte halten Aufgaben für ein gemeinsames Ziel zusammen.';
+
+  @override
+  String get learningTourSkipStep => 'Schritt überspringen';
+
+  @override
+  String get learningTourOpenAddTask => 'Aufgabe hinzufügen öffnen';
+
+  @override
+  String get learningTourOpenFocus => 'Fokus öffnen';
+
+  @override
+  String get learningTourOpenProjects => 'Projekte öffnen';
 }

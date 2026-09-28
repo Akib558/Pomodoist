@@ -3639,4 +3639,51 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get onboardingPreviewSubtask => '첫 아이디어 적기';
+
+  @override
+  String get learningTourInvitationTitle => 'Pomodoist를 잠깐 둘러볼까요?';
+
+  @override
+  String get learningTourInvitationBody => '약 1분 동안 작업 추가, 집중, 프로젝트 정리를 살펴보세요.';
+
+  @override
+  String get learningTourStart => '시작';
+
+  @override
+  String get learningTourLater => '나중에';
+
+  @override
+  String get learningTourClose => '둘러보기 닫기';
+
+  @override
+  String get learningTourSettings => '앱 둘러보기';
+
+  @override
+  String get learningTourAddTask =>
+      '작업 추가를 눌러 새 작업을 만드는 곳을 확인하세요. 연습용 작업을 저장할 필요는 없습니다.';
+
+  @override
+  String get learningTourFocusNavigation => '집중 화면을 열어 작업 세션을 시작하는 곳을 확인하세요.';
+
+  @override
+  String get learningTourFocusReady =>
+      '작업을 선택하고 일정한 간격으로 집중할 수 있습니다. 지금 타이머를 시작할 필요는 없습니다.';
+
+  @override
+  String get learningTourProjectsNavigation => '프로젝트를 열어 관련 작업을 모으는 곳을 확인하세요.';
+
+  @override
+  String get learningTourProjectsReady => '프로젝트는 같은 목표의 작업을 모아 줍니다.';
+
+  @override
+  String get learningTourSkipStep => '단계 건너뛰기';
+
+  @override
+  String get learningTourOpenAddTask => '작업 추가 열기';
+
+  @override
+  String get learningTourOpenFocus => '집중 열기';
+
+  @override
+  String get learningTourOpenProjects => '프로젝트 열기';
 }

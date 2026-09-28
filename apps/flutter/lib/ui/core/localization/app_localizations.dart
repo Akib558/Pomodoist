@@ -6418,6 +6418,96 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Write down your first ideas'**
   String get onboardingPreviewSubtask;
+
+  /// No description provided for @learningTourInvitationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a quick look around Pomodoist?'**
+  String get learningTourInvitationTitle;
+
+  /// No description provided for @learningTourInvitationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'See how to add tasks, use Focus, and organize projects. About a minute.'**
+  String get learningTourInvitationBody;
+
+  /// No description provided for @learningTourStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get learningTourStart;
+
+  /// No description provided for @learningTourLater.
+  ///
+  /// In en, this message translates to:
+  /// **'Later'**
+  String get learningTourLater;
+
+  /// No description provided for @learningTourClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close tour'**
+  String get learningTourClose;
+
+  /// No description provided for @learningTourSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Take the app tour'**
+  String get learningTourSettings;
+
+  /// No description provided for @learningTourAddTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap Add task to see where new tasks begin. You do not need to save a test task.'**
+  String get learningTourAddTask;
+
+  /// No description provided for @learningTourFocusNavigation.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Focus to see where a work session starts.'**
+  String get learningTourFocusNavigation;
+
+  /// No description provided for @learningTourFocusReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a task and work in intervals. You do not need to start the timer now.'**
+  String get learningTourFocusReady;
+
+  /// No description provided for @learningTourProjectsNavigation.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Projects to see where related tasks belong.'**
+  String get learningTourProjectsNavigation;
+
+  /// No description provided for @learningTourProjectsReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Projects keep tasks for one goal together.'**
+  String get learningTourProjectsReady;
+
+  /// No description provided for @learningTourSkipStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip step'**
+  String get learningTourSkipStep;
+
+  /// No description provided for @learningTourOpenAddTask.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Add task'**
+  String get learningTourOpenAddTask;
+
+  /// No description provided for @learningTourOpenFocus.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Focus'**
+  String get learningTourOpenFocus;
+
+  /// No description provided for @learningTourOpenProjects.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Projects'**
+  String get learningTourOpenProjects;
 }
 
 class _AppLocalizationsDelegate

@@ -1,4 +1,5 @@
 import 'package:pomodoist/ui/tasks/widgets/task_row_geometry.dart';
+import 'package:pomodoist/ui/tasks/widgets/task_title_dialog.dart';
 import 'package:pomodoist/ui/core/widgets/app_context_menu_region.dart';
 import 'package:pomodoist/ui/core/widgets/app_action_menu.dart';
 import 'package:pomodoist/ui/tasks/view_models/task_subtask_progress.dart';
@@ -287,6 +288,12 @@ class TaskListItem extends ConsumerWidget {
 
     if (diagram) {
       final menu = [
+        ShadContextMenuItem(
+          height: 44,
+          onPressed: () => openTaskDetails(context, task.id),
+          leading: const Icon(LucideIcons.externalLink, size: 16),
+          child: Text(l10n.commonOpen),
+        ),
         if (task.canEdit && onAddSubtask != null)
           ShadContextMenuItem(
             height: 44,
@@ -337,8 +344,15 @@ class TaskListItem extends ConsumerWidget {
             children: [
               Expanded(
                 child: InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  hoverColor: Colors.transparent,
+                  mouseCursor: task.canEdit
+                      ? SystemMouseCursors.text
+                      : SystemMouseCursors.click,
                   onTap: () => selection?.active == true
                       ? selection!.toggle(task.id)
+                      : task.canEdit
+                      ? unawaited(showTaskTitleDialog(context, task))
                       : openTaskDetails(context, task.id),
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),

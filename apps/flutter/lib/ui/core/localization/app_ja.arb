@@ -1790,5 +1790,20 @@
   "onboardingSepiaDescription": "温かみのある紙",
   "onboardingGraphiteDescription": "必要なものだけ",
   "onboardingThemeHint": "独自の配色や背景は後から設定で作成できます。",
-  "onboardingPreviewSubtask": "最初のアイデアを書き留める"
+  "onboardingPreviewSubtask": "最初のアイデアを書き留める",
+  "learningTourInvitationTitle": "Pomodoistを少し見てみますか？",
+  "learningTourInvitationBody": "タスクの追加、集中、プロジェクトの整理を約1分で確認できます。",
+  "learningTourStart": "始める",
+  "learningTourLater": "後で",
+  "learningTourClose": "ツアーを閉じる",
+  "learningTourSettings": "アプリのツアーを見る",
+  "learningTourAddTask": "「タスクを追加」を押して、タスクの作成場所を確認しましょう。試しのタスクを保存する必要はありません。",
+  "learningTourFocusNavigation": "集中画面を開き、作業セッションの開始場所を確認しましょう。",
+  "learningTourFocusReady": "タスクを選び、時間を区切って作業できます。今はタイマーを開始しなくて大丈夫です。",
+  "learningTourProjectsNavigation": "プロジェクトを開き、関連するタスクをまとめる場所を確認しましょう。",
+  "learningTourProjectsReady": "プロジェクトは同じ目標のタスクをまとめます。",
+  "learningTourSkipStep": "このステップをスキップ",
+  "learningTourOpenAddTask": "タスク追加を開く",
+  "learningTourOpenFocus": "集中を開く",
+  "learningTourOpenProjects": "プロジェクトを開く"
 }

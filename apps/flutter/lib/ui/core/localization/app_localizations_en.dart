@@ -3754,4 +3754,56 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingPreviewSubtask => 'Write down your first ideas';
+
+  @override
+  String get learningTourInvitationTitle =>
+      'Take a quick look around Pomodoist?';
+
+  @override
+  String get learningTourInvitationBody =>
+      'See how to add tasks, use Focus, and organize projects. About a minute.';
+
+  @override
+  String get learningTourStart => 'Start';
+
+  @override
+  String get learningTourLater => 'Later';
+
+  @override
+  String get learningTourClose => 'Close tour';
+
+  @override
+  String get learningTourSettings => 'Take the app tour';
+
+  @override
+  String get learningTourAddTask =>
+      'Tap Add task to see where new tasks begin. You do not need to save a test task.';
+
+  @override
+  String get learningTourFocusNavigation =>
+      'Open Focus to see where a work session starts.';
+
+  @override
+  String get learningTourFocusReady =>
+      'Choose a task and work in intervals. You do not need to start the timer now.';
+
+  @override
+  String get learningTourProjectsNavigation =>
+      'Open Projects to see where related tasks belong.';
+
+  @override
+  String get learningTourProjectsReady =>
+      'Projects keep tasks for one goal together.';
+
+  @override
+  String get learningTourSkipStep => 'Skip step';
+
+  @override
+  String get learningTourOpenAddTask => 'Open Add task';
+
+  @override
+  String get learningTourOpenFocus => 'Open Focus';
+
+  @override
+  String get learningTourOpenProjects => 'Open Projects';
 }

@@ -18,6 +18,20 @@ import 'package:shared_preferences_platform_interface/shared_preferences_platfor
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  test('finishing onboarding leaves one learning invitation pending', () async {
+    SharedPreferences.setMockInitialValues({});
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final controller = container.read(onboardingViewModelProvider.notifier);
+    await container.read(sharedPreferencesProvider.future);
+    await container.pump();
+
+    await controller.complete();
+    final saved = await SharedPreferences.getInstance();
+    expect(saved.getBool('onboarding.completed.v1'), isTrue);
+    expect(saved.getBool('learningTour.invitationPending.v1'), isTrue);
+  });
+
   test(
     'timer choices start with circle and compact, including before loading',
     () async {

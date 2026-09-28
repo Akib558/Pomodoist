@@ -3681,4 +3681,54 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get onboardingPreviewSubtask => 'دوّن أفكارك الأولى';
+
+  @override
+  String get learningTourInvitationTitle => 'هل تريد جولة سريعة في Pomodoist؟';
+
+  @override
+  String get learningTourInvitationBody =>
+      'تعرّف على إضافة المهام واستخدام التركيز وتنظيم المشاريع في نحو دقيقة.';
+
+  @override
+  String get learningTourStart => 'ابدأ';
+
+  @override
+  String get learningTourLater => 'لاحقًا';
+
+  @override
+  String get learningTourClose => 'إغلاق الجولة';
+
+  @override
+  String get learningTourSettings => 'جولة في التطبيق';
+
+  @override
+  String get learningTourAddTask =>
+      'اضغط على إضافة مهمة لترى من أين تبدأ المهام الجديدة. لا يلزم حفظ مهمة تجريبية.';
+
+  @override
+  String get learningTourFocusNavigation =>
+      'افتح التركيز لترى أين تبدأ جلسة العمل.';
+
+  @override
+  String get learningTourFocusReady =>
+      'اختر مهمة واعمل على فترات. لا يلزم تشغيل المؤقت الآن.';
+
+  @override
+  String get learningTourProjectsNavigation =>
+      'افتح المشاريع لترى مكان جمع المهام المرتبطة.';
+
+  @override
+  String get learningTourProjectsReady => 'تجمع المشاريع مهام الهدف الواحد.';
+
+  @override
+  String get learningTourSkipStep => 'تخطي الخطوة';
+
+  @override
+  String get learningTourOpenAddTask => 'فتح إضافة مهمة';
+
+  @override
+  String get learningTourOpenFocus => 'فتح التركيز';
+
+  @override
+  String get learningTourOpenProjects => 'فتح المشاريع';
 }

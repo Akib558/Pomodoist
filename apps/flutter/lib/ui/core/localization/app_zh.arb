@@ -1179,5 +1179,20 @@
   "onboardingSepiaDescription": "温暖纸张",
   "onboardingGraphiteDescription": "只留必要元素",
   "onboardingThemeHint": "之后可以在设置中创建自己的配色和背景。",
-  "onboardingPreviewSubtask": "记下最初的想法"
+  "onboardingPreviewSubtask": "记下最初的想法",
+  "learningTourInvitationTitle": "快速了解 Pomodoist？",
+  "learningTourInvitationBody": "用大约一分钟了解如何添加任务、使用专注和整理项目。",
+  "learningTourStart": "开始",
+  "learningTourLater": "稍后",
+  "learningTourClose": "关闭导览",
+  "learningTourSettings": "查看应用导览",
+  "learningTourAddTask": "点击“添加任务”，了解新任务从哪里开始。无需保存测试任务。",
+  "learningTourFocusNavigation": "打开专注，了解如何开始工作时段。",
+  "learningTourFocusReady": "选择任务，按时间段专注工作。现在无需启动计时器。",
+  "learningTourProjectsNavigation": "打开项目，了解相关任务放在哪里。",
+  "learningTourProjectsReady": "项目将同一目标的任务集中在一起。",
+  "learningTourSkipStep": "跳过此步",
+  "learningTourOpenAddTask": "打开添加任务",
+  "learningTourOpenFocus": "打开专注",
+  "learningTourOpenProjects": "打开项目"
 }

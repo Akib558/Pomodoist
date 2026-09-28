@@ -34,6 +34,7 @@ import 'package:pomodoist/config/billing_store_dependencies.dart';
 import 'package:pomodoist/domain/models/focus/focus_models.dart';
 import 'package:pomodoist/ui/focus/widgets/focus_screen.dart';
 import 'package:pomodoist/ui/onboarding/widgets/onboarding_gate.dart';
+import 'package:pomodoist/ui/onboarding/view_models/learning_tour_view_model.dart';
 import 'package:pomodoist/ui/planning/widgets/today_screen.dart';
 import 'package:pomodoist/domain/models/productivity/achievement_models.dart';
 import 'package:pomodoist/domain/models/productivity/productivity_models.dart';
@@ -698,6 +699,37 @@ void main() {
     await _disposeApp(tester);
   });
 
+  testWidgets('tour pauses for Quick Add and continues without a sample task', (
+    tester,
+  ) async {
+    final harness = await _pumpWideApp(tester);
+    final container = ProviderScope.containerOf(
+      tester.element(find.byKey(const Key('sidebar-add-task'))),
+    );
+    await container.read(learningTourProvider.future);
+    container.read(learningTourProvider.notifier).replay();
+    await _pumpFrames(tester);
+    final before = (await harness.db.select(harness.db.tasks).get()).length;
+
+    await tester.tap(find.byKey(const Key('sidebar-add-task')));
+    await _pumpFrames(tester);
+    expect(find.byType(QuickAddComposer), findsOneWidget);
+    expect(
+      container.read(learningTourProvider).value,
+      LearningTourStep.addTaskOpen,
+    );
+    expect(find.byKey(const Key('learning-tour-card')), findsNothing);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+    await _pumpFrames(tester);
+    expect(
+      container.read(learningTourProvider).value,
+      LearningTourStep.focusNavigation,
+    );
+    expect((await harness.db.select(harness.db.tasks).get()).length, before);
+    await _disposeApp(tester);
+  });
+
   testWidgets('sidebar quick add suggestions support keyboard selection', (
     tester,
   ) async {
@@ -968,6 +1000,43 @@ void main() {
 
     expect(find.byType(KeyboardShortcutsScreen), findsOneWidget);
     expect(find.byKey(const Key('shortcut-row-toggleSidebar')), findsOneWidget);
+    await _disposeApp(tester);
+  });
+
+  testWidgets('General settings restarts the optional app tour', (
+    tester,
+  ) async {
+    await _pumpWideApp(tester);
+    await tester.ensureVisible(
+      find.byKey(const ValueKey('sidebar-destination-/settings')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const ValueKey('sidebar-destination-/settings')),
+    );
+    await _pumpFrames(tester);
+    await tester.tap(find.widgetWithText(ShadButton, 'General'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(
+      find.byKey(const Key('settings-learning-tour-button')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('settings-learning-tour-button')));
+    await _pumpFrames(tester);
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byKey(const Key('learning-tour-card'))),
+    );
+    expect(
+      container.read(learningTourProvider).value,
+      LearningTourStep.addTask,
+    );
+    expect(
+      find.text(
+        'Tap Add task to see where new tasks begin. You do not need to save a test task.',
+      ),
+      findsOneWidget,
+    );
     await _disposeApp(tester);
   });
 

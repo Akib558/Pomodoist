@@ -1179,5 +1179,20 @@
   "onboardingSepiaDescription": "Papier chaleureux",
   "onboardingGraphiteDescription": "Juste l’essentiel",
   "onboardingThemeHint": "Vous pourrez créer votre palette et votre fond dans les réglages.",
-  "onboardingPreviewSubtask": "Noter les premières idées"
+  "onboardingPreviewSubtask": "Noter les premières idées",
+  "learningTourInvitationTitle": "Découvrir rapidement Pomodoist ?",
+  "learningTourInvitationBody": "Découvrez comment ajouter des tâches, utiliser Focus et organiser vos projets. Cela prend environ une minute.",
+  "learningTourStart": "Commencer",
+  "learningTourLater": "Plus tard",
+  "learningTourClose": "Fermer la visite",
+  "learningTourSettings": "Faire la visite de l’application",
+  "learningTourAddTask": "Touchez Ajouter une tâche pour voir où commencent les tâches. Inutile d’enregistrer une tâche d’essai.",
+  "learningTourFocusNavigation": "Ouvrez Focus pour voir comment commence une session de travail.",
+  "learningTourFocusReady": "Choisissez une tâche et travaillez par intervalles. Inutile de démarrer le minuteur maintenant.",
+  "learningTourProjectsNavigation": "Ouvrez Projets pour voir où regrouper les tâches liées.",
+  "learningTourProjectsReady": "Les projets rassemblent les tâches d’un même objectif.",
+  "learningTourSkipStep": "Ignorer l’étape",
+  "learningTourOpenAddTask": "Ouvrir Ajouter une tâche",
+  "learningTourOpenFocus": "Ouvrir Focus",
+  "learningTourOpenProjects": "Ouvrir Projets"
 }

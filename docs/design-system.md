@@ -727,6 +727,13 @@ Cards use existing details, menus, completion/Undo and Focus actions. New tasks
 and subprojects use the existing composers; adding a subtask uses the existing
 subtask editor logic. Explicit creation and successful drops reveal the parent.
 
+On Map, task title activation opens a rename dialog for editable tasks; read-only
+titles open details. Keep Open in the task menu for detail navigation and preserve
+bulk selection on title activation. Task and project title regions have no hover
+fill; retain rounded keyboard focus feedback. Rename uses the existing title
+editor, keeps failed drafts available for retry, and disables dismissal while
+saving. Project title navigation and the card's drag behavior remain unchanged.
+
 Mouse drops distinguish before, inside and after. A task dropped on a project
 becomes a root task; a task dropped on another task becomes its subtask. Move
 the entire task subtree atomically with order and sync-queue changes. Projects
@@ -980,6 +987,23 @@ including purchase restoration and signed-in/error states. Account buttons use
 the shared panel's compact vertical presentation. Closing or finishing still
 persists completion; prevent overlapping preference writes and show localized,
 retryable feedback when a write fails.
+
+### Optional app tour
+
+After first-run onboarding closes or finishes, offer one optional tour of Add
+task, Focus, and Projects. Keep the tour on the real app surfaces: highlight
+the current control without intercepting its tap, and place a compact callout
+beside it. If the control is hidden by a collapsed sidebar, customized bottom
+navigation, or an active Focus run, show a callout with an explicit action to
+open the destination. Let users skip each step or close the tour at any time;
+keep a replay action in General settings. Opening Quick Add pauses the callout
+until the composer closes. Never create a sample task or start Focus on the
+user's behalf. Keep the launch-offer card out of the way during the tour.
+
+Use the active palette, 44 px or larger controls, safe-area-aware placement,
+keyboard focus and screen-reader announcements. Follow the shared 180 ms popup
+motion and show the final position immediately with Reduce Motion. Localize
+every visible string through the existing ARB catalog.
 
 ### Authentication
 
