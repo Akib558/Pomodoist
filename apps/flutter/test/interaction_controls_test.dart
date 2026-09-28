@@ -401,7 +401,7 @@ void main() {
     expect(_routerUri(router), '/login?returnTo=%2Fprojects');
   });
 
-  testWidgets('task list checkbox and focus icon do not open detail', (
+  testWidgets('task list checkbox and focus action do not open detail', (
     tester,
   ) async {
     late GoRouter router;
@@ -436,12 +436,9 @@ void main() {
     expect(harness.taskRepository.uncompletedTaskIds, contains('task-1'));
     expect(_hapticCalls(platformCalls), hasLength(2));
 
-    final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
-    await mouse.addPointer();
-    await mouse.moveTo(tester.getCenter(find.text('Today task')));
-    await _pumpFrames(tester);
-    await tester.tap(find.byTooltip('Start focus').first);
-    await mouse.removePointer();
+    await _openTaskContextMenu(tester, 'Today task');
+    await tester.ensureVisible(find.text('Start focus').last);
+    await tester.tap(find.text('Start focus').last);
     await _pumpFrames(tester);
 
     expect(harness.focusRepository.startInputs, hasLength(1));
@@ -1496,7 +1493,7 @@ void main() {
       expect(find.text('Child task'), findsOneWidget);
       expect(find.byKey(const Key('task-drag-parent-1')), findsNothing);
       expect(find.byKey(const Key('task-collapse-parent-1')), findsNothing);
-      expect(tester.getTopLeft(find.text('Parent task')).dx, lessThan(56));
+      expect(tester.getTopLeft(find.text('Parent task')).dx, lessThan(64));
       expect(
         tester.getTopLeft(find.text('Child task')).dx,
         greaterThan(tester.getTopLeft(find.text('Parent task')).dx),

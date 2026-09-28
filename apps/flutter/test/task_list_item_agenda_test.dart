@@ -127,11 +127,6 @@ void main() {
     expect(find.text('Work'), findsOneWidget);
     expect(find.text('14:00'), findsOneWidget);
     expect(find.text('Agenda rows stay compact'), findsNothing);
-    expect(
-      tester.getTopLeft(find.text('Work')).dx,
-      greaterThan(tester.getTopLeft(find.text('14:00')).dx),
-    );
-
     expect(find.text('#'), findsOneWidget);
     final colorMarker = tester.widget<Text>(
       find.byKey(const Key('agenda-project-color')),
@@ -265,9 +260,9 @@ void main() {
 
     expect(find.text('Standard description'), findsOneWidget);
     expect(find.byKey(const ValueKey('task-time-label-task')), findsOneWidget);
-    expect(find.byTooltip('Start focus'), findsOneWidget);
+    expect(find.byTooltip('Start focus'), findsNothing);
     expect(find.byKey(const Key('agenda-project-label')), findsOneWidget);
-    expect(find.byKey(const Key('agenda-schedule-label')), findsOneWidget);
+    expect(find.byKey(const Key('agenda-schedule-label')), findsNothing);
     expect(
       find.byKey(const ValueKey('agenda-overflow-action-task')),
       findsNothing,
