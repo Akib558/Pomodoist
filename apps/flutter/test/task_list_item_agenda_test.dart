@@ -1,5 +1,6 @@
 import 'package:pomodoist/config/task_preferences_dependencies.dart';
 import 'package:pomodoist/domain/models/settings/task_preferences.dart';
+import 'package:pomodoist/ui/tasks/view_models/task_branch_rows.dart';
 import 'package:pomodoist/data/repositories/tasks/task_repository.dart';
 import 'package:pomodoist/data/repositories/focus/focus_repository.dart';
 import 'support/test_app.dart';
@@ -23,6 +24,86 @@ import 'package:pomodoist/ui/core/localization/app_localizations.dart';
 void main() {
   setUpAll(loadTestAppResources);
   setUp(() => SharedPreferences.setMockInitialValues({}));
+  testWidgets('mobile dividers balance the content above and below', (
+    tester,
+  ) async {
+    addTearDown(() => debugDefaultTargetPlatformOverride = null);
+
+    for (final platform in [TargetPlatform.iOS, TargetPlatform.android]) {
+      debugDefaultTargetPlatformOverride = platform;
+      for (final spacing in TaskRowSpacing.values) {
+        for (final scale in [1.0, 2.0]) {
+          SharedPreferences.setMockInitialValues({
+            taskRowSpacingPreferenceKey: spacing.name,
+          });
+          final first = _task(
+            id: 'first-${platform.name}-${spacing.name}-$scale',
+            content: 'First task',
+            schedule: TaskSchedule.allDay(DateTime(2026, 7, 10)),
+          );
+          final second = _task(
+            id: 'second-${platform.name}-${spacing.name}-$scale',
+            content: 'Second task',
+          );
+          await _pumpRow(
+            tester,
+            task: first,
+            nextTask: second,
+            project: _project(),
+            showProject: false,
+            textScale: scale,
+            size: const Size(390, 500),
+          );
+
+          final divider = find.descendant(
+            of: find.byKey(const Key('test-task-divider')),
+            matching: find.byType(Divider),
+          );
+          final line = tester.getCenter(divider).dy;
+          final before =
+              line -
+              tester
+                  .getBottomLeft(
+                    find.byKey(ValueKey('task-time-meta-${first.id}')),
+                  )
+                  .dy;
+          final after = tester.getTopLeft(find.text('Second task')).dy - line;
+          expect((before - after).abs(), lessThanOrEqualTo(2));
+          expect(
+            tester.getSize(find.byKey(const Key('test-task-divider'))).height,
+            12,
+          );
+        }
+      }
+
+      final first = _task(
+        id: 'plain-first-${platform.name}',
+        content: 'First task',
+      );
+      final second = _task(
+        id: 'plain-second-${platform.name}',
+        content: 'Second task',
+      );
+      await _pumpRow(
+        tester,
+        task: first,
+        nextTask: second,
+        project: _project(),
+        showProject: false,
+        size: const Size(390, 500),
+      );
+      final divider = find.descendant(
+        of: find.byKey(const Key('test-task-divider')),
+        matching: find.byType(Divider),
+      );
+      final line = tester.getCenter(divider).dy;
+      final before = line - tester.getBottomLeft(find.text('First task')).dy;
+      final after = tester.getTopLeft(find.text('Second task')).dy - line;
+      expect((before - after).abs(), lessThanOrEqualTo(2));
+    }
+    debugDefaultTargetPlatformOverride = null;
+  });
+
   testWidgets('agenda row shows project color and within-day time', (
     tester,
   ) async {
@@ -306,6 +387,9 @@ Future<void> _pumpRow(
   required TaskItem task,
   required ProjectItem project,
   required Size size,
+  TaskItem? nextTask,
+  bool showProject = true,
+  double textScale = 1,
   TaskListItemPresentation presentation = TaskListItemPresentation.standard,
   DateTime? now,
   String? activeFocusTaskId,
@@ -318,6 +402,10 @@ Future<void> _pumpRow(
     ProviderScope(
       key: ValueKey('task-list-row-scope-${task.id}'),
       overrides: [
+        if (!showProject)
+          projectsProvider.overrideWith(
+            (ref) => Stream.value(const <ProjectItem>[]),
+          ),
         taskRepositoryProvider.overrideWithValue(_StubTaskRepository()),
         focusRepositoryProvider.overrideWithValue(_StubFocusRepository()),
         focusPresetsProvider.overrideWith(
@@ -342,16 +430,40 @@ Future<void> _pumpRow(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         home: MediaQuery(
-          data: const MediaQueryData(alwaysUse24HourFormat: true),
+          data: MediaQueryData(
+            alwaysUse24HourFormat: true,
+            textScaler: TextScaler.linear(textScale),
+          ),
           child: Scaffold(
             body: SizedBox(
               width: double.infinity,
-              child: TaskListItem(
-                task: task,
-                project: project,
-                presentation: presentation,
-                enableSubtaskDrop: false,
-              ),
+              child: nextTask == null
+                  ? TaskListItem(
+                      task: task,
+                      project: showProject ? project : null,
+                      presentation: presentation,
+                      enableSubtaskDrop: false,
+                    )
+                  : Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TaskListItem(
+                          task: task,
+                          project: showProject ? project : null,
+                          enableSubtaskDrop: false,
+                        ),
+                        TaskListDivider(
+                          key: const Key('test-task-divider'),
+                          previousRow: VisibleTaskRow(task: task, depth: 0),
+                          nextRow: VisibleTaskRow(task: nextTask, depth: 0),
+                        ),
+                        TaskListItem(
+                          task: nextTask,
+                          project: showProject ? project : null,
+                          enableSubtaskDrop: false,
+                        ),
+                      ],
+                    ),
             ),
           ),
         ),
@@ -363,6 +475,7 @@ Future<void> _pumpRow(
 
 TaskItem _task({
   String id = 'task',
+  String content = 'Plan launch',
   TaskSchedule? schedule,
   String? description,
   bool completed = false,
@@ -371,7 +484,7 @@ TaskItem _task({
   return TaskItem(
     id: id,
     userId: 'user',
-    content: 'Plan launch',
+    content: content,
     description: description,
     projectId: 'work',
     priority: 4,

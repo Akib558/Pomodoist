@@ -1,6 +1,13 @@
 part of 'quick_add_bar.dart';
 
 extension _VoiceQuickAddHostPanel on _VoiceQuickAddHostState {
+  bool get _reviewReady =>
+      _draftControllers.isNotEmpty &&
+      !_voice.motionActive &&
+      !_voice.analyzing &&
+      !_voice.isTranscribing &&
+      _error == null;
+
   Widget _expandedPanel(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) => SingleChildScrollView(
@@ -41,10 +48,12 @@ extension _VoiceQuickAddHostPanel on _VoiceQuickAddHostState {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _panelHeader(context),
-              const SizedBox(height: 14),
-              _voiceSmartModeRow(context),
-              const SizedBox(height: 10),
-              _VoiceProcessingSteps(activeIndex: _processingStepIndex),
+              if (!_reviewReady) ...[
+                const SizedBox(height: 14),
+                _voiceSmartModeRow(context),
+                const SizedBox(height: 10),
+                _VoiceProcessingSteps(activeIndex: _processingStepIndex),
+              ],
               const SizedBox(height: 16),
               Flexible(
                 child: AnimatedSwitcher(
@@ -84,20 +93,23 @@ extension _VoiceQuickAddHostPanel on _VoiceQuickAddHostState {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          _VoicePulse(
-            animation: _pulseController,
-            active:
-                _voice.motionActive && !MediaQuery.disableAnimationsOf(context),
-            listeningLevel: _voice.status == VoiceCaptureStatus.recording
-                ? _voice.amplitudeLevel
-                : null,
-            icon: _voice.analyzing
-                ? LucideIcons.sparkles
-                : _voice.isTranscribing
-                ? LucideIcons.audioLines
-                : LucideIcons.mic,
-          ),
-          const SizedBox(width: 14),
+          if (!_reviewReady) ...[
+            _VoicePulse(
+              animation: _pulseController,
+              active:
+                  _voice.motionActive &&
+                  !MediaQuery.disableAnimationsOf(context),
+              listeningLevel: _voice.status == VoiceCaptureStatus.recording
+                  ? _voice.amplitudeLevel
+                  : null,
+              icon: _voice.analyzing
+                  ? LucideIcons.sparkles
+                  : _voice.isTranscribing
+                  ? LucideIcons.audioLines
+                  : LucideIcons.mic,
+            ),
+            const SizedBox(width: 14),
+          ],
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -161,6 +173,39 @@ extension _VoiceQuickAddHostPanel on _VoiceQuickAddHostState {
 
   Widget _panelActions(BuildContext context, int acceptedTaskCount) {
     final l10n = context.l10n;
+    if (_reviewReady) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              onPressed: _voice.canStart ? _voiceActions.start : null,
+              icon: const Icon(LucideIcons.mic),
+              label: Text(l10n.voiceAgain),
+            ),
+          ),
+          if (_voice.canRetryTranscription)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                key: const Key('voice-retry-transcription'),
+                onPressed: _voice.canStart
+                    ? () => _voiceActions.start(retry: true)
+                    : null,
+                icon: const Icon(LucideIcons.rotateCw),
+                label: Text(l10n.voiceRetryTranscription),
+              ),
+            ),
+          FilledButton.icon(
+            key: const Key('voice-add-all'),
+            onPressed: _voice.saving || acceptedTaskCount == 0 ? null : _save,
+            icon: const Icon(LucideIcons.check),
+            label: Text(l10n.voiceAddCount(acceptedTaskCount)),
+          ),
+        ],
+      );
+    }
     return Wrap(
       spacing: 8,
       runSpacing: 8,

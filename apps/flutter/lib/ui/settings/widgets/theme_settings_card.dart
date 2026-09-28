@@ -30,7 +30,7 @@ bool themeHasLowContrast(AppThemePalette colors) => [
   (colors.onError, colors.error),
 ].any((pair) => themeContrastRatio(pair.$1, pair.$2) < 4.5);
 
-String _themeName(AppLocalizations l10n, AppThemeDefinition theme) =>
+String themeDisplayName(AppLocalizations l10n, AppThemeDefinition theme) =>
     switch (theme.id) {
       'classic' => l10n.themeClassic,
       'ocean' => l10n.themeOcean,
@@ -167,7 +167,7 @@ class ThemeSettingsCard extends ConsumerWidget {
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      _themeName(l10n, theme),
+                                      themeDisplayName(l10n, theme),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),

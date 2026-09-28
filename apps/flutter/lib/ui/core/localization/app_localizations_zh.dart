@@ -87,10 +87,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get onboardingLanguageSubtitle => '选择 Pomodoist 要使用的语言。';
 
   @override
-  String get onboardingTimerTitle => '选择计时器样式';
+  String get onboardingTimerTitle => '设置你的专注方式';
 
   @override
-  String get onboardingTimerSubtitle => '选择专注会话中的番茄钟进度视图。';
+  String get onboardingTimerSubtitle => '选择计时器样式和专注时段的显示方式。';
 
   @override
   String get onboardingPaywallTitle => '解锁 Pomodoist';
@@ -3506,4 +3506,46 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settingsTaskBranchGrouped => '分组区块';
+
+  @override
+  String get onboardingTasksTitle => '你的列表，你的节奏。';
+
+  @override
+  String get onboardingTasksSubtitle => '选择任务的样式和间距。';
+
+  @override
+  String get onboardingThemeTitle => '今天是什么颜色？';
+
+  @override
+  String get onboardingThemeSubtitle => '选择让你工作舒心的配色。';
+
+  @override
+  String get onboardingModernDescription => '突出标题';
+
+  @override
+  String get onboardingClassicDescription => '简洁列表';
+
+  @override
+  String get onboardingAppearanceHint => '之后可以在设置中随时更改。';
+
+  @override
+  String get onboardingClassicThemeDescription => '熟悉的红色点缀';
+
+  @override
+  String get onboardingOceanDescription => '清爽蓝色';
+
+  @override
+  String get onboardingForestDescription => '沉静绿色';
+
+  @override
+  String get onboardingSepiaDescription => '温暖纸张';
+
+  @override
+  String get onboardingGraphiteDescription => '只留必要元素';
+
+  @override
+  String get onboardingThemeHint => '之后可以在设置中创建自己的配色和背景。';
+
+  @override
+  String get onboardingPreviewSubtask => '记下最初的想法';
 }

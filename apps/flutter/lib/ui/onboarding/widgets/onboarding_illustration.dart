@@ -3,6 +3,8 @@ import 'package:shadcn_ui/shadcn_ui.dart' show LucideIcons;
 
 import 'package:pomodoist/domain/models/focus/focus_view_mode.dart';
 import 'package:pomodoist/ui/core/themes/app_theme.dart';
+import 'package:pomodoist/ui/focus/widgets/focus_rhythm.dart';
+import 'package:pomodoist/ui/focus/widgets/focus_rhythm_rail.dart';
 import 'package:pomodoist/ui/onboarding/view_models/onboarding_view_model.dart';
 
 /// Decorative slide artwork; the controls below expose the actual settings.
@@ -35,6 +37,8 @@ class OnboardingIllustration extends StatelessWidget {
                   OnboardingStep.timer => Center(
                     child: _TimerPreview(style: timerStyle),
                   ),
+                  OnboardingStep.tasks ||
+                  OnboardingStep.theme => const SizedBox.shrink(),
                   OnboardingStep.paywall => const _ProArtwork(),
                   OnboardingStep.account => const _DevicesArtwork(),
                 },
@@ -45,6 +49,81 @@ class OnboardingIllustration extends StatelessWidget {
       ),
     );
   }
+}
+
+/// A static sample using the same session renderer as Focus, without a live run.
+class OnboardingTimerPreview extends StatelessWidget {
+  const OnboardingTimerPreview({
+    required this.style,
+    required this.sessionDisplay,
+    super.key,
+  });
+
+  final FocusTimerVisualStyle style;
+  final FocusSessionDisplay sessionDisplay;
+
+  static final _rhythm = FocusRhythm([
+    for (var index = 0; index < 8; index++)
+      FocusRhythmStep(
+        phase: index.isEven
+            ? FocusRhythmPhase.work
+            : index == 7
+            ? FocusRhythmPhase.longBreak
+            : FocusRhythmPhase.shortBreak,
+        state: index == 0
+            ? FocusRhythmState.running
+            : FocusRhythmState.upcoming,
+        sequence: index + 1,
+        workOrdinal: index ~/ 2 + 1,
+        plannedSeconds: index.isEven
+            ? 1500
+            : index == 7
+            ? 900
+            : 300,
+        source: FocusRhythmSource.projected,
+      ),
+  ]);
+
+  @override
+  Widget build(BuildContext context) => ExcludeSemantics(
+    child: IgnorePointer(
+      child: MediaQuery.withNoTextScaling(
+        child: SizedBox(
+          height: 192,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: SizedBox(
+              width: 360,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _TimerPreview(style: style),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 48,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: SizedBox(
+                        width: 400,
+                        child: FocusRhythmRail(
+                          rhythm: _rhythm,
+                          semanticsLabel: '',
+                          compact: true,
+                          activeProgress: .75,
+                          activeSequence: 1,
+                          display: sessionDisplay,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
 }
 
 class _TimerPreview extends StatelessWidget {

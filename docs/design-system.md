@@ -633,9 +633,11 @@ starts 38 px from the task body's leading edge, after any disclosure margin,
 and adds 28 px per level of the less
 indented adjacent task. Do not add leading or trailing separators. Its total
 height is 1 px on desktop/web and 12 px on native iOS/Android, with the line
-centered to retain the existing touch drop area. Root-task drop targets keep
-their existing expansion and Reduce Motion behavior. Kanban and Timeline do not
-use this spacing preference.
+centered after title-only rows. When a native row shows content below its
+title, move only the stroke down by half the title inset (at most 5 px) so the
+visible gaps on both sides match. Keep the 12 px separator and touch drop area
+unchanged. Root-task drop targets keep their existing expansion and Reduce
+Motion behavior. Kanban and Timeline do not use this spacing preference.
 
 ### Connected task branches
 
@@ -922,8 +924,10 @@ values. Standalone login and registration retain their own layouts.
 Use the compact slide-card direction from variant 02 in
 `variants/onboarding/index.html`: a minimal header with the step counter and
 Close, a decorative illustration above the current setting, and a pinned footer
-with Back, four progress indicators,
-and Continue / Later / Finish. The flow remains Language, Timer, Pro, Account.
+with Back, six progress indicators,
+and Continue / Later / Finish. The flow is Language, Timer, Tasks, Theme, Pro,
+Account. Derive the step counter from the step enum; wrap the 48 px navigation
+targets and stack progress above actions when the full row cannot fit.
 Center a dialog up to 540 px wide on larger windows. When the viewport's
 shortest side is below 600 px, use a fullscreen surface in both orientations.
 Paint the opaque surface behind the safe-area insets too; dimming, shadows and
@@ -934,9 +938,33 @@ at the bottom even on short slides. Use 20 px horizontal content padding and
 height. Keep labels and touch targets at their normal accessible sizes. Stack
 progress above the actions on narrow layouts or with enlarged text.
 
+Tasks and Theme use variant 02 from the onboarding HTML sketches. These two
+slides replace the decorative illustration with live, noninteractive task samples.
+Tasks presents Modern/Classic as preview cards, then spacing choices, the shared
+sample, and Connecting lines/Grouped branch choices. Stack cards on narrow
+screens or with enlarged text. Samples use the shared row padding rules and
+respond to all three choices without creating tasks or exposing task actions.
+Theme presents System/Light/Dark above a vertical catalog of Classic, Ocean,
+Forest, Sepia, and Graphite, with swatches, descriptions, selection indicators,
+and the same task sample below. Custom palette/background editing stays in
+Settings. Existing Custom selections are retained until a preset is chosen.
+Both slides use the existing task, palette, and theme-mode controllers and their
+local persistence. Disable changes and navigation while saving; retain existing
+save feedback and allow retry when palette loading fails. Navigation never resets
+selections, and users who already completed onboarding are not shown it again.
+
 Show all supported languages as selectable tiles, with System using a full row.
-Show Bar and Circle as compact text choices with a selection indicator. Keep the
-timer preview only in the illustration above; it follows the selected style.
+The Timer slide uses variant 01 of `onboarding-sketches/timer-sessions.html`:
+one shared timer/session preview below the heading, followed by two labeled
+choice rows. Order timer choices Circle then Bar, and session choices Compact
+then Icons (leading to trailing, mirrored in RTL). New or invalid preferences
+use Circle and Compact; saved choices always win. Persist both independently
+through the existing focus preferences repository. The static session sample
+uses `FocusRhythmRail` without creating a focus run; both choices update the
+preview. Keep its height at 192 px and scale only the decorative content on
+narrow screens. Choice labels retain text scaling and 48 px minimum targets,
+stacking when needed. Keep the footer pinned and allow the slide body to scroll
+on short screens. Preserve swipe navigation over the combined preview.
 The language illustration follows the selected language. Reflow choices into one
 column when space or text scale requires it. Use existing localized strings,
 palette roles and bundled fonts.

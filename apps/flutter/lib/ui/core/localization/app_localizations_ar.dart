@@ -89,11 +89,10 @@ class AppLocalizationsAr extends AppLocalizations {
       'اختر اللغة التي يجب أن يستخدمها Pomodoist.';
 
   @override
-  String get onboardingTimerTitle => 'اختر نمط المؤقت';
+  String get onboardingTimerTitle => 'اضبط أسلوب تركيزك';
 
   @override
-  String get onboardingTimerSubtitle =>
-      'اختر عرض تقدم بومودورو لجلسات التركيز.';
+  String get onboardingTimerSubtitle => 'اختر شكل المؤقت وطريقة عرض الجلسات.';
 
   @override
   String get onboardingPaywallTitle => 'افتح Pomodoist';
@@ -3638,4 +3637,48 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get settingsTaskBranchGrouped => 'كتلة مجمّعة';
+
+  @override
+  String get onboardingTasksTitle => 'قائمتك. إيقاعك.';
+
+  @override
+  String get onboardingTasksSubtitle => 'اختر مظهر المهام والمسافة بينها.';
+
+  @override
+  String get onboardingThemeTitle => 'ما لون يومك؟';
+
+  @override
+  String get onboardingThemeSubtitle => 'اختر مجموعة ألوان تستمتع بالعمل بها.';
+
+  @override
+  String get onboardingModernDescription => 'عناوين بارزة';
+
+  @override
+  String get onboardingClassicDescription => 'قائمة هادئة';
+
+  @override
+  String get onboardingAppearanceHint =>
+      'يمكنك تغيير كل ذلك لاحقًا في الإعدادات.';
+
+  @override
+  String get onboardingClassicThemeDescription => 'اللمسة الحمراء المألوفة';
+
+  @override
+  String get onboardingOceanDescription => 'أزرق بارد';
+
+  @override
+  String get onboardingForestDescription => 'أخضر هادئ';
+
+  @override
+  String get onboardingSepiaDescription => 'ورق دافئ';
+
+  @override
+  String get onboardingGraphiteDescription => 'الأساسيات فقط';
+
+  @override
+  String get onboardingThemeHint =>
+      'يمكنك إنشاء ألوانك وخلفيتك الخاصة لاحقًا في الإعدادات.';
+
+  @override
+  String get onboardingPreviewSubtask => 'دوّن أفكارك الأولى';
 }

@@ -1962,8 +1962,14 @@ void main() {
       FocusTimerVisualStyle.bar.storageValue,
     );
 
-    await tester.tap(find.byKey(const Key('onboarding-next-button')));
-    await tester.pumpAndSettle();
+    for (
+      var step = OnboardingStep.timer.index;
+      step < OnboardingStep.paywall.index;
+      step++
+    ) {
+      await tester.tap(find.byKey(const Key('onboarding-next-button')));
+      await tester.pumpAndSettle();
+    }
     expect(
       find.byKey(const ValueKey('onboarding-step-paywall')),
       findsOneWidget,
@@ -2179,10 +2185,14 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('onboarding-next-button')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('onboarding-next-button')));
-    await tester.pumpAndSettle();
+    for (
+      var step = OnboardingStep.language.index;
+      step < OnboardingStep.paywall.index;
+      step++
+    ) {
+      await tester.tap(find.byKey(const Key('onboarding-next-button')));
+      await tester.pumpAndSettle();
+    }
 
     final annualPlan = find.byKey(
       const ValueKey('billing-plan-pomodoist.pro.annual'),

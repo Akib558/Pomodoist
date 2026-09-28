@@ -88,11 +88,11 @@ class AppLocalizationsPt extends AppLocalizations {
   String get onboardingLanguageSubtitle => 'Escolha o idioma do Pomodoist.';
 
   @override
-  String get onboardingTimerTitle => 'Escolha o estilo do timer';
+  String get onboardingTimerTitle => 'Configure seu foco';
 
   @override
   String get onboardingTimerSubtitle =>
-      'Escolha como exibir o progresso Pomodoro nas sessões de foco.';
+      'Escolha o estilo do timer e a exibição das sessões.';
 
   @override
   String get onboardingPaywallTitle => 'Desbloqueie o Pomodoist';
@@ -3730,6 +3730,53 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get settingsTaskBranchGrouped => 'Bloco agrupado';
+
+  @override
+  String get onboardingTasksTitle => 'Sua lista. Seu ritmo.';
+
+  @override
+  String get onboardingTasksSubtitle =>
+      'Escolha o estilo e o espaçamento das tarefas.';
+
+  @override
+  String get onboardingThemeTitle => 'Qual é a cor do seu dia?';
+
+  @override
+  String get onboardingThemeSubtitle =>
+      'Escolha uma paleta com a qual goste de trabalhar.';
+
+  @override
+  String get onboardingModernDescription => 'Títulos destacados';
+
+  @override
+  String get onboardingClassicDescription => 'Lista discreta';
+
+  @override
+  String get onboardingAppearanceHint =>
+      'Você pode mudar tudo depois nas configurações.';
+
+  @override
+  String get onboardingClassicThemeDescription =>
+      'O familiar destaque vermelho';
+
+  @override
+  String get onboardingOceanDescription => 'Azul fresco';
+
+  @override
+  String get onboardingForestDescription => 'Verde tranquilo';
+
+  @override
+  String get onboardingSepiaDescription => 'Papel acolhedor';
+
+  @override
+  String get onboardingGraphiteDescription => 'Só o essencial';
+
+  @override
+  String get onboardingThemeHint =>
+      'Você pode criar sua própria paleta e fundo depois nas configurações.';
+
+  @override
+  String get onboardingPreviewSubtask => 'Anotar as primeiras ideias';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).

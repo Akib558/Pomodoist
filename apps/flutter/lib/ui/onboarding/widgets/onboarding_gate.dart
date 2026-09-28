@@ -10,6 +10,7 @@ import 'package:pomodoist/ui/core/localization/app_l10n.dart';
 import 'package:pomodoist/ui/core/themes/app_theme.dart';
 import 'package:pomodoist/ui/core/themes/app_motion.dart';
 import 'package:pomodoist/ui/onboarding/widgets/onboarding_illustration.dart';
+import 'package:pomodoist/ui/onboarding/widgets/onboarding_appearance_steps.dart';
 import 'package:pomodoist/domain/models/billing/billing_models.dart';
 import 'package:pomodoist/ui/billing/view_models/billing_view_model.dart';
 import 'package:pomodoist/ui/billing/widgets/billing_paywall.dart';
@@ -141,7 +142,7 @@ class _OnboardingOverlayState extends ConsumerState<_OnboardingOverlay> {
                                       children: [
                                         const Spacer(),
                                         Text(
-                                          '${state.step.index + 1} / 4',
+                                          '${state.step.index + 1} / ${OnboardingStep.values.length}',
                                           style: AppTheme.monoTextStyle
                                               .copyWith(
                                                 fontSize: 11,
@@ -208,30 +209,38 @@ class _OnboardingOverlayState extends ConsumerState<_OnboardingOverlay> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.stretch,
                                           children: [
-                                            GestureDetector(
-                                              onHorizontalDragEnd: (details) {
-                                                if (_saving) return;
-                                                controller.swipe(
-                                                  details.primaryVelocity ?? 0,
-                                                  rightToLeft:
-                                                      Directionality.of(
-                                                        context,
-                                                      ) ==
-                                                      TextDirection.rtl,
-                                                );
-                                              },
-                                              child: OnboardingIllustration(
-                                                height: fullScreen
-                                                    ? (constraints.maxHeight <
-                                                              500
-                                                          ? 88
-                                                          : 120)
-                                                    : 148,
-                                                step: state.step,
-                                                timerStyle: state.timerStyle,
+                                            if (state.step !=
+                                                    OnboardingStep.timer &&
+                                                state.step !=
+                                                    OnboardingStep.tasks &&
+                                                state.step !=
+                                                    OnboardingStep.theme) ...[
+                                              GestureDetector(
+                                                onHorizontalDragEnd: (details) {
+                                                  if (_saving) return;
+                                                  controller.swipe(
+                                                    details.primaryVelocity ??
+                                                        0,
+                                                    rightToLeft:
+                                                        Directionality.of(
+                                                          context,
+                                                        ) ==
+                                                        TextDirection.rtl,
+                                                  );
+                                                },
+                                                child: OnboardingIllustration(
+                                                  height: fullScreen
+                                                      ? (constraints.maxHeight <
+                                                                500
+                                                            ? 88
+                                                            : 120)
+                                                      : 148,
+                                                  step: state.step,
+                                                  timerStyle: state.timerStyle,
+                                                ),
                                               ),
-                                            ),
-                                            const SizedBox(height: 16),
+                                              const SizedBox(height: 16),
+                                            ],
                                             if (state.step !=
                                                 OnboardingStep.paywall) ...[
                                               _StepHeader(step: state.step),
@@ -251,18 +260,38 @@ class _OnboardingOverlayState extends ConsumerState<_OnboardingOverlay> {
                                                         ),
                                                       ),
                                                 ),
-                                              OnboardingStep.timer =>
-                                                _TimerStep(
-                                                  enabled: !_saving,
-                                                  onSelected: (value) =>
-                                                      unawaited(
-                                                        _save(
-                                                          () => controller
-                                                              .setTimerStyle(
-                                                                value,
-                                                              ),
-                                                        ),
+                                              OnboardingStep.timer => _TimerStep(
+                                                enabled: !_saving,
+                                                onSelected: (value) =>
+                                                    unawaited(
+                                                      _save(
+                                                        () => controller
+                                                            .setTimerStyle(
+                                                              value,
+                                                            ),
                                                       ),
+                                                    ),
+                                                onSessionSelected: (value) =>
+                                                    unawaited(
+                                                      _save(
+                                                        () => controller
+                                                            .setSessionDisplay(
+                                                              value,
+                                                            ),
+                                                      ),
+                                                    ),
+                                              ),
+                                              OnboardingStep.tasks =>
+                                                OnboardingTasksStep(
+                                                  enabled: !_saving,
+                                                  onSave: (action) =>
+                                                      unawaited(_save(action)),
+                                                ),
+                                              OnboardingStep.theme =>
+                                                OnboardingThemeStep(
+                                                  enabled: !_saving,
+                                                  onSave: (action) =>
+                                                      unawaited(_save(action)),
                                                 ),
                                               OnboardingStep.paywall =>
                                                 const LaunchOfferPaywall(
@@ -327,6 +356,8 @@ class _OnboardingOverlayState extends ConsumerState<_OnboardingOverlay> {
 String _stepTitle(BuildContext context, OnboardingStep step) => switch (step) {
   OnboardingStep.language => context.l10n.onboardingLanguageTitle,
   OnboardingStep.timer => context.l10n.onboardingTimerTitle,
+  OnboardingStep.tasks => context.l10n.onboardingTasksTitle,
+  OnboardingStep.theme => context.l10n.onboardingThemeTitle,
   OnboardingStep.paywall => context.l10n.billingTitle,
   OnboardingStep.account => context.l10n.onboardingAccountTitle,
 };
@@ -357,6 +388,8 @@ class _StepHeader extends StatelessWidget {
           switch (step) {
             OnboardingStep.language => l10n.onboardingLanguageSubtitle,
             OnboardingStep.timer => l10n.onboardingTimerSubtitle,
+            OnboardingStep.tasks => l10n.onboardingTasksSubtitle,
+            OnboardingStep.theme => l10n.onboardingThemeSubtitle,
             OnboardingStep.paywall => l10n.onboardingPaywallSubtitle,
             OnboardingStep.account => l10n.onboardingAccountSubtitle,
           },
@@ -388,8 +421,8 @@ class _OnboardingFooter extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final colors = context.appColors;
-    final progress = Row(
-      mainAxisSize: MainAxisSize.min,
+    final progress = Wrap(
+      alignment: WrapAlignment.center,
       children: [
         for (final item in OnboardingStep.values)
           Semantics(
@@ -419,7 +452,7 @@ class _OnboardingFooter extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           final stacked =
-              constraints.maxWidth < 480 ||
+              constraints.maxWidth < 600 ||
               MediaQuery.textScalerOf(context).scale(14) > 18;
           final back = ShadButton.ghost(
             key: const Key('onboarding-back-button'),
@@ -540,49 +573,55 @@ class _LanguageStep extends ConsumerWidget {
 }
 
 class _TimerStep extends ConsumerWidget {
-  const _TimerStep({required this.enabled, required this.onSelected});
+  const _TimerStep({
+    required this.enabled,
+    required this.onSelected,
+    required this.onSessionSelected,
+  });
   final bool enabled;
   final ValueChanged<FocusTimerVisualStyle> onSelected;
+  final ValueChanged<FocusSessionDisplay> onSessionSelected;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final selected = ref.watch(onboardingViewModelProvider).timerStyle;
-    return LayoutBuilder(
+    final state = ref.watch(onboardingViewModelProvider);
+    final l10n = context.l10n;
+    Widget choices<T>({
+      required String key,
+      required List<T> values,
+      required T selected,
+      required String Function(T) label,
+      required ValueChanged<T> onSelected,
+    }) => LayoutBuilder(
       builder: (context, constraints) {
         final singleColumn =
             constraints.maxWidth < 300 ||
             MediaQuery.textScalerOf(context).scale(14) > 18;
         return Wrap(
-          key: const Key('onboarding-timer-visual-style-select'),
+          key: Key(key),
           spacing: 12,
-          runSpacing: 12,
+          runSpacing: 8,
           children: [
-            for (final style in FocusTimerVisualStyle.values)
+            for (final value in values)
               SizedBox(
                 width: singleColumn
                     ? constraints.maxWidth
                     : (constraints.maxWidth - 12) / 2,
                 child: Semantics(
-                  selected: style == selected,
+                  selected: value == selected,
                   child: OutlinedButton(
-                    style: _choiceStyle(context, style == selected),
-                    onPressed: enabled ? () => onSelected(style) : null,
+                    style: _choiceStyle(context, value == selected),
+                    onPressed: enabled ? () => onSelected(value) : null,
                     child: Row(
                       children: [
-                        Expanded(
-                          child: Text(
-                            style == FocusTimerVisualStyle.bar
-                                ? context.l10n.settingsTimerVisualBar
-                                : context.l10n.settingsTimerVisualCircle,
-                          ),
-                        ),
+                        Expanded(child: Text(label(value))),
                         const SizedBox(width: 4),
                         Icon(
-                          style == selected
+                          value == selected
                               ? LucideIcons.circleCheck
                               : LucideIcons.circle,
                           size: 16,
-                          color: style == selected
+                          color: value == selected
                               ? context.appColors.accent
                               : context.appColors.secondaryText,
                         ),
@@ -594,6 +633,62 @@ class _TimerStep extends ConsumerWidget {
           ],
         );
       },
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onHorizontalDragEnd: (details) {
+            if (!enabled) return;
+            ref
+                .read(onboardingViewModelProvider.notifier)
+                .swipe(
+                  details.primaryVelocity ?? 0,
+                  rightToLeft: Directionality.of(context) == TextDirection.rtl,
+                );
+          },
+          child: OnboardingTimerPreview(
+            style: state.timerStyle,
+            sessionDisplay: state.sessionDisplay,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Text(
+          l10n.settingsTimerVisualTitle,
+          style: Theme.of(context).textTheme.labelLarge,
+        ),
+        const SizedBox(height: 8),
+        choices(
+          key: 'onboarding-timer-visual-style-select',
+          values: onboardingTimerStyles,
+          selected: state.timerStyle,
+          label: (value) => value == FocusTimerVisualStyle.circle
+              ? l10n.settingsTimerVisualCircle
+              : l10n.settingsTimerVisualBar,
+          onSelected: onSelected,
+        ),
+        const SizedBox(height: 16),
+        Text(
+          l10n.focusSessionDisplay,
+          style: Theme.of(context).textTheme.labelLarge,
+        ),
+        const SizedBox(height: 8),
+        choices(
+          key: 'onboarding-session-display-select',
+          values: onboardingSessionDisplays,
+          selected: state.sessionDisplay,
+          label: (value) => value == FocusSessionDisplay.compact
+              ? l10n.focusSessionCompact
+              : l10n.focusSessionIcons,
+          onSelected: onSessionSelected,
+        ),
+        const SizedBox(height: 16),
+        Text(
+          l10n.onboardingAppearanceHint,
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+      ],
     );
   }
 }

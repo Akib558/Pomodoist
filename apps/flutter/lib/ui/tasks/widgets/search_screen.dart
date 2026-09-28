@@ -11,6 +11,7 @@ import 'package:pomodoist/ui/core/widgets/adaptive_shell.dart'
     show showQuickAddDialog;
 import 'package:pomodoist/domain/models/tasks/task_models.dart';
 import 'package:pomodoist/ui/tasks/view_models/task_search.dart';
+import 'package:pomodoist/ui/tasks/view_models/task_branch_rows.dart';
 import 'package:pomodoist/ui/tasks/widgets/task_list_item.dart';
 import 'package:pomodoist/ui/tasks/widgets/task_motion.dart';
 import 'package:pomodoist/ui/tasks/widgets/task_selection_region.dart';
@@ -233,8 +234,16 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                           subtaskProgress: progressById[task.id],
                         );
                       },
-                      separatorBuilder: (context, index) =>
-                          const TaskListDivider(),
+                      separatorBuilder: (context, index) => TaskListDivider(
+                        previousRow: VisibleTaskRow(
+                          task: visibleItems[index],
+                          depth: 0,
+                          hasVisibleChildren:
+                              (progressById[visibleItems[index].id]?.total ??
+                                  0) >
+                              0,
+                        ),
+                      ),
                     ),
                   );
                 },

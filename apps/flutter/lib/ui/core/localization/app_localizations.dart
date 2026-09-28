@@ -274,13 +274,13 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingTimerTitle.
   ///
   /// In en, this message translates to:
-  /// **'Choose timer style'**
+  /// **'Set up your focus'**
   String get onboardingTimerTitle;
 
   /// No description provided for @onboardingTimerSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Pick the Pomodoro progress view for focus sessions.'**
+  /// **'Choose your timer style and session display.'**
   String get onboardingTimerSubtitle;
 
   /// No description provided for @onboardingPaywallTitle.
@@ -6334,6 +6334,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Grouped branch'**
   String get settingsTaskBranchGrouped;
+
+  /// No description provided for @onboardingTasksTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your list. Your rhythm.'**
+  String get onboardingTasksTitle;
+
+  /// No description provided for @onboardingTasksSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the look and spacing of your tasks.'**
+  String get onboardingTasksSubtitle;
+
+  /// No description provided for @onboardingThemeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What color is your day?'**
+  String get onboardingThemeTitle;
+
+  /// No description provided for @onboardingThemeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a palette you enjoy working in.'**
+  String get onboardingThemeSubtitle;
+
+  /// No description provided for @onboardingModernDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Emphasized titles'**
+  String get onboardingModernDescription;
+
+  /// No description provided for @onboardingClassicDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Understated rows'**
+  String get onboardingClassicDescription;
+
+  /// No description provided for @onboardingAppearanceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You can change all of this later in Settings.'**
+  String get onboardingAppearanceHint;
+
+  /// No description provided for @onboardingClassicThemeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'The familiar red accent'**
+  String get onboardingClassicThemeDescription;
+
+  /// No description provided for @onboardingOceanDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Cool blue'**
+  String get onboardingOceanDescription;
+
+  /// No description provided for @onboardingForestDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Calm green'**
+  String get onboardingForestDescription;
+
+  /// No description provided for @onboardingSepiaDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Warm paper'**
+  String get onboardingSepiaDescription;
+
+  /// No description provided for @onboardingGraphiteDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Just the essentials'**
+  String get onboardingGraphiteDescription;
+
+  /// No description provided for @onboardingThemeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'You can create your own palette and background later in Settings.'**
+  String get onboardingThemeHint;
+
+  /// No description provided for @onboardingPreviewSubtask.
+  ///
+  /// In en, this message translates to:
+  /// **'Write down your first ideas'**
+  String get onboardingPreviewSubtask;
 }
 
 class _AppLocalizationsDelegate

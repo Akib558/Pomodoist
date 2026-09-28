@@ -61,7 +61,7 @@ class _TaskDraftList extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView.separated(
       itemCount: controllers.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 10),
+      separatorBuilder: (_, _) => const Divider(height: 1),
       itemBuilder: (context, index) {
         return TweenAnimationBuilder<double>(
           key: ValueKey(controllers[index]),
@@ -94,8 +94,9 @@ class _TaskDraftList extends StatelessWidget {
   }
 }
 
-class _TaskDraftItem extends ConsumerWidget {
+class _TaskDraftItem extends ConsumerStatefulWidget {
   const _TaskDraftItem({
+    super.key,
     required this.controller,
     required this.depth,
     required this.index,
@@ -120,46 +121,107 @@ class _TaskDraftItem extends ConsumerWidget {
   final VoidCallback onRemove;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_TaskDraftItem> createState() => _TaskDraftItemState();
+}
+
+class _TaskDraftItemState extends ConsumerState<_TaskDraftItem> {
+  bool _editing = false;
+
+  @override
+  Widget build(BuildContext context) {
     final parsed = ref.watch(
-      voiceDraftViewModelProvider((controller.quickAdd.text, defaultDate)),
+      voiceDraftViewModelProvider((
+        widget.controller.quickAdd.text,
+        widget.defaultDate,
+      )),
     );
-    final horizontalOffset = depth * 20.0;
+    final title = parsed.content.trim().isEmpty
+        ? widget.controller.quickAdd.text.trim()
+        : parsed.content;
+    final horizontalOffset = widget.depth * 20.0;
     return Padding(
-      padding: EdgeInsets.only(left: horizontalOffset),
+      padding: EdgeInsets.only(left: horizontalOffset, top: 8, bottom: 8),
       child: Column(
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(child: _fields(context)),
+              if (!_editing)
+                const Padding(
+                  padding: EdgeInsets.only(top: 13, right: 8),
+                  child: Icon(LucideIcons.circleCheck, size: 20),
+                ),
+              Expanded(
+                child: _editing
+                    ? _fields(context)
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          InkWell(
+                            key: ValueKey('voice-draft-open-${widget.index}'),
+                            onTap: widget.enabled
+                                ? () => setState(() => _editing = true)
+                                : null,
+                            borderRadius: BorderRadius.circular(8),
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(minHeight: 44),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  title,
+                                  style: Theme.of(context).textTheme.bodyLarge,
+                                ),
+                              ),
+                            ),
+                          ),
+                          QuickAddDetails(
+                            controller: widget.controller.quickAdd,
+                            defaultDate: widget.defaultDate,
+                            projectId: widget.projectId,
+                            inheritedProjectName: widget.inheritedProjectName,
+                            priority: widget.priority,
+                            enabled: widget.enabled,
+                            onChanged: widget.onChanged,
+                          ),
+                        ],
+                      ),
+              ),
               const SizedBox(width: 8),
               IconButton.filledTonal(
                 tooltip: context.l10n.voiceRemoveTask,
-                onPressed: enabled ? onRemove : null,
+                onPressed: widget.enabled ? widget.onRemove : null,
                 icon: const Icon(LucideIcons.trash2),
               ),
             ],
           ),
+          if (_editing)
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed: () => setState(() => _editing = false),
+                child: Text(context.l10n.commonDone),
+              ),
+            ),
           for (
             var childIndex = 0;
-            childIndex < controller.subtasks.length;
+            childIndex < widget.controller.subtasks.length;
             childIndex++
           ) ...[
-            const SizedBox(height: 10),
             _TaskDraftItem(
-              controller: controller.subtasks[childIndex],
-              depth: depth + 1,
+              key: ValueKey(widget.controller.subtasks[childIndex]),
+              controller: widget.controller.subtasks[childIndex],
+              depth: widget.depth + 1,
               index: childIndex,
-              onChanged: onChanged,
-              defaultDate: defaultDate,
-              projectId: parsed.project == null ? projectId : null,
-              inheritedProjectName: parsed.project ?? inheritedProjectName,
-              priority: priority,
-              enabled: enabled,
+              onChanged: widget.onChanged,
+              defaultDate: widget.defaultDate,
+              projectId: parsed.project == null ? widget.projectId : null,
+              inheritedProjectName:
+                  parsed.project ?? widget.inheritedProjectName,
+              priority: widget.priority,
+              enabled: widget.enabled,
               onRemove: () {
-                controller.subtasks.removeAt(childIndex).dispose();
-                onChanged();
+                widget.controller.subtasks.removeAt(childIndex).dispose();
+                widget.onChanged();
               },
             ),
           ],
@@ -172,35 +234,35 @@ class _TaskDraftItem extends ConsumerWidget {
     return Column(
       children: [
         QuickAddInput(
-          controller: controller.quickAdd,
-          enabled: enabled,
+          controller: widget.controller.quickAdd,
+          enabled: widget.enabled,
           maxLines: 3,
-          onChanged: (_) => onChanged(),
+          onChanged: (_) => widget.onChanged(),
           decoration: InputDecoration(
-            labelText: context.l10n.voiceTaskLabel(index + 1),
+            labelText: context.l10n.voiceTaskLabel(widget.index + 1),
             prefixIcon: Icon(
-              depth == 0
+              widget.depth == 0
                   ? LucideIcons.circleCheck
                   : LucideIcons.cornerDownRight,
             ),
           ),
         ),
         QuickAddDetails(
-          controller: controller.quickAdd,
-          defaultDate: defaultDate,
-          projectId: projectId,
-          inheritedProjectName: inheritedProjectName,
-          priority: priority,
-          enabled: enabled,
-          onChanged: onChanged,
+          controller: widget.controller.quickAdd,
+          defaultDate: widget.defaultDate,
+          projectId: widget.projectId,
+          inheritedProjectName: widget.inheritedProjectName,
+          priority: widget.priority,
+          enabled: widget.enabled,
+          onChanged: widget.onChanged,
         ),
         const SizedBox(height: 8),
         TextField(
-          enabled: enabled,
-          controller: controller.description,
+          enabled: widget.enabled,
+          controller: widget.controller.description,
           minLines: 1,
           maxLines: 3,
-          onChanged: (_) => onChanged(),
+          onChanged: (_) => widget.onChanged(),
           decoration: InputDecoration(
             labelText: context.l10n.taskComment,
             hintText: context.l10n.taskCommentHint,

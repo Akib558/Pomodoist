@@ -1186,6 +1186,27 @@ class TaskListDivider extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final grouped =
         ref.watch(taskBranchStyleViewModelProvider) == TaskBranchStyle.grouped;
+    var lineOffset = 0.0;
+    if (usesTouchTaskInteraction && previousRow != null) {
+      final task = previousRow!.task;
+      final state = ref.watch(taskItemViewModelProvider(task));
+      final progress = ref
+          .watch(taskHierarchyViewModelProvider)
+          .progress[task.id];
+      final hasTrailingContent =
+          (task.parentId != null &&
+              (previousRow!.visibleParentId == null ||
+                  previousRow!.depth > 2)) ||
+          (task.description?.trim().isNotEmpty ?? false) ||
+          task.schedule != null ||
+          state.project != null ||
+          state.focusEstimate != null ||
+          (progress?.total ?? 0) > 0 ||
+          previousRow!.hasVisibleChildren;
+      if (hasTrailingContent) {
+        lineOffset = math.min(5, _mobileGeometry(context).titleInset / 2);
+      }
+    }
     final joinsGroup =
         grouped &&
         previousRow?.groupRootId != null &&
@@ -1202,16 +1223,19 @@ class TaskListDivider extends ConsumerWidget {
             : 28.0 * math.min(math.min(previousDepth, nextDepth), 2));
     final divider = Padding(
       padding: EdgeInsetsDirectional.only(start: indent),
-      child: Divider(
-        height: usesTouchTaskInteraction ? 12 : 1,
-        thickness: 1,
-        color:
-            grouped &&
-                !joinsGroup &&
-                (previousRow?.groupRootId != null ||
-                    nextRow?.groupRootId != null)
-            ? Colors.transparent
-            : context.appColors.border,
+      child: Transform.translate(
+        offset: Offset(0, lineOffset),
+        child: Divider(
+          height: usesTouchTaskInteraction ? 12 : 1,
+          thickness: 1,
+          color:
+              grouped &&
+                  !joinsGroup &&
+                  (previousRow?.groupRootId != null ||
+                      nextRow?.groupRootId != null)
+              ? Colors.transparent
+              : context.appColors.border,
+        ),
       ),
     );
     if (joinsGroup) {

@@ -13,7 +13,16 @@ const launchOfferStartedAtPreferenceKey = 'launchOffer.startedAt.v1';
 const launchOfferDuration = Duration(hours: 24);
 const launchOfferCycleDuration = Duration(days: 7);
 
-enum OnboardingStep { language, timer, paywall, account }
+enum OnboardingStep { language, timer, tasks, theme, paywall, account }
+
+const onboardingTimerStyles = [
+  FocusTimerVisualStyle.circle,
+  FocusTimerVisualStyle.bar,
+];
+const onboardingSessionDisplays = [
+  FocusSessionDisplay.compact,
+  FocusSessionDisplay.icons,
+];
 
 class OnboardingState {
   const OnboardingState({
@@ -22,7 +31,8 @@ class OnboardingState {
     this.step = OnboardingStep.language,
     this.launchOfferStartedAt,
     this.language = AppLanguage.system,
-    this.timerStyle = FocusTimerVisualStyle.bar,
+    this.timerStyle = FocusTimerVisualStyle.circle,
+    this.sessionDisplay = FocusSessionDisplay.compact,
   });
 
   final bool loading;
@@ -31,6 +41,7 @@ class OnboardingState {
   final DateTime? launchOfferStartedAt;
   final AppLanguage language;
   final FocusTimerVisualStyle timerStyle;
+  final FocusSessionDisplay sessionDisplay;
 
   OnboardingState copyWith({
     bool? loading,
@@ -39,6 +50,7 @@ class OnboardingState {
     DateTime? launchOfferStartedAt,
     AppLanguage? language,
     FocusTimerVisualStyle? timerStyle,
+    FocusSessionDisplay? sessionDisplay,
   }) => OnboardingState(
     loading: loading ?? this.loading,
     completed: completed ?? this.completed,
@@ -46,6 +58,7 @@ class OnboardingState {
     launchOfferStartedAt: launchOfferStartedAt ?? this.launchOfferStartedAt,
     language: language ?? this.language,
     timerStyle: timerStyle ?? this.timerStyle,
+    sessionDisplay: sessionDisplay ?? this.sessionDisplay,
   );
 }
 
@@ -63,10 +76,17 @@ class OnboardingViewModel extends Notifier<OnboardingState> {
     ref.listen(focusTimerVisualStyleProvider, (_, style) {
       if (ref.mounted) state = state.copyWith(timerStyle: style);
     });
+    ref.listen(
+      focusPreferencesStateProvider.select((value) => value.sessionDisplay),
+      (_, display) {
+        if (ref.mounted) state = state.copyWith(sessionDisplay: display);
+      },
+    );
     unawaited(_load());
     return OnboardingState(
       language: ref.read(appLanguageProvider),
       timerStyle: ref.read(focusTimerVisualStyleProvider),
+      sessionDisplay: ref.read(focusPreferencesStateProvider).sessionDisplay,
     );
   }
 
@@ -106,6 +126,13 @@ class OnboardingViewModel extends Notifier<OnboardingState> {
 
   Future<void> setTimerStyle(FocusTimerVisualStyle style) async {
     (await ref.read(focusPreferencesRepositoryProvider).setTimerStyle(style))
+        .getOrThrow();
+  }
+
+  Future<void> setSessionDisplay(FocusSessionDisplay display) async {
+    (await ref
+            .read(focusPreferencesRepositoryProvider)
+            .setSessionDisplay(display))
         .getOrThrow();
   }
 

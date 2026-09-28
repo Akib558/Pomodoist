@@ -522,10 +522,10 @@ void main() {
       addTearDown(() {
         if (!canceling.isCompleted) canceling.complete();
       });
-      final again = find.widgetWithText(FilledButton, 'Again');
+      final again = find.widgetWithText(TextButton, 'Again');
       await tester.tap(again);
       await tester.pump();
-      expect(tester.widget<FilledButton>(again).onPressed, isNull);
+      expect(tester.widget<TextButton>(again).onPressed, isNull);
       canceling.complete();
       await tester.pump();
       await tester.runAsync(
@@ -1122,19 +1122,27 @@ void main() {
     await tester.tap(find.text('Stop'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Купить кофе today 09:00 30m'), findsOneWidget);
-    expect(find.text('Написать отчет tomorrow 10:00 1h'), findsOneWidget);
+    expect(find.text('Купить кофе'), findsOneWidget);
+    expect(find.text('Написать отчет'), findsOneWidget);
+    expect(find.byKey(const Key('voice-smart-mode')), findsNothing);
+    expect(find.text('Review'), findsNothing);
+    expect(find.byKey(const Key('voice-add-all')), findsOneWidget);
+    final firstDraft = find.byWidgetPredicate(
+      (widget) =>
+          widget is TextField && widget.decoration?.labelText == 'Task 1',
+    );
+    expect(firstDraft, findsNothing);
 
     await tester.tap(find.byTooltip('Remove').first);
     await tester.pumpAndSettle();
-    await tester.enterText(
-      find.byWidgetPredicate(
-        (widget) =>
-            widget is TextField && widget.decoration?.labelText == 'Task 1',
-      ),
-      'Написать отчет tomorrow 10:00 1h p1',
-    );
+    await tester.tap(find.byKey(const Key('voice-draft-open-0')));
     await tester.pumpAndSettle();
+    await tester.enterText(firstDraft, 'Написать отчет tomorrow 10:00 1h p1');
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Done'));
+    await tester.pumpAndSettle();
+    expect(firstDraft, findsNothing);
+    expect(find.text('Написать отчет'), findsOneWidget);
     await tester.tap(find.text('Add 1'));
     await tester.pump(const Duration(milliseconds: 300));
 
@@ -1206,7 +1214,7 @@ void main() {
     expect(find.text('Buy milk'), findsOneWidget);
     expect(find.byKey(const Key('voice-recording-countdown')), findsNothing);
 
-    await tester.tap(find.widgetWithText(FilledButton, 'Again'));
+    await tester.tap(find.widgetWithText(TextButton, 'Again'));
     // A completed subscription's cancel future may belong to the real zone.
     await tester.runAsync(() => Future<void>.delayed(Duration.zero));
     await tester.pump();
@@ -1218,7 +1226,7 @@ void main() {
     await tester.pump(const Duration(minutes: 5));
     expect(recognizer.stopCalls, 2);
 
-    await tester.tap(find.widgetWithText(FilledButton, 'Again'));
+    await tester.tap(find.widgetWithText(TextButton, 'Again'));
     await tester.runAsync(() => Future<void>.delayed(Duration.zero));
     await tester.pump();
     await tester.tap(find.byTooltip('Close'));
@@ -1359,6 +1367,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Buy milk'), findsOneWidget);
     expect(find.text('Buy coffee'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('voice-draft-open-0')));
+    await tester.pumpAndSettle();
     final firstDraft = find.byWidgetPredicate(
       (widget) =>
           widget is TextField && widget.decoration?.labelText == 'Task 1',
@@ -1696,7 +1706,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Retry analysis'));
       await tester.pumpAndSettle();
-      expect(find.text('Buy milk tomorrow'), findsOneWidget);
+      expect(find.text('Buy milk'), findsOneWidget);
       expect(decomposer.calls, 2);
       expect(recognizer.startCalls, 1);
       expect(recognizer.stopCalls, 1);
@@ -2232,7 +2242,7 @@ void main() {
 
     expect(decomposer.calls, 2);
     expect(recordedRecognizer.stopCalls, 1);
-    expect(find.text('Buy milk tomorrow'), findsOneWidget);
+    expect(find.text('Buy milk'), findsOneWidget);
   });
 
   testWidgets('voice sheet visualizes the transcript while analysis runs', (
@@ -2444,9 +2454,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Запустить проект'), findsOneWidget);
-      expect(find.text('Написать бриф tomorrow'), findsOneWidget);
-      expect(find.text('Согласовать бюджет p1'), findsOneWidget);
-      expect(find.text('Собрать вводные @finance'), findsOneWidget);
+      expect(find.text('Написать бриф'), findsOneWidget);
+      expect(find.text('Согласовать бюджет'), findsOneWidget);
+      expect(find.text('Собрать вводные'), findsOneWidget);
 
       await tester.tap(find.text('Add 4'));
       var rows = await db.select(db.tasks).get();

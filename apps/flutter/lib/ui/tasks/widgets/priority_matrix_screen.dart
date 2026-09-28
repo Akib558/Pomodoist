@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pomodoist/ui/core/localization/app_l10n.dart';
 import 'package:pomodoist/ui/core/themes/app_motion.dart';
 import 'package:pomodoist/ui/tasks/view_models/priority_matrix_view_model.dart';
+import 'package:pomodoist/ui/tasks/view_models/task_branch_rows.dart';
 import 'package:pomodoist/ui/core/themes/app_theme.dart';
 import 'package:pomodoist/ui/core/widgets/action_feedback.dart';
 import 'package:pomodoist/domain/models/tasks/task_models.dart';
@@ -419,7 +420,13 @@ class _PriorityQuadrant extends StatelessWidget {
                         task: tasks[index],
                         enableSubtaskDrop: false,
                       ),
-                      if (index != tasks.length - 1) const TaskListDivider(),
+                      if (index != tasks.length - 1)
+                        TaskListDivider(
+                          previousRow: VisibleTaskRow(
+                            task: tasks[index],
+                            depth: 0,
+                          ),
+                        ),
                     ],
                 ],
               ),

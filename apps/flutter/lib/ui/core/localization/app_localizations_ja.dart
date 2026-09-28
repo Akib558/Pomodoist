@@ -88,10 +88,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get onboardingLanguageSubtitle => 'Pomodoistで使う言語を選んでください。';
 
   @override
-  String get onboardingTimerTitle => 'タイマーのスタイルを選択';
+  String get onboardingTimerTitle => '集中のスタイルを設定';
 
   @override
-  String get onboardingTimerSubtitle => '集中セッションのポモドーロ進捗表示を選んでください。';
+  String get onboardingTimerSubtitle => 'タイマーとセッションの表示スタイルを選びましょう。';
 
   @override
   String get onboardingPaywallTitle => 'Pomodoistの全機能を利用';
@@ -3587,4 +3587,46 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get settingsTaskBranchGrouped => 'グループ表示';
+
+  @override
+  String get onboardingTasksTitle => '自分のリスト、自分のリズム。';
+
+  @override
+  String get onboardingTasksSubtitle => 'タスクの表示スタイルと間隔を選びましょう。';
+
+  @override
+  String get onboardingThemeTitle => '今日はどんな色にしますか？';
+
+  @override
+  String get onboardingThemeSubtitle => '心地よく作業できる配色を選びましょう。';
+
+  @override
+  String get onboardingModernDescription => 'タイトルを強調';
+
+  @override
+  String get onboardingClassicDescription => '控えめなリスト';
+
+  @override
+  String get onboardingAppearanceHint => '後から設定ですべて変更できます。';
+
+  @override
+  String get onboardingClassicThemeDescription => 'おなじみの赤いアクセント';
+
+  @override
+  String get onboardingOceanDescription => '涼しげな青';
+
+  @override
+  String get onboardingForestDescription => '穏やかな緑';
+
+  @override
+  String get onboardingSepiaDescription => '温かみのある紙';
+
+  @override
+  String get onboardingGraphiteDescription => '必要なものだけ';
+
+  @override
+  String get onboardingThemeHint => '独自の配色や背景は後から設定で作成できます。';
+
+  @override
+  String get onboardingPreviewSubtask => '最初のアイデアを書き留める';
 }

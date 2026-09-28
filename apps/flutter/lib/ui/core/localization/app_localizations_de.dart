@@ -89,11 +89,11 @@ class AppLocalizationsDe extends AppLocalizations {
       'Wähle die Sprache, die Pomodoist verwenden soll.';
 
   @override
-  String get onboardingTimerTitle => 'Timer-Stil wählen';
+  String get onboardingTimerTitle => 'Richte deinen Fokus ein';
 
   @override
   String get onboardingTimerSubtitle =>
-      'Wähle die Pomodoro-Fortschrittsanzeige für Fokussitzungen.';
+      'Wähle die Darstellung von Timer und Sitzungen.';
 
   @override
   String get onboardingPaywallTitle => 'Pomodoist freischalten';
@@ -3722,4 +3722,50 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsTaskBranchGrouped => 'Gemeinsamer Block';
+
+  @override
+  String get onboardingTasksTitle => 'Deine Liste. Dein Rhythmus.';
+
+  @override
+  String get onboardingTasksSubtitle =>
+      'Wähle Darstellung und Abstand deiner Aufgaben.';
+
+  @override
+  String get onboardingThemeTitle => 'Welche Farbe hat dein Tag?';
+
+  @override
+  String get onboardingThemeSubtitle =>
+      'Wähle eine Palette, mit der du gerne arbeitest.';
+
+  @override
+  String get onboardingModernDescription => 'Betonte Titel';
+
+  @override
+  String get onboardingClassicDescription => 'Dezente Zeilen';
+
+  @override
+  String get onboardingAppearanceHint =>
+      'Du kannst alles später in den Einstellungen ändern.';
+
+  @override
+  String get onboardingClassicThemeDescription => 'Der vertraute rote Akzent';
+
+  @override
+  String get onboardingOceanDescription => 'Kühles Blau';
+
+  @override
+  String get onboardingForestDescription => 'Ruhiges Grün';
+
+  @override
+  String get onboardingSepiaDescription => 'Warmes Papier';
+
+  @override
+  String get onboardingGraphiteDescription => 'Nur das Wesentliche';
+
+  @override
+  String get onboardingThemeHint =>
+      'Eine eigene Palette und einen Hintergrund kannst du später in den Einstellungen erstellen.';
+
+  @override
+  String get onboardingPreviewSubtask => 'Erste Ideen aufschreiben';
 }
