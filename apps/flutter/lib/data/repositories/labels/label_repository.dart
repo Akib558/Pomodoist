@@ -19,5 +19,3 @@ abstract interface class LabelRepository {
   Future<Result<void>> updateLabelIcon(String id, String icon);
   Future<Result<void>> deleteLabel(String id);
 }
-
-class LabelNameTakenException implements Exception {}

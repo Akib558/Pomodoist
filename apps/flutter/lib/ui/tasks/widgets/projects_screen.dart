@@ -18,6 +18,7 @@ import 'package:go_router/go_router.dart';
 import 'package:pomodoist/ui/core/localization/app_l10n.dart';
 import 'package:pomodoist/ui/core/widgets/app_context_menu_region.dart';
 import 'package:pomodoist/ui/tasks/view_models/projects_view_model.dart';
+import 'package:pomodoist/ui/tasks/view_models/browse_view_model.dart';
 import 'package:pomodoist/ui/tasks/view_models/project_diagram_view_model.dart';
 import 'package:pomodoist/domain/models/settings/task_preferences.dart';
 import 'package:pomodoist/ui/core/widgets/action_feedback.dart';
@@ -31,7 +32,6 @@ import 'package:pomodoist/ui/tasks/widgets/project_context_menu.dart';
 import 'package:pomodoist/ui/tasks/widgets/project_icon.dart';
 import 'package:pomodoist/ui/tasks/widgets/project_tree_controls.dart';
 import 'package:pomodoist/ui/tasks/widgets/label_icon.dart';
-import 'package:pomodoist/config/providers.dart';
 import 'package:pomodoist/ui/onboarding/widgets/learning_tour_overlay.dart';
 
 class ProjectsScreen extends ConsumerStatefulWidget {
@@ -656,7 +656,7 @@ class _LabelListTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final colors = context.appColors;
-    final count = ref.watch(labelTaskCountsProvider).value?[label.id] ?? 0;
+    final count = ref.watch(labelTaskCountsViewModelProvider)[label.id] ?? 0;
     return AppContextMenuRegion(
       key: ValueKey('projects-screen-label-${label.id}'),
       items: [

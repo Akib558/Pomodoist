@@ -2,9 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pomodoist/config/providers.dart';
 import 'package:pomodoist/domain/models/tasks/task_models.dart';
 import 'package:pomodoist/domain/models/tasks/project_colors.dart';
-import 'package:pomodoist/data/repositories/labels/label_repository.dart';
 
 enum NamedItemKind { project, label, renameProject, editLabel }
+
+final labelCreationViewModelProvider = Provider(
+  (ref) => ref.watch(labelsProvider).value ?? const <LabelItem>[],
+);
 
 typedef ProjectCreationState = ({List<ProjectItem> projects, String color});
 final projectCreationViewModelProvider =

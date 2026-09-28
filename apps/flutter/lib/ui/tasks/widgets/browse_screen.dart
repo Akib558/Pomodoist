@@ -27,7 +27,6 @@ import 'package:pomodoist/ui/tasks/widgets/project_icon.dart';
 import 'package:pomodoist/ui/tasks/widgets/task_list_view.dart';
 import 'package:pomodoist/ui/tasks/widgets/task_selection_region.dart';
 import 'package:pomodoist/ui/tasks/widgets/label_icon.dart';
-import 'package:pomodoist/config/providers.dart';
 
 class BrowseScreen extends ConsumerStatefulWidget {
   const BrowseScreen({super.key});
@@ -319,7 +318,7 @@ class _BrowseSecondary extends ConsumerWidget {
     final l10n = context.l10n;
     final labels = ref.watch(browseLabelsViewModelProvider);
     final labelTaskCounts =
-        ref.watch(labelTaskCountsProvider).value ?? const <String, int>{};
+        ref.watch(labelTaskCountsViewModelProvider);
     final items = labels.value ?? const <LabelItem>[];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

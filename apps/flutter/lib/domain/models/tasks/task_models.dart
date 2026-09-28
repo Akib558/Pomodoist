@@ -2,6 +2,8 @@ import 'dart:convert';
 
 const inboxProjectId = 'inbox';
 
+class LabelNameTakenException implements Exception {}
+
 class TaskSchedule {
   const TaskSchedule._({
     required this.kind,

@@ -11,8 +11,6 @@ import 'package:pomodoist/ui/tasks/widgets/label_icon.dart';
 import 'package:pomodoist/ui/tasks/widgets/project_tree_controls.dart';
 import 'package:pomodoist/domain/models/tasks/project_colors.dart';
 import 'package:pomodoist/domain/models/tasks/task_models.dart';
-import 'package:pomodoist/config/providers.dart';
-import 'package:pomodoist/data/repositories/labels/label_repository.dart';
 
 Future<void> showCreateProjectDialog(BuildContext context, {String? parentId}) {
   final tree = ProjectTreeScope.of(context);
@@ -133,7 +131,7 @@ class CreateLabelDialog extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final labels = ref.watch(labelsProvider).value ?? const <LabelItem>[];
+    final labels = ref.watch(labelCreationViewModelProvider);
     return _NamedItemDialog(
       title: l10n.addLabel,
       hintText: l10n.labelName,

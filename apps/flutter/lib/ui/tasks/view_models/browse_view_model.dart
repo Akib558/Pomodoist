@@ -81,6 +81,10 @@ final browseLabelsViewModelProvider =
       AsyncValue<List<LabelItem>>
     >(BrowseLabelsViewModel.new);
 
+final labelTaskCountsViewModelProvider = Provider(
+  (ref) => ref.watch(labelTaskCountsProvider).value ?? const <String, int>{},
+);
+
 class BrowseLabelsViewModel extends Notifier<AsyncValue<List<LabelItem>>> {
   @override
   AsyncValue<List<LabelItem>> build() => ref.watch(labelsProvider);

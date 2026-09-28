@@ -14,7 +14,6 @@ import 'package:pomodoist/data/services/local/outbox_service.dart';
 import 'package:pomodoist/data/repositories/tasks/task_repository_impl.dart';
 import 'package:pomodoist/domain/models/tasks/task_models.dart';
 import 'package:pomodoist/domain/models/tasks/project_colors.dart';
-import 'package:pomodoist/data/repositories/labels/label_repository.dart';
 import 'package:pomodoist/config/providers.dart';
 import 'package:pomodoist/ui/tasks/view_models/named_item_view_model.dart';
 import 'package:pomodoist/domain/use_cases/quick_add/quick_add_use_case.dart';
