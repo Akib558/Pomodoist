@@ -3716,4 +3716,13 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get projectCatalogSearch => 'Rechercher des projets et des tâches';
+
+  @override
+  String get settingsTaskBranchStyle => 'Apparence des sous-tâches';
+
+  @override
+  String get settingsTaskBranchConnected => 'Lignes de liaison';
+
+  @override
+  String get settingsTaskBranchGrouped => 'Bloc groupé';
 }

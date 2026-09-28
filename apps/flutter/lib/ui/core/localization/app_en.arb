@@ -1892,5 +1892,8 @@
   "projectPlaceInside": "Move inside",
   "projectPlaceBefore": "Move before",
   "projectPlaceAfter": "Move after",
-  "projectCatalogSearch": "Search projects and tasks"
+  "projectCatalogSearch": "Search projects and tasks",
+  "settingsTaskBranchStyle": "Subtask appearance",
+  "settingsTaskBranchConnected": "Connecting lines",
+  "settingsTaskBranchGrouped": "Grouped branch"
 }

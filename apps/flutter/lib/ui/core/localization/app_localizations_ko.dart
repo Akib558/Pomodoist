@@ -3588,4 +3588,13 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get projectCatalogSearch => '프로젝트 및 작업 검색';
+
+  @override
+  String get settingsTaskBranchStyle => '하위 작업 표시';
+
+  @override
+  String get settingsTaskBranchConnected => '연결선';
+
+  @override
+  String get settingsTaskBranchGrouped => '그룹 블록';
 }

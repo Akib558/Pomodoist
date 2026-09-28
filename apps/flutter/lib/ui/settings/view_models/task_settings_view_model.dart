@@ -7,21 +7,39 @@ import 'package:pomodoist/domain/models/tasks/task_time.dart';
 final taskListSettingsViewModelProvider =
     NotifierProvider<
       TaskListSettingsViewModel,
-      ({TaskListStyle style, TaskRowSpacing spacing})
+      ({
+        TaskListStyle style,
+        TaskRowSpacing spacing,
+        TaskBranchStyle branchStyle,
+      })
     >(TaskListSettingsViewModel.new);
 
 class TaskListSettingsViewModel
-    extends Notifier<({TaskListStyle style, TaskRowSpacing spacing})> {
+    extends
+        Notifier<
+          ({
+            TaskListStyle style,
+            TaskRowSpacing spacing,
+            TaskBranchStyle branchStyle,
+          })
+        > {
   late TaskPreferencesRepository _repository;
   @override
-  ({TaskListStyle style, TaskRowSpacing spacing}) build() {
+  ({TaskListStyle style, TaskRowSpacing spacing, TaskBranchStyle branchStyle})
+  build() {
     _repository = ref.watch(taskPreferencesRepositoryProvider);
     final preferences = ref.watch(taskPreferencesStateProvider);
-    return (style: preferences.listStyle, spacing: preferences.rowSpacing);
+    return (
+      style: preferences.listStyle,
+      spacing: preferences.rowSpacing,
+      branchStyle: preferences.branchStyle,
+    );
   }
 
   Future<void> setStyle(TaskListStyle style) async =>
       (await _repository.setListStyle(style)).getOrThrow();
+  Future<void> setBranchStyle(TaskBranchStyle style) async =>
+      (await _repository.setBranchStyle(style)).getOrThrow();
   Future<void> setSpacing(TaskRowSpacing spacing) async =>
       (await _repository.setRowSpacing(spacing)).getOrThrow();
 }

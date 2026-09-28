@@ -24,11 +24,11 @@ void main() {
     for (var i = 0; i < 20; i++) {
       await controller.apply(AppZoomCommand.increase);
     }
-    expect(container.read(appZoomProvider), 150);
+    expect(container.read(appZoomProvider), 200);
     for (var i = 0; i < 20; i++) {
       await controller.apply(AppZoomCommand.decrease);
     }
-    expect(container.read(appZoomProvider), 70);
+    expect(container.read(appZoomProvider), 50);
     await controller.apply(AppZoomCommand.reset);
     expect(container.read(appZoomProvider), 100);
     await controller.apply(AppZoomCommand.increase);
@@ -62,7 +62,13 @@ void main() {
   });
 
   test('invalid preferences are safe and zoom works without storage', () async {
-    for (final (saved, expected) in [(999, 150), (-50, 70), ('bad', 100)]) {
+    for (final (saved, expected) in [
+      (180, 180),
+      (60, 60),
+      (999, 200),
+      (-50, 50),
+      ('bad', 100),
+    ]) {
       SharedPreferences.setMockInitialValues({appZoomPreferenceKey: saved});
       final container = ProviderContainer();
       container.read(appZoomProvider);

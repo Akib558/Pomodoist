@@ -3497,4 +3497,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get projectCatalogSearch => '搜索项目和任务';
+
+  @override
+  String get settingsTaskBranchStyle => '子任务外观';
+
+  @override
+  String get settingsTaskBranchConnected => '连接线';
+
+  @override
+  String get settingsTaskBranchGrouped => '分组区块';
 }

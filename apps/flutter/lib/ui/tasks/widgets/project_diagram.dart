@@ -133,13 +133,14 @@ class _ProjectDiagramState extends ConsumerState<ProjectDiagram> {
     try {
       await action();
     } catch (_) {
-      if (mounted)
+      if (mounted) {
         showActionFeedback(
           context,
           message: context.l10n.taskActionFailedCount(1),
           icon: LucideIcons.circleAlert,
           sound: ActionFeedbackSound.none,
         );
+      }
     }
   }
 
@@ -149,8 +150,9 @@ class _ProjectDiagramState extends ConsumerState<ProjectDiagram> {
     final tree = state.tree;
     final l10n = context.l10n;
     if (tree.nodes.isEmpty) {
-      if (state.loading)
+      if (state.loading) {
         return const Center(child: CircularProgressIndicator());
+      }
       return TaskViewState(
         icon: LucideIcons.folder,
         title: state.hasError ? l10n.taskListLoadError : l10n.noProjects,
@@ -178,10 +180,7 @@ class _ProjectDiagramState extends ConsumerState<ProjectDiagram> {
     };
     final layout = layoutProjectTree(tree, sizes, rtl: rtl);
     final selectedId = GoRouterState.of(context).uri.queryParameters['task'];
-    final tasks = [
-      for (final key in tree.visibleKeys)
-        if (tree.nodes[key]!.task case final task?) task,
-    ];
+    final tasks = [for (final key in tree.visibleKeys) ?tree.nodes[key]!.task];
     return Column(
       children: [
         if (state.loading) const LinearProgressIndicator(),
@@ -264,7 +263,7 @@ class _ProjectDiagramState extends ConsumerState<ProjectDiagram> {
                                         onDragEnd: _stopDrag,
                                         onAddTask: () => _action(() async {
                                           await _model.reveal(entry.key);
-                                          if (context.mounted)
+                                          if (context.mounted) {
                                             showQuickAddDialog(
                                               context,
                                               projectId: tree
@@ -272,6 +271,7 @@ class _ProjectDiagramState extends ConsumerState<ProjectDiagram> {
                                                   .project!
                                                   .id,
                                             );
+                                          }
                                         }),
                                         onAddSubtask: () => _addSubtask(
                                           tree.nodes[entry.key]!.task!,
@@ -302,8 +302,9 @@ class _ProjectDiagramState extends ConsumerState<ProjectDiagram> {
       context: context,
       builder: (_) => _DiagramSubtaskDialog(task: task),
     );
-    if (saved == true && mounted)
+    if (saved == true && mounted) {
       await _action(() => _model.reveal('t:${task.id}'));
+    }
   }
 
   Future<void> _moveTask(ProjectTreeData tree, String key) async {
@@ -708,6 +709,12 @@ class _DiagramSubtaskDialogState extends ConsumerState<_DiagramSubtaskDialog> {
     final state = ref.watch(taskEditorViewModelProvider(_identity));
     return ShadDialog(
       title: Text(context.l10n.addSubtask),
+      actions: [
+        ShadButton(
+          onPressed: state.saving || _text.text.trim().isEmpty ? null : _save,
+          child: Text(context.l10n.addSubtask),
+        ),
+      ],
       child: SizedBox(
         width: 400,
         child: Column(
@@ -721,8 +728,9 @@ class _DiagramSubtaskDialogState extends ConsumerState<_DiagramSubtaskDialog> {
                   .read(taskEditorViewModelProvider(_identity).notifier)
                   .updateDraft(text),
               onSubmitted: (_) {
-                if (!state.saving && _text.text.trim().isNotEmpty)
+                if (!state.saving && _text.text.trim().isNotEmpty) {
                   unawaited(_save());
+                }
               },
             ),
             if (state.failed)
@@ -733,12 +741,6 @@ class _DiagramSubtaskDialogState extends ConsumerState<_DiagramSubtaskDialog> {
           ],
         ),
       ),
-      actions: [
-        ShadButton(
-          onPressed: state.saving || _text.text.trim().isEmpty ? null : _save,
-          child: Text(context.l10n.addSubtask),
-        ),
-      ],
     );
   }
 }

@@ -36,13 +36,14 @@ class _ProjectContentState extends ConsumerState<_ProjectContent> {
           .read(projectDiagramViewModelProvider(widget.projectId).notifier)
           .setMode(mode);
     } catch (_) {
-      if (mounted)
+      if (mounted) {
         showActionFeedback(
           context,
           message: context.l10n.settingsSaveError,
           icon: LucideIcons.circleAlert,
           sound: ActionFeedbackSound.none,
         );
+      }
     }
   }
 

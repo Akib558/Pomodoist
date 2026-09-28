@@ -79,11 +79,7 @@ void main() {
       final windows = NotificationScheduler.initializationSettings.windows;
 
       expect(windows!.appName, flavor.displayName, reason: flavor.name);
-      expect(
-        windows.appUserModelId,
-        flavor.applicationId,
-        reason: flavor.name,
-      );
+      expect(windows.appUserModelId, flavor.applicationId, reason: flavor.name);
       expect(windows.guid, flavor.windowsToastGuid, reason: flavor.name);
     }
   });

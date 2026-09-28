@@ -46,9 +46,7 @@ AccountAuthFeedback presentAccountAuthFailure(
           ? l10n.authProviderUnavailableHere(
               provider ?? l10n.authProviderFallback,
             )
-          : l10n.authProviderUnavailable(
-              provider ?? l10n.authProviderFallback,
-            ),
+          : l10n.authProviderUnavailable(provider ?? l10n.authProviderFallback),
     AccountAuthFailureKind.signUpDisabled => l10n.authSignUpDisabled,
     AccountAuthFailureKind.accountRestricted => l10n.authAccountRestricted,
     AccountAuthFailureKind.linkExpired =>

@@ -1773,5 +1773,8 @@
   "projectPlaceInside": "中に移動",
   "projectPlaceBefore": "前に移動",
   "projectPlaceAfter": "後に移動",
-  "projectCatalogSearch": "プロジェクトとタスクを検索"
+  "projectCatalogSearch": "プロジェクトとタスクを検索",
+  "settingsTaskBranchStyle": "サブタスクの表示",
+  "settingsTaskBranchConnected": "接続線",
+  "settingsTaskBranchGrouped": "グループ表示"
 }

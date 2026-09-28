@@ -3629,4 +3629,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get projectCatalogSearch => 'البحث في المشاريع والمهام';
+
+  @override
+  String get settingsTaskBranchStyle => 'مظهر المهام الفرعية';
+
+  @override
+  String get settingsTaskBranchConnected => 'خطوط الربط';
+
+  @override
+  String get settingsTaskBranchGrouped => 'كتلة مجمّعة';
 }

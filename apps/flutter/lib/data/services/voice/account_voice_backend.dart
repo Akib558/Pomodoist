@@ -1,7 +1,6 @@
 import 'package:app_account/app_account.dart';
 import 'package:app_voice/app_voice.dart';
 
-
 /// Authenticated backend transport for recorded voice transcription.
 final class AccountVoiceBackend {
   AccountVoiceBackend(this._account);

@@ -1773,5 +1773,8 @@
   "projectPlaceInside": "안으로 이동",
   "projectPlaceBefore": "앞으로 이동",
   "projectPlaceAfter": "뒤로 이동",
-  "projectCatalogSearch": "프로젝트 및 작업 검색"
+  "projectCatalogSearch": "프로젝트 및 작업 검색",
+  "settingsTaskBranchStyle": "하위 작업 표시",
+  "settingsTaskBranchConnected": "연결선",
+  "settingsTaskBranchGrouped": "그룹 블록"
 }

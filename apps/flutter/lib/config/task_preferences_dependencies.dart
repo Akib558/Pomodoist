@@ -42,6 +42,9 @@ final taskTimeDisplayModeProvider = Provider(
 final taskListStyleProvider = Provider(
   (ref) => ref.watch(taskPreferencesStateProvider).listStyle,
 );
+final taskBranchStyleProvider = Provider(
+  (ref) => ref.watch(taskPreferencesStateProvider).branchStyle,
+);
 final taskRowSpacingProvider = Provider(
   (ref) => ref.watch(taskPreferencesStateProvider).rowSpacing,
 );

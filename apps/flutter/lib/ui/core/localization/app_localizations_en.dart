@@ -3699,4 +3699,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get projectCatalogSearch => 'Search projects and tasks';
+
+  @override
+  String get settingsTaskBranchStyle => 'Subtask appearance';
+
+  @override
+  String get settingsTaskBranchConnected => 'Connecting lines';
+
+  @override
+  String get settingsTaskBranchGrouped => 'Grouped branch';
 }

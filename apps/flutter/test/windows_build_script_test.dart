@@ -18,14 +18,14 @@ void main() {
     File(
       '../../tool/windows/build.ps1',
     ).copySync('${scriptDirectory.path}${Platform.pathSeparator}build.ps1');
-    File(
-      '../../tool/windows/link-build.ps1',
-    ).copySync('${scriptDirectory.path}${Platform.pathSeparator}link-build.ps1');
+    File('../../tool/windows/link-build.ps1').copySync(
+      '${scriptDirectory.path}${Platform.pathSeparator}link-build.ps1',
+    );
     // build.ps1 dot-sources the flavor table from its own directory, so the
     // copy has to carry it too or the script aborts before it reaches Flutter.
-    File('../../tool/windows/flavors.ps1').copySync(
-      '${scriptDirectory.path}${Platform.pathSeparator}flavors.ps1',
-    );
+    File(
+      '../../tool/windows/flavors.ps1',
+    ).copySync('${scriptDirectory.path}${Platform.pathSeparator}flavors.ps1');
 
     Directory('${testRoot.path}/apps/flutter').createSync(recursive: true);
     final configFile = File(
@@ -104,14 +104,14 @@ void main() {
     File(
       '../../tool/windows/build.ps1',
     ).copySync('${scriptDirectory.path}${Platform.pathSeparator}build.ps1');
-    File(
-      '../../tool/windows/link-build.ps1',
-    ).copySync('${scriptDirectory.path}${Platform.pathSeparator}link-build.ps1');
+    File('../../tool/windows/link-build.ps1').copySync(
+      '${scriptDirectory.path}${Platform.pathSeparator}link-build.ps1',
+    );
     // build.ps1 dot-sources the flavor table from its own directory, so the
     // copy has to carry it too or the script aborts before it reaches Flutter.
-    File('../../tool/windows/flavors.ps1').copySync(
-      '${scriptDirectory.path}${Platform.pathSeparator}flavors.ps1',
-    );
+    File(
+      '../../tool/windows/flavors.ps1',
+    ).copySync('${scriptDirectory.path}${Platform.pathSeparator}flavors.ps1');
 
     Directory(
       '${testRoot.path}/apps/flutter/build',

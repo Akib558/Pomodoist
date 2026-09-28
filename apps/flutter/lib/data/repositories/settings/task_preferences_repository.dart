@@ -15,6 +15,7 @@ abstract interface class TaskPreferencesRepository {
   Future<Result<void>> setProjectViewMode(ProjectViewMode mode);
   Future<Result<void>> setProjectCatalogViewMode(ProjectViewMode mode);
   Future<Result<void>> setListStyle(TaskListStyle style);
+  Future<Result<void>> setBranchStyle(TaskBranchStyle style);
   Future<Result<void>> setRowSpacing(TaskRowSpacing spacing);
   Future<Result<void>> setBranchExpanded(
     String scopeKey,

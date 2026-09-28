@@ -16,12 +16,10 @@ void main() {
     root = Directory.systemTemp.createTempSync('pomodoist-link-build-');
     flutterRoot = Directory('${root.path}/apps/flutter')
       ..createSync(recursive: true);
+    File('${root.path}/tool/link-build.sh').createSync(recursive: true);
     File(
-      '${root.path}/tool/link-build.sh',
-    ).createSync(recursive: true);
-    File('../../tool/link-build.sh').copySync(
-      '${root.path}/tool/link-build.sh',
-    );
+      '../../tool/link-build.sh',
+    ).copySync('${root.path}/tool/link-build.sh');
   });
 
   tearDown(() {
@@ -31,7 +29,9 @@ void main() {
 
   // Runs the real script against the temp checkout and returns its stderr.
   String runLinker() {
-    final result = Process.runSync('bash', ['tool/link-build.sh'], workingDirectory: root.path);
+    final result = Process.runSync('bash', [
+      'tool/link-build.sh',
+    ], workingDirectory: root.path);
     expect(result.exitCode, 0, reason: '${result.stdout}${result.stderr}');
     return result.stderr.toString();
   }
@@ -93,9 +93,8 @@ void main() {
   test('is idempotent across repeated runs', () {
     if (Platform.isWindows) return;
     runLinker();
-    final first = File(
-      '${root.path}/build/flutter/kept',
-    )..writeAsStringSync('kept');
+    final first = File('${root.path}/build/flutter/kept')
+      ..writeAsStringSync('kept');
     expect(runLinker(), isEmpty, reason: 'second run must not report repairs');
     expectLinks();
     expect(
@@ -123,11 +122,15 @@ void main() {
     // back; the removal itself is exercised on Windows only, where junctions
     // can be created.
     test('never shells out to cmd to remove a link', () {
-      final script = File('../../tool/windows/link-build.ps1').readAsStringSync();
+      final script = File(
+        '../../tool/windows/link-build.ps1',
+      ).readAsStringSync();
       final flavorTable = File(
         '../../tool/windows/flavors.ps1',
       ).readAsStringSync();
-      final buildScript = File('../../tool/windows/build.ps1').readAsStringSync();
+      final buildScript = File(
+        '../../tool/windows/build.ps1',
+      ).readAsStringSync();
 
       for (final entry in {
         'link-build.ps1': script,
@@ -146,7 +149,9 @@ void main() {
     });
 
     test('delegates the repair to the shared helper', () {
-      final script = File('../../tool/windows/link-build.ps1').readAsStringSync();
+      final script = File(
+        '../../tool/windows/link-build.ps1',
+      ).readAsStringSync();
 
       expect(
         script,
@@ -165,7 +170,9 @@ void main() {
       final flavorTable = File(
         '../../tool/windows/flavors.ps1',
       ).readAsStringSync();
-      final start = flavorTable.indexOf('function Remove-PomodoistReparsePoint');
+      final start = flavorTable.indexOf(
+        'function Remove-PomodoistReparsePoint',
+      );
       expect(start, isNonNegative, reason: 'the helper must exist');
       final body = flavorTable.substring(
         start,
@@ -192,7 +199,9 @@ void main() {
       final flavorTable = File(
         '../../tool/windows/flavors.ps1',
       ).readAsStringSync();
-      final start = flavorTable.indexOf('function Remove-PomodoistReparsePoint');
+      final start = flavorTable.indexOf(
+        'function Remove-PomodoistReparsePoint',
+      );
       expect(start, isNonNegative, reason: 'the helper must exist');
       final body = flavorTable.substring(
         start,

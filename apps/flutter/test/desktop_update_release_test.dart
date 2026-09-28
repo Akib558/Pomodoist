@@ -136,10 +136,7 @@ void main() {
       final releases = [
         releaseFixture('v1.1.0-rc.5', name: name, prerelease: true),
       ];
-      expect(
-        select(releases, current: '1.1.0-rc.4', target: target),
-        isNull,
-      );
+      expect(select(releases, current: '1.1.0-rc.4', target: target), isNull);
       expect(
         select(
           releases,

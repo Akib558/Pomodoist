@@ -1162,5 +1162,8 @@
   "projectPlaceInside": "Déplacer à l’intérieur",
   "projectPlaceBefore": "Déplacer avant",
   "projectPlaceAfter": "Déplacer après",
-  "projectCatalogSearch": "Rechercher des projets et des tâches"
+  "projectCatalogSearch": "Rechercher des projets et des tâches",
+  "settingsTaskBranchStyle": "Apparence des sous-tâches",
+  "settingsTaskBranchConnected": "Lignes de liaison",
+  "settingsTaskBranchGrouped": "Bloc groupé"
 }

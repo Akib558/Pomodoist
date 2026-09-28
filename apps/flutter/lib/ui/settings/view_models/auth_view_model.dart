@@ -123,9 +123,8 @@ final class AuthViewModel extends Notifier<AuthUiState> {
 
   Future<void> retry() => ref.read(accountBootstrapProvider.notifier).retry();
 
-  bool get socialProviderSignInDisabled => ref
-      .read(runtimePublicConfigProvider)
-      .socialProviderSignInDisabled;
+  bool get socialProviderSignInDisabled =>
+      ref.read(runtimePublicConfigProvider).socialProviderSignInDisabled;
 
   void refresh() => ref.invalidate(accountOverviewProvider);
 

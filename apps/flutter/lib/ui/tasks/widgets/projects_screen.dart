@@ -447,13 +447,14 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
     try {
       await _diagramModel.setMode(mode);
     } catch (_) {
-      if (mounted)
+      if (mounted) {
         showActionFeedback(
           context,
           message: context.l10n.settingsSaveError,
           icon: LucideIcons.circleAlert,
           sound: ActionFeedbackSound.none,
         );
+      }
     }
   }
 

@@ -542,8 +542,9 @@ class DriftTaskRepository implements TaskRepository {
       }
       if (beforeTaskId == id &&
           task.projectId == projectId &&
-          task.parentId == parentId)
+          task.parentId == parentId) {
         return;
+      }
       final siblings =
           rows
               .where(

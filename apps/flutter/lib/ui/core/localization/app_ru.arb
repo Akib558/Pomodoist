@@ -1162,5 +1162,8 @@
   "projectPlaceInside": "Переместить внутрь",
   "projectPlaceBefore": "Переместить перед",
   "projectPlaceAfter": "Переместить после",
-  "projectCatalogSearch": "Поиск проектов и задач"
+  "projectCatalogSearch": "Поиск проектов и задач",
+  "settingsTaskBranchStyle": "Оформление подзадач",
+  "settingsTaskBranchConnected": "Соединительные линии",
+  "settingsTaskBranchGrouped": "Единый блок"
 }

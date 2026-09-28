@@ -121,6 +121,7 @@ class _CompletedTodayState extends ConsumerState<_CompletedToday> {
             if (index > 0)
               TaskListDivider(
                 previousDepth: rows[index - 1].depth,
+                previousRow: rows[index - 1],
                 nextDepth: rows[index].depth,
                 nextRow: rows[index],
               ),

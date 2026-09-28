@@ -136,7 +136,7 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           accountClientProvider.overrideWithValue(account),
-        accountOverviewProvider.overrideWith((ref) async => null),
+          accountOverviewProvider.overrideWith((ref) async => null),
           accountAuthStateProvider.overrideWithValue(const AsyncLoading()),
         ],
       );

@@ -113,9 +113,7 @@ void main() {
         expect(manifestJson['description'], isNot('A new Flutter project.'));
 
         final icons = (manifestJson['icons']! as List).cast<Map>();
-        final iconSources = icons
-            .map((icon) => icon['src']! as String)
-            .toSet();
+        final iconSources = icons.map((icon) => icon['src']! as String).toSet();
         expect(
           iconSources,
           contains(entry['icon']),
@@ -128,24 +126,26 @@ void main() {
       }
     });
 
-    test('the static default is the production identity, before JS runs',
-        () async {
-      final index = await _indexHtml();
-      final manifest = _staticHref(index, 'manifest');
-      final appleTouchIcon = _staticHref(index, 'apple-touch-icon');
+    test(
+      'the static default is the production identity, before JS runs',
+      () async {
+        final index = await _indexHtml();
+        final manifest = _staticHref(index, 'manifest');
+        final appleTouchIcon = _staticHref(index, 'apple-touch-icon');
 
-      expect(manifest, 'manifest.json');
-      final manifestJson =
-          jsonDecode(await File('web/$manifest').readAsString())
-              as Map<String, Object?>;
-      final icons = (manifestJson['icons']! as List).cast<Map>();
-      expect(
-        icons.map((icon) => icon['src']),
-        contains(appleTouchIcon),
-        reason: 'the pre-JS apple-touch-icon must be the production icon',
-      );
-      expect(await File('web/$appleTouchIcon').exists(), isTrue);
-    });
+        expect(manifest, 'manifest.json');
+        final manifestJson =
+            jsonDecode(await File('web/$manifest').readAsString())
+                as Map<String, Object?>;
+        final icons = (manifestJson['icons']! as List).cast<Map>();
+        expect(
+          icons.map((icon) => icon['src']),
+          contains(appleTouchIcon),
+          reason: 'the pre-JS apple-touch-icon must be the production icon',
+        );
+        expect(await File('web/$appleTouchIcon').exists(), isTrue);
+      },
+    );
   });
 
   group('web runtime config delivery', () {
@@ -171,16 +171,18 @@ void main() {
       );
     });
 
-    test('the entry point prefers the deployed config over the marker',
-        () async {
-      final index = await _indexHtml();
-      final readConfig = index.indexOf('config.environment');
-      final readMarker = index.indexOf('window.pomodoistBuildEnvironment');
+    test(
+      'the entry point prefers the deployed config over the marker',
+      () async {
+        final index = await _indexHtml();
+        final readConfig = index.indexOf('config.environment');
+        final readMarker = index.indexOf('window.pomodoistBuildEnvironment');
 
-      expect(readConfig, greaterThanOrEqualTo(0));
-      expect(readMarker, greaterThanOrEqualTo(0));
-      expect(readConfig, lessThan(readMarker));
-    });
+        expect(readConfig, greaterThanOrEqualTo(0));
+        expect(readMarker, greaterThanOrEqualTo(0));
+        expect(readConfig, lessThan(readMarker));
+      },
+    );
   });
 }
 
@@ -268,6 +270,10 @@ String _jsObject(String source, String declaration) {
 /// head, which is what a browser uses before the scripts run.
 String _staticHref(String source, String rel) {
   final match = RegExp('<link rel="$rel" href="([^"]+)">').firstMatch(source);
-  expect(match, isNotNull, reason: 'no static <link rel="$rel"> in web/index.html');
+  expect(
+    match,
+    isNotNull,
+    reason: 'no static <link rel="$rel"> in web/index.html',
+  );
   return match!.group(1)!;
 }

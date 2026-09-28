@@ -1162,5 +1162,8 @@
   "projectPlaceInside": "نقل إلى الداخل",
   "projectPlaceBefore": "نقل قبل",
   "projectPlaceAfter": "نقل بعد",
-  "projectCatalogSearch": "البحث في المشاريع والمهام"
+  "projectCatalogSearch": "البحث في المشاريع والمهام",
+  "settingsTaskBranchStyle": "مظهر المهام الفرعية",
+  "settingsTaskBranchConnected": "خطوط الربط",
+  "settingsTaskBranchGrouped": "كتلة مجمّعة"
 }

@@ -263,6 +263,7 @@ class TaskListView extends ConsumerWidget {
                           final colorScheme = Theme.of(context).colorScheme;
                           final divider = TaskListDivider(
                             previousDepth: rows[index].depth,
+                            previousRow: rows[index],
                             nextDepth: rows[index + 1].depth,
                             nextRow: rows[index + 1],
                           );
@@ -287,9 +288,13 @@ class TaskListView extends ConsumerWidget {
                                 color: accepting
                                     ? colorScheme.primaryContainer
                                     : Colors.transparent,
-                                child: Center(
-                                  child: accepting
-                                      ? Text(
+                                child: Stack(
+                                  fit: StackFit.expand,
+                                  children: [
+                                    divider,
+                                    if (accepting)
+                                      Center(
+                                        child: Text(
                                           l10n.makeParentTask,
                                           style: Theme.of(context)
                                               .textTheme
@@ -298,8 +303,9 @@ class TaskListView extends ConsumerWidget {
                                                 color: colorScheme
                                                     .onPrimaryContainer,
                                               ),
-                                        )
-                                      : divider,
+                                        ),
+                                      ),
+                                  ],
                                 ),
                               );
                             },

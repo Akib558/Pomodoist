@@ -3694,4 +3694,13 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get projectCatalogSearch => 'Поиск проектов и задач';
+
+  @override
+  String get settingsTaskBranchStyle => 'Оформление подзадач';
+
+  @override
+  String get settingsTaskBranchConnected => 'Соединительные линии';
+
+  @override
+  String get settingsTaskBranchGrouped => 'Единый блок';
 }

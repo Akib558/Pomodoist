@@ -162,9 +162,7 @@ bool containsCaptchaChallengeMetadata(Object? value) {
   if (value is String) {
     final callbackTarget = RegExp.escape(appFlavor.urlScheme);
     return value.contains('/auth/challenge') ||
-        RegExp(
-          '$callbackTarget://captcha-callback(?:[?#]|\$)',
-        ).hasMatch(value);
+        RegExp('$callbackTarget://captcha-callback(?:[?#]|\$)').hasMatch(value);
   }
   if (value is Map) {
     return value.entries.any(

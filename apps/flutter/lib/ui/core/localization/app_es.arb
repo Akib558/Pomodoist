@@ -1162,5 +1162,8 @@
   "projectPlaceInside": "Mover dentro",
   "projectPlaceBefore": "Mover antes",
   "projectPlaceAfter": "Mover después",
-  "projectCatalogSearch": "Buscar proyectos y tareas"
+  "projectCatalogSearch": "Buscar proyectos y tareas",
+  "settingsTaskBranchStyle": "Aspecto de las subtareas",
+  "settingsTaskBranchConnected": "Líneas de conexión",
+  "settingsTaskBranchGrouped": "Bloque agrupado"
 }

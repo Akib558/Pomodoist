@@ -362,6 +362,7 @@ class _UpcomingDayCard extends StatelessWidget {
           if (index > 0)
             TaskListDivider(
               previousDepth: group.rows[index - 1].depth,
+              previousRow: group.rows[index - 1],
               nextDepth: group.rows[index].depth,
               nextRow: group.rows[index],
             ),

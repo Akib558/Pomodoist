@@ -420,7 +420,13 @@ class AppTheme {
         placeholderStyle: theme.textTheme.bodyLarge?.copyWith(
           color: colors.mutedText,
         ),
-        decoration: shad.ShadDecoration(color: colors.surface),
+        decoration: shad.ShadDecoration(
+          color: colors.surface,
+          secondaryFocusedBorder: shad.ShadBorder.all(
+            offset: 0,
+            radius: BorderRadius.circular(8),
+          ),
+        ),
       ),
       primaryDialogTheme: dialog,
       alertDialogTheme: dialog,

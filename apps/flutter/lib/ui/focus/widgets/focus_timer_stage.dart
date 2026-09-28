@@ -1,9 +1,8 @@
 part of 'focus_stage.dart';
 
 /// Grow with the available content width while keeping a readable, bounded dial.
-double focusTimerDiameter(double maxWidth, {required bool compact}) => compact
-    ? math.min(300.0, math.max(200.0, maxWidth - 24))
-    : 320.0;
+double focusTimerDiameter(double maxWidth, {required bool compact}) =>
+    compact ? math.min(300.0, math.max(200.0, maxWidth - 24)) : 320.0;
 
 class _FocusTimerStage extends StatelessWidget {
   const _FocusTimerStage({

@@ -174,8 +174,7 @@ class NativeCaptchaBroker {
 
   void _handleUri(_NativeCaptchaRequest request, Uri uri) {
     if (!identical(_activeRequest, request)) return;
-    if (uri.scheme != appFlavor.urlScheme ||
-        uri.host != 'captcha-callback') {
+    if (uri.scheme != appFlavor.urlScheme || uri.host != 'captcha-callback') {
       return;
     }
     final session = request.session;

@@ -4591,6 +4591,20 @@ class _FakeTaskRepository implements TaskRepository {
   });
 
   @override
+  Future<Result<void>> placeTask(
+    String id, {
+    required String projectId,
+    required String? parentId,
+    required String? beforeTaskId,
+  }) => moveTask(
+    id,
+    projectId: projectId,
+    parentId: parentId,
+    clearParentId: parentId == null,
+    clearSectionId: true,
+  );
+
+  @override
   Future<Result<void>> completeTask(String id) =>
       Result.capture<void>(() async {
         for (final taskId in _subtreeIds(id)) {

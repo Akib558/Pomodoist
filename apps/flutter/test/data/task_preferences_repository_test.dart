@@ -9,6 +9,97 @@ import 'package:pomodoist/data/repositories/settings/task_preferences_repository
 
 void main() {
   test(
+    'branch style defaults safely and remains independent of row settings',
+    () async {
+      for (final value in [null, 'unknown', 42, 'connected']) {
+        SharedPreferences.setMockInitialValues({
+          if (value case final Object storedValue)
+            taskBranchStylePreferenceKey: storedValue,
+          taskListStylePreferenceKey: 'classic',
+          taskRowSpacingPreferenceKey: 'compact',
+        });
+        final repository = LocalTaskPreferencesRepository(
+          PreferencesService(SharedPreferences.getInstance),
+        );
+        addTearDown(repository.dispose);
+        (await repository.load()).getOrThrow();
+        expect(repository.state.branchStyle, TaskBranchStyle.connected);
+        expect(repository.state.listStyle, TaskListStyle.classic);
+        expect(repository.state.rowSpacing, TaskRowSpacing.compact);
+        (await repository.setBranchStyle(TaskBranchStyle.grouped)).getOrThrow();
+        expect(repository.state.listStyle, TaskListStyle.classic);
+        expect(repository.state.rowSpacing, TaskRowSpacing.compact);
+      }
+    },
+  );
+
+  test('branch style survives restart and wins over a delayed load', () async {
+    SharedPreferences.setMockInitialValues({
+      taskBranchStylePreferenceKey: 'connected',
+    });
+    final ready = Completer<SharedPreferences?>();
+    final service = PreferencesService(() => ready.future);
+    final repository = LocalTaskPreferencesRepository(service);
+    addTearDown(repository.dispose);
+    final loading = repository.load();
+    final saving = repository.setBranchStyle(TaskBranchStyle.grouped);
+    expect(repository.state.branchStyle, TaskBranchStyle.grouped);
+    ready.complete(await SharedPreferences.getInstance());
+    (await loading).getOrThrow();
+    (await saving).getOrThrow();
+    expect(repository.state.branchStyle, TaskBranchStyle.grouped);
+    final restored = LocalTaskPreferencesRepository(service);
+    addTearDown(restored.dispose);
+    (await restored.load()).getOrThrow();
+    expect(restored.state.branchStyle, TaskBranchStyle.grouped);
+  });
+
+  test(
+    'rapid branch styles persist in order without reverting the live choice',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final service = _ControlledPreferences();
+      final repository = LocalTaskPreferencesRepository(service);
+      addTearDown(repository.dispose);
+      final first = repository.setBranchStyle(TaskBranchStyle.grouped);
+      await service.started.future;
+      final last = repository.setBranchStyle(TaskBranchStyle.connected);
+      await Future<void>.delayed(Duration.zero);
+      expect(service.writeCount, 1);
+      expect(repository.state.branchStyle, TaskBranchStyle.connected);
+      service.release.complete();
+      for (final result in await Future.wait([first, last])) {
+        result.getOrThrow();
+      }
+      final restored = LocalTaskPreferencesRepository(service);
+      addTearDown(restored.dispose);
+      (await restored.load()).getOrThrow();
+      expect(restored.state.branchStyle, TaskBranchStyle.connected);
+    },
+  );
+
+  test(
+    'failed style writes retain session state and allow a later save',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final service = _ControlledPreferences()..failNextWrite = true;
+      service.release.complete();
+      final repository = LocalTaskPreferencesRepository(service);
+      addTearDown(repository.dispose);
+      expect(
+        await repository.setBranchStyle(TaskBranchStyle.grouped),
+        isA<Failure<void>>(),
+      );
+      expect(repository.state.branchStyle, TaskBranchStyle.grouped);
+      (await repository.setBranchStyle(TaskBranchStyle.connected)).getOrThrow();
+      final restored = LocalTaskPreferencesRepository(service);
+      addTearDown(restored.dispose);
+      (await restored.load()).getOrThrow();
+      expect(restored.state.branchStyle, TaskBranchStyle.connected);
+    },
+  );
+
+  test(
     'catalog choice is independent and survives delayed load and restart',
     () async {
       SharedPreferences.setMockInitialValues({

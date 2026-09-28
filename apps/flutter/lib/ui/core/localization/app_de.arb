@@ -1162,5 +1162,8 @@
   "projectPlaceInside": "Hinein verschieben",
   "projectPlaceBefore": "Davor verschieben",
   "projectPlaceAfter": "Danach verschieben",
-  "projectCatalogSearch": "Projekte und Aufgaben suchen"
+  "projectCatalogSearch": "Projekte und Aufgaben suchen",
+  "settingsTaskBranchStyle": "Darstellung von Unteraufgaben",
+  "settingsTaskBranchConnected": "Verbindungslinien",
+  "settingsTaskBranchGrouped": "Gemeinsamer Block"
 }

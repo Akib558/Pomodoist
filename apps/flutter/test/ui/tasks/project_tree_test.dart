@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/widgets.dart';
 import 'package:pomodoist/ui/tasks/widgets/project_diagram.dart';
 import 'package:pomodoist/ui/tasks/widgets/project_screen.dart';

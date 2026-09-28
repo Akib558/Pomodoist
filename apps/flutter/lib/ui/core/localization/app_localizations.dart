@@ -6316,6 +6316,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Search projects and tasks'**
   String get projectCatalogSearch;
+
+  /// No description provided for @settingsTaskBranchStyle.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtask appearance'**
+  String get settingsTaskBranchStyle;
+
+  /// No description provided for @settingsTaskBranchConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting lines'**
+  String get settingsTaskBranchConnected;
+
+  /// No description provided for @settingsTaskBranchGrouped.
+  ///
+  /// In en, this message translates to:
+  /// **'Grouped branch'**
+  String get settingsTaskBranchGrouped;
 }
 
 class _AppLocalizationsDelegate

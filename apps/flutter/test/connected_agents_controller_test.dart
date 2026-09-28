@@ -88,7 +88,9 @@ void main() {
   test('background error retains the last list until retry succeeds', () async {
     final repository = _FakeRepository();
     final container = _container(repository);
-    final controller = container.read(connectedAgentsViewModelProvider.notifier);
+    final controller = container.read(
+      connectedAgentsViewModelProvider.notifier,
+    );
     await _settle();
     repository.requests.single.complete([_grant]);
     await controller.refresh();
@@ -106,68 +108,70 @@ void main() {
     repository.requests.last.complete([]);
     await retry;
     expect(container.read(connectedAgentsViewModelProvider).grants, isEmpty);
-    expect(
-      container.read(connectedAgentsViewModelProvider).hasError,
-      isFalse,
-    );
+    expect(container.read(connectedAgentsViewModelProvider).hasError, isFalse);
   });
 
-  test('account changes discard stale requests and load the new user', () async {
-    final repository = _FakeRepository();
-    final container = _container(repository);
-    container.listen(connectedAgentsViewModelProvider, (_, _) {});
-    final controller = container.read(connectedAgentsViewModelProvider.notifier);
-    await _settle();
-    repository.requests.single.complete([_grant]);
-    await controller.refresh();
-    expect(
-      _clientIds(container.read(connectedAgentsViewModelProvider).grants),
-      ['client-a'],
-    );
+  test(
+    'account changes discard stale requests and load the new user',
+    () async {
+      final repository = _FakeRepository();
+      final container = _container(repository);
+      container.listen(connectedAgentsViewModelProvider, (_, _) {});
+      final controller = container.read(
+        connectedAgentsViewModelProvider.notifier,
+      );
+      await _settle();
+      repository.requests.single.complete([_grant]);
+      await controller.refresh();
+      expect(
+        _clientIds(container.read(connectedAgentsViewModelProvider).grants),
+        ['client-a'],
+      );
 
-    final stale = controller.refresh();
-    final replacement = _FakeRepository(userId: 'user-b');
-    container.updateOverrides(_overrides(replacement));
-    await container.pump();
-    expect(
-      container.read(connectedAgentsViewModelProvider).isLoading,
-      isTrue,
-    );
-    expect(container.read(connectedAgentsViewModelProvider).grants, isNull);
-    await _settle();
-    expect(replacement.requests, hasLength(1));
+      final stale = controller.refresh();
+      final replacement = _FakeRepository(userId: 'user-b');
+      container.updateOverrides(_overrides(replacement));
+      await container.pump();
+      expect(
+        container.read(connectedAgentsViewModelProvider).isLoading,
+        isTrue,
+      );
+      expect(container.read(connectedAgentsViewModelProvider).grants, isNull);
+      await _settle();
+      expect(replacement.requests, hasLength(1));
 
-    repository.requests[1].complete([_grant]);
-    await stale;
-    expect(container.read(connectedAgentsViewModelProvider).grants, isNull);
+      repository.requests[1].complete([_grant]);
+      await stale;
+      expect(container.read(connectedAgentsViewModelProvider).grants, isNull);
 
-    replacement.requests.last.complete([_grantB]);
-    await container.read(connectedAgentsViewModelProvider.notifier).refresh();
-    expect(
-      _clientIds(container.read(connectedAgentsViewModelProvider).grants),
-      ['client-b'],
-    );
+      replacement.requests.last.complete([_grantB]);
+      await container.read(connectedAgentsViewModelProvider.notifier).refresh();
+      expect(
+        _clientIds(container.read(connectedAgentsViewModelProvider).grants),
+        ['client-b'],
+      );
 
-    container.updateOverrides([
-      accountManagementRepositoryProvider.overrideWithValue(null),
-    ]);
-    await container.pump();
-    expect(
-      container.read(connectedAgentsViewModelProvider).isLoading,
-      isFalse,
-    );
-    expect(container.read(connectedAgentsViewModelProvider).grants, isEmpty);
-    container.updateOverrides(_overrides(replacement));
-    await container.pump();
-    expect(
-      container.read(connectedAgentsViewModelProvider).isLoading,
-      isTrue,
-    );
-    await _settle();
-    expect(container.read(connectedAgentsViewModelProvider).grants, isNull);
-    replacement.requests.last.complete([]);
-    await container.read(connectedAgentsViewModelProvider.notifier).refresh();
-  });
+      container.updateOverrides([
+        accountManagementRepositoryProvider.overrideWithValue(null),
+      ]);
+      await container.pump();
+      expect(
+        container.read(connectedAgentsViewModelProvider).isLoading,
+        isFalse,
+      );
+      expect(container.read(connectedAgentsViewModelProvider).grants, isEmpty);
+      container.updateOverrides(_overrides(replacement));
+      await container.pump();
+      expect(
+        container.read(connectedAgentsViewModelProvider).isLoading,
+        isTrue,
+      );
+      await _settle();
+      expect(container.read(connectedAgentsViewModelProvider).grants, isNull);
+      replacement.requests.last.complete([]);
+      await container.read(connectedAgentsViewModelProvider.notifier).refresh();
+    },
+  );
 
   test(
     'replacement client ignores an old revoke even for the same user',
@@ -193,9 +197,7 @@ void main() {
       );
       expect(container.read(connectedAgentsViewModelProvider).grants, isNull);
       replacement.requests.single.complete([_grant]);
-      await container
-          .read(connectedAgentsViewModelProvider.notifier)
-          .refresh();
+      await container.read(connectedAgentsViewModelProvider.notifier).refresh();
       expect(
         _clientIds(container.read(connectedAgentsViewModelProvider).grants),
         ['client-a'],
@@ -253,10 +255,7 @@ void main() {
         _clientIds(container.read(connectedAgentsViewModelProvider).grants),
         ['client-b'],
       );
-      expect(
-        container.read(connectedAgentsViewModelProvider).hasError,
-        isTrue,
-      );
+      expect(container.read(connectedAgentsViewModelProvider).hasError, isTrue);
     },
   );
 

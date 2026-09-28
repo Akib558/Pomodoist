@@ -96,8 +96,9 @@ class ProjectDiagramViewModel extends Notifier<ProjectDiagramState> {
   }
 
   Future<void> place(ProjectDiagramDrop target) async {
-    if (!state.tree.movesEnabled)
+    if (!state.tree.movesEnabled) {
       throw StateError('Structural moves are disabled');
+    }
     // Repositories revalidate permissions and destinations against current storage.
     if (target.sourceKey.startsWith('p:')) {
       (await ref

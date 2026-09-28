@@ -3578,4 +3578,13 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get projectCatalogSearch => 'プロジェクトとタスクを検索';
+
+  @override
+  String get settingsTaskBranchStyle => 'サブタスクの表示';
+
+  @override
+  String get settingsTaskBranchConnected => '接続線';
+
+  @override
+  String get settingsTaskBranchGrouped => 'グループ表示';
 }

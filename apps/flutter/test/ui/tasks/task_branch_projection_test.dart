@@ -5,6 +5,92 @@ import 'package:pomodoist/ui/tasks/view_models/task_list_view_model.dart';
 import 'package:pomodoist/ui/tasks/view_models/task_subtask_progress.dart';
 
 void main() {
+  test(
+    'groups annotate complete branches without grouping unrelated tasks',
+    () {
+      final tasks = [
+        _task('a'),
+        _task('b', parentId: 'a'),
+        _task('c', parentId: 'b'),
+        _task('d', parentId: 'a'),
+        _task('e'),
+      ];
+      final rows = visibleTaskRows(tasks, tasks, expansion: {'b': true});
+      expect(rows.map((r) => r.task.id), ['a', 'b', 'c', 'd', 'e']);
+      expect(rows.map((r) => r.groupRootId), ['a', 'a', 'a', 'a', null]);
+      expect(rows.where((r) => r.startsGroup).map((r) => r.task.id), ['a']);
+      expect(rows.where((r) => r.endsGroup).map((r) => r.task.id), ['d']);
+      expect(rows[2].groupDisplayDepth, 2);
+    },
+  );
+
+  test(
+    'collapsed branches keep a single closed block and independent siblings',
+    () {
+      final tasks = [
+        _task('a'),
+        _task('b', parentId: 'a'),
+        _task('c'),
+        _task('d', parentId: 'c'),
+      ];
+      final rows = visibleTaskRows(tasks, tasks, expansion: {'a': false});
+      expect(rows.first.startsGroup, isTrue);
+      expect(rows.first.endsGroup, isTrue);
+      expect(rows.map((r) => r.groupRootId), ['a', 'c', 'c']);
+    },
+  );
+
+  test(
+    'group membership never pulls tasks from other day or filter selections',
+    () {
+      final tasks = [
+        _task('a'),
+        _task('b', parentId: 'a'),
+        _task('c', parentId: 'b'),
+      ];
+      final parentDay = visibleTaskRows(tasks, [tasks.first]);
+      final childDay = visibleTaskRows(tasks, tasks.skip(1).toList());
+      expect(parentDay.single.groupRootId, isNull);
+      expect(childDay.map((r) => r.task.id), ['b', 'c']);
+      expect(childDay.map((r) => r.groupRootId), ['b', 'b']);
+      expect(childDay.first.ancestors.single.id, 'a');
+    },
+  );
+
+  test(
+    'details regroup displayed subtrees after removing their owning task',
+    () {
+      final tasks = [
+        _task('a'),
+        _task('b', parentId: 'a'),
+        _task('c', parentId: 'b'),
+        _task('d', parentId: 'a'),
+      ];
+      final projected = visibleTaskRows(tasks, tasks, expansion: {'b': true});
+      final rows = withTaskBranchGroups(projected.skip(1).toList());
+      expect(rows.map((r) => r.groupRootId), ['b', 'b', null]);
+      expect(rows.first.startsGroup, isTrue);
+      expect(rows.first.groupDisplayDepth, 0);
+      expect(rows[1].groupDisplayDepth, 1);
+      expect(rows[1].endsGroup, isTrue);
+    },
+  );
+
+  test('retained and restored descendants keep the group endpoint current', () {
+    final root = _task('a');
+    final child = _task('b', parentId: 'a');
+    final completed = _task('b', parentId: 'a', completed: true);
+    final retained = visibleTaskRows([root], [root, completed]);
+    expect(retained.last.endsGroup, isTrue);
+    expect(retained.last.task.isCompleted, isTrue);
+    final settled = visibleTaskRows([root, completed], [root]);
+    expect(settled.single.groupRootId, isNull);
+    final undone = visibleTaskRows([root, child], [root, child]);
+    expect(undone.first.startsGroup, isTrue);
+    expect(undone.last.endsGroup, isTrue);
+    expect(undone.last.task.isCompleted, isFalse);
+  });
+
   test('opens roots and collapses nested branches by default', () {
     final tasks = [
       _task('root'),

@@ -39,8 +39,9 @@ void main() {
         );
         addTearDown(container.dispose);
 
-        final provider =
-            NotifierProvider<FakeBoolController, bool>(FakeBoolController.new);
+        final provider = NotifierProvider<FakeBoolController, bool>(
+          FakeBoolController.new,
+        );
         expect(container.read(provider), isFalse);
         container.read(provider.notifier).setValue(true);
         expect(container.read(provider), isTrue);
@@ -52,14 +53,14 @@ void main() {
         expect(client.currentUserId, isNull);
         expect(client.currentEmail, isNull);
         expect(await client.authStateChanges().first, isFalse);
-        expect((await client.accountAuthStateChanges().first).signedIn, isFalse);
+        expect(
+          (await client.accountAuthStateChanges().first).signedIn,
+          isFalse,
+        );
 
         await client.signInWithEmail('person@example.com');
         expect(client.signInWithEmailCalls, hasLength(1));
-        expect(
-          client.signInWithEmailCalls.single.email,
-          'person@example.com',
-        );
+        expect(client.signInWithEmailCalls.single.email, 'person@example.com');
 
         await client.signOut();
         expect(client.signOutCalls, hasLength(1));
@@ -67,7 +68,10 @@ void main() {
         client.syncHints(appId: 'pomodoist');
         expect(client.syncHintsCalls, ['pomodoist']);
 
-        await client.broadcastSyncHint(appId: 'pomodoist', deviceId: 'device-1');
+        await client.broadcastSyncHint(
+          appId: 'pomodoist',
+          deviceId: 'device-1',
+        );
         expect(client.broadcastSyncHintCalls.single.deviceId, 'device-1');
 
         expect(client.downloadedBytes, isEmpty);
@@ -174,20 +178,25 @@ void main() {
         final repository = FakeFocusRepository();
 
         expect(await repository.watchPresets().first, isEmpty);
-        expect(valueOf(await repository.createPreset(
-          buildCreateFocusPresetInput(),
-        )), 'preset-1');
+        expect(
+          valueOf(await repository.createPreset(buildCreateFocusPresetInput())),
+          'preset-1',
+        );
         expect(repository.createPresetCalls, hasLength(1));
 
-        expect(valueOf(await repository.startRun(buildStartFocusRunInput())),
-            'run-1');
+        expect(
+          valueOf(await repository.startRun(buildStartFocusRunInput())),
+          'run-1',
+        );
         expect(repository.startRunCalls, hasLength(1));
 
-        expectOk(await repository.stopActiveRun(
-          reason: StopFocusReason.stopped,
-        ));
-        expect(repository.stopActiveRunCalls.single.reason,
-            StopFocusReason.stopped);
+        expectOk(
+          await repository.stopActiveRun(reason: StopFocusReason.stopped),
+        );
+        expect(
+          repository.stopActiveRunCalls.single.reason,
+          StopFocusReason.stopped,
+        );
 
         expectOk(await repository.deletePreset('preset-1'));
         expect(repository.deletePresetCalls, ['preset-1']);
@@ -222,7 +231,10 @@ void main() {
         final repository = FakeProjectRepository();
 
         expect(await repository.watchProjects().first, isEmpty);
-        expect(valueOf(await repository.createProject('Inbox')), 'created-project');
+        expect(
+          valueOf(await repository.createProject('Inbox')),
+          'created-project',
+        );
         expect(repository.created.single.name, 'Inbox');
         expect(valueOf(await repository.findByName('Inbox')), isNull);
         expectOk(await repository.moveProject('project-1', parentId: null));
@@ -243,8 +255,10 @@ void main() {
 
         expect(await repository.watchTasks(buildTaskQuery()).first, isEmpty);
         expect(await repository.watchTask('task-1').first, isNull);
-        expect(valueOf(await repository.createTask(buildCreateTaskInput())),
-            'task-1');
+        expect(
+          valueOf(await repository.createTask(buildCreateTaskInput())),
+          'task-1',
+        );
         expect(repository.created.single.content, 'Task 1');
 
         expect(
@@ -323,12 +337,9 @@ void main() {
         expect(service.watchPendingCalls, hasLength(1));
 
         service.enqueueError = StateError('boom');
-        expect(
-          () {
-            service.enqueue(type: 'task', payload: const {});
-          },
-          throwsStateError,
-        );
+        expect(() {
+          service.enqueue(type: 'task', payload: const {});
+        }, throwsStateError);
 
         await service.dispose();
       });
@@ -484,14 +495,12 @@ void main() {
       test('billing fixtures expose named states', () {
         expect(BillingFixtures.free().loading, isFalse);
         expect(BillingFixtures.free().storeAvailable, isTrue);
-        expect(
-          BillingFixtures.monthly().purchasedProductIds,
-          {pomodoistMonthlyProductId},
-        );
-        expect(
-          BillingFixtures.lifetime().activeStoreKitProductIds,
-          {pomodoistLifetimeProductId},
-        );
+        expect(BillingFixtures.monthly().purchasedProductIds, {
+          pomodoistMonthlyProductId,
+        });
+        expect(BillingFixtures.lifetime().activeStoreKitProductIds, {
+          pomodoistLifetimeProductId,
+        });
         expect(BillingFixtures.expired().activeProductId, isNull);
         expect(
           BillingFixtures.storeUnavailable().missingProductIds,
@@ -517,10 +526,10 @@ void main() {
       test('planning fixtures build drafts and achievements', () {
         expect(buildDecomposedTaskDraft().quickAdd, 'Buy milk');
         expect(buildDecomposedTaskDrafts(2), hasLength(2));
-        expect(
-          buildAchievements(2).map((achievement) => achievement.id),
-          ['achievement_1', 'achievement_2'],
-        );
+        expect(buildAchievements(2).map((achievement) => achievement.id), [
+          'achievement_1',
+          'achievement_2',
+        ]);
         expect(buildAchievement().target, 1);
       });
     });

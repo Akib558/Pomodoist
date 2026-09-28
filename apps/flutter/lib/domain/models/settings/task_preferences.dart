@@ -8,6 +8,7 @@ const taskTimeDisplayModePreferenceKey = 'tasks.timeDisplayMode';
 const projectViewModePreferenceKey = 'projects.viewMode';
 const projectCatalogViewModePreferenceKey = 'projects.catalogViewMode';
 const taskListStylePreferenceKey = 'tasks.listStyle';
+const taskBranchStylePreferenceKey = 'tasks.branchStyle';
 const taskRowSpacingPreferenceKey = 'tasks.rowSpacing';
 const taskBranchExpansionPreferenceKey = 'tasks.branchExpansion.v1';
 const timelineVisibleStartMinutesPreferenceKey = 'timeline.visibleStartMinutes';
@@ -26,6 +27,8 @@ const timelineHourWidthLevels = <int>[96, 144, 192, 288, 384];
 enum ProjectViewMode { list, map }
 
 enum TaskListStyle { modern, classic }
+
+enum TaskBranchStyle { connected, grouped }
 
 enum TaskRowSpacing { compact, comfortable, spacious }
 
@@ -58,6 +61,7 @@ class TaskPreferences {
     this.listStyle = TaskListStyle.modern,
     this.projectViewMode = ProjectViewMode.list,
     this.projectCatalogViewMode = ProjectViewMode.list,
+    this.branchStyle = TaskBranchStyle.connected,
     this.rowSpacing = TaskRowSpacing.comfortable,
     this.visibleHours = const TimelineVisibleHours(
       startMinutes: 0,
@@ -77,6 +81,7 @@ class TaskPreferences {
   final TaskListStyle listStyle;
   final ProjectViewMode projectViewMode;
   final ProjectViewMode projectCatalogViewMode;
+  final TaskBranchStyle branchStyle;
   final TaskRowSpacing rowSpacing;
   final TimelineVisibleHours visibleHours;
   final int hourWidth;
@@ -89,6 +94,7 @@ class TaskPreferences {
     TaskListStyle? listStyle,
     ProjectViewMode? projectViewMode,
     ProjectViewMode? projectCatalogViewMode,
+    TaskBranchStyle? branchStyle,
     TaskRowSpacing? rowSpacing,
     TimelineVisibleHours? visibleHours,
     int? hourWidth,
@@ -103,6 +109,7 @@ class TaskPreferences {
     projectCatalogViewMode:
         projectCatalogViewMode ?? this.projectCatalogViewMode,
     rowSpacing: rowSpacing ?? this.rowSpacing,
+    branchStyle: branchStyle ?? this.branchStyle,
     visibleHours: visibleHours ?? this.visibleHours,
     hourWidth: hourWidth ?? this.hourWidth,
     collapsedProjectIds: collapsedProjectIds ?? this.collapsedProjectIds,

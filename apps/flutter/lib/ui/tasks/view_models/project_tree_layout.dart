@@ -17,8 +17,9 @@ ProjectTreeLayout layoutProjectTree(
   const gap = 28.0, levelGap = 64.0;
   final rects = <String, Rect>{};
   final edges = <(String, String)>[];
-  if (!tree.nodes.containsKey(tree.rootKey))
+  if (!tree.nodes.containsKey(tree.rootKey)) {
     return const ProjectTreeLayout(Size.zero, {}, []);
+  }
   final spans = <String, double>{};
   final widths = <int, double>{};
   final depths = <String, int>{tree.rootKey: 0};

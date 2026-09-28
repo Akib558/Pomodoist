@@ -15,6 +15,7 @@ class LocalTaskPreferencesRepository implements TaskPreferencesRepository {
   Future<Result<void>>? _loadFuture;
   Future<Result<void>> _branchWrites = Future.value(const Result.ok(null));
   Future<Result<void>> _projectModeWrites = Future.value(const Result.ok(null));
+  Future<Result<void>> _branchStyleWrites = Future.value(const Result.ok(null));
   bool _disposed = false;
   TaskPreferences _state = TaskPreferences();
 
@@ -45,6 +46,7 @@ class LocalTaskPreferencesRepository implements TaskPreferencesRepository {
       projectViewModePreferenceKey,
       projectCatalogViewModePreferenceKey,
       taskRowSpacingPreferenceKey,
+      taskBranchStylePreferenceKey,
       taskBranchExpansionPreferenceKey,
       timelineVisibleStartMinutesPreferenceKey,
       timelineVisibleEndMinutesPreferenceKey,
@@ -89,6 +91,9 @@ class LocalTaskPreferencesRepository implements TaskPreferencesRepository {
             .firstOrNull,
         listStyle: TaskListStyle.values
             .where((v) => v.name == values[taskListStylePreferenceKey])
+            .firstOrNull,
+        branchStyle: TaskBranchStyle.values
+            .where((v) => v.name == values[taskBranchStylePreferenceKey])
             .firstOrNull,
         rowSpacing: TaskRowSpacing.values
             .where((v) => v.name == values[taskRowSpacingPreferenceKey])
@@ -234,6 +239,20 @@ class LocalTaskPreferencesRepository implements TaskPreferencesRepository {
     state.copyWith(rowSpacing: spacing),
     {taskRowSpacingPreferenceKey: spacing.name},
   );
+  @override
+  Future<Result<void>> setBranchStyle(TaskBranchStyle style) {
+    if (_disposed) return Future.value(const Result.ok(null));
+    _edited.add(taskBranchStylePreferenceKey);
+    _publish(state.copyWith(branchStyle: style));
+    return _branchStyleWrites = _branchStyleWrites.then(
+      (_) => Result.capture(() async {
+        (await _preferences.write({
+          taskBranchStylePreferenceKey: style.name,
+        })).getOrThrow();
+      }),
+    );
+  }
+
   bool _validHours(int start, int end) =>
       start >= 0 &&
       end <= 1440 &&

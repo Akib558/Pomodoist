@@ -946,11 +946,13 @@ class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
         const SizedBox(height: 12),
         tasks.when(
           data: (items) {
-            final children = visibleTaskRows(
-              subtasks.allTasks,
-              [widget.task, ...items],
-              expansion: expansion,
-            ).where((row) => row.task.id != widget.task.id).toList();
+            final children = withTaskBranchGroups(
+              visibleTaskRows(
+                subtasks.allTasks,
+                [widget.task, ...items],
+                expansion: expansion,
+              ).where((row) => row.task.id != widget.task.id).toList(),
+            );
             if (items.isEmpty) {
               return Text(
                 l10n.noSubtasks,
@@ -965,6 +967,7 @@ class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
                   if (index > 0)
                     TaskListDivider(
                       previousDepth: children[index - 1].depth,
+                      previousRow: children[index - 1],
                       nextDepth: children[index].depth,
                       nextRow: children[index],
                     ),

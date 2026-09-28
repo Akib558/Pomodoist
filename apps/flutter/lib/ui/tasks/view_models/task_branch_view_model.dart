@@ -5,6 +5,10 @@ import 'package:pomodoist/domain/models/tasks/task_models.dart';
 import 'task_branch_rows.dart';
 import 'task_subtask_progress.dart';
 
+final taskBranchStyleViewModelProvider = Provider(
+  (ref) => ref.watch(taskBranchStyleProvider),
+);
+
 String taskBranchScopeKey(TaskQuery query) => switch (query.kind) {
   TaskQueryKind.project => 'project:${query.projectId}',
   TaskQueryKind.label => 'label:${query.labelId}',

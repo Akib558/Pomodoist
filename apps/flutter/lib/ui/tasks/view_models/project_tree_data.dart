@@ -71,8 +71,9 @@ ProjectTreeData projectTreeData(
   final projectChildren = <String?, List<ProjectItem>>{};
   for (final p in active) {
     final parent = parents[p.id];
-    if (catalog || (!p.isArchived && parent != null))
+    if (catalog || (!p.isArchived && parent != null)) {
       projectChildren.putIfAbsent(parent, () => []).add(p);
+    }
   }
   for (final children in projectChildren.values) {
     children.sort(compareProjects);
@@ -80,7 +81,7 @@ ProjectTreeData projectTreeData(
   final included = <String>{};
   final pending = catalog
       ? (projectChildren[null] ?? []).map((p) => p.id).toList()
-      : [projectId!];
+      : <String>[projectId];
   while (pending.isNotEmpty) {
     final id = pending.removeLast();
     if (!byProject.containsKey(id) || !included.add(id)) continue;
@@ -131,8 +132,9 @@ ProjectTreeData projectTreeData(
     final descendants = [id];
     while (descendants.isNotEmpty) {
       final current = descendants.removeLast();
-      if (subtreeIds.add(current))
+      if (subtreeIds.add(current)) {
         descendants.addAll((projectChildren[current] ?? []).map((p) => p.id));
+      }
     }
     // ponytail: aggregate each project subtree; cache bottom-up if huge project forests need it.
     final counted = allTasks.values
@@ -272,20 +274,23 @@ ProjectDiagramDrop? projectDiagramDrop(
   String targetKey,
   ProjectDropPosition position,
 ) {
-  if (!canMoveProjectDiagramNode(tree, sourceKey) || sourceKey == targetKey)
+  if (!canMoveProjectDiagramNode(tree, sourceKey) || sourceKey == targetKey) {
     return null;
+  }
   final source = tree.nodes[sourceKey]!, target = tree.nodes[targetKey];
   if (target == null) return null;
   if (target.isCatalogRoot) {
-    if (source.project == null || position != ProjectDropPosition.inside)
+    if (source.project == null || position != ProjectDropPosition.inside) {
       return null;
+    }
     final project = source.project!;
     final parent = tree.projects
         .where((p) => p.id == project.parentId)
         .firstOrNull;
     // Shared subprojects must remain inside their shared scope; shared roots are personal links.
-    if (project.scopeId != null && project.scopeId == parent?.scopeId)
+    if (project.scopeId != null && project.scopeId == parent?.scopeId) {
       return null;
+    }
     return ProjectDiagramDrop(
       sourceKey: sourceKey,
       projectId: null,
@@ -294,22 +299,25 @@ ProjectDiagramDrop? projectDiagramDrop(
     );
   }
   if (source.task case final task?) {
-    if (target.project != null && position != ProjectDropPosition.inside)
+    if (target.project != null && position != ProjectDropPosition.inside) {
       return null;
+    }
     final projectId = target.project?.id ?? target.task!.projectId;
     final destination = tree.nodes['p:$projectId']?.project;
     if (destination == null ||
         !destination.canEdit ||
         destination.isArchived ||
-        task.scopeId != destination.scopeId)
+        task.scopeId != destination.scopeId) {
       return null;
+    }
     final parentId = position == ProjectDropPosition.inside
         ? target.task?.id
         : target.task?.parentId;
     final parent = tree.tasksById[parentId];
     if (parentId != null &&
-        (parent == null || !parent.canEdit || parent.projectId != projectId))
+        (parent == null || !parent.canEdit || parent.projectId != projectId)) {
       return null;
+    }
     var ancestorId = parentId;
     final seen = <String>{};
     while (ancestorId != null && seen.add(ancestorId)) {
@@ -351,8 +359,9 @@ ProjectDiagramDrop? projectDiagramDrop(
     );
   }
   if (target.project == null ||
-      targetKey == tree.rootKey && position != ProjectDropPosition.inside)
+      targetKey == tree.rootKey && position != ProjectDropPosition.inside) {
     return null;
+  }
   final projects = tree.projects;
   final move = projectDropTarget(
     projects,
@@ -365,8 +374,9 @@ ProjectDiagramDrop? projectDiagramDrop(
     if (tree.rootKey != projectCatalogRootKey) return null;
     final project = source.project!;
     final parent = projects.where((p) => p.id == project.parentId).firstOrNull;
-    if (project.scopeId != null && project.scopeId == parent?.scopeId)
+    if (project.scopeId != null && project.scopeId == parent?.scopeId) {
       return null;
+    }
     return ProjectDiagramDrop(
       sourceKey: sourceKey,
       projectId: null,
@@ -383,8 +393,9 @@ ProjectDiagramDrop? projectDiagramDrop(
           projects.where((p) => p.id == project.parentId).firstOrNull?.scopeId;
   if (sharedRoot
       ? destination.scopeId != null
-      : !destination.canEdit || project.scopeId != destination.scopeId)
+      : !destination.canEdit || project.scopeId != destination.scopeId) {
     return null;
+  }
   return ProjectDiagramDrop(
     sourceKey: sourceKey,
     projectId: destination.id,

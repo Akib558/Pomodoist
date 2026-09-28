@@ -3721,6 +3721,15 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get projectCatalogSearch => 'Pesquisar projetos e tarefas';
+
+  @override
+  String get settingsTaskBranchStyle => 'Aparência das subtarefas';
+
+  @override
+  String get settingsTaskBranchConnected => 'Linhas de ligação';
+
+  @override
+  String get settingsTaskBranchGrouped => 'Bloco agrupado';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
@@ -3975,4 +3984,13 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get projectCatalogSearch => 'Pesquisar projetos e tarefas';
+
+  @override
+  String get settingsTaskBranchStyle => 'Aparência das subtarefas';
+
+  @override
+  String get settingsTaskBranchConnected => 'Linhas de conexão';
+
+  @override
+  String get settingsTaskBranchGrouped => 'Bloco agrupado';
 }

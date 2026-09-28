@@ -24,9 +24,7 @@ void main() {
       // repository-root build directory, so a fresh checkout has to recreate
       // them before pub get; make linux-pub-get and the Windows entry scripts
       // both link first.
-      final linkIndex = steps.indexWhere(
-        (step) => _linksFlutterBuild(step),
-      );
+      final linkIndex = steps.indexWhere((step) => _linksFlutterBuild(step));
       expect(
         linkIndex,
         inInclusiveRange(0, pubGetIndex),
@@ -98,138 +96,146 @@ void main() {
     });
   }
 
-  test('tag publication waits for automated platforms and preserves RC status', () {
-    final publishers = [
-      (
-        path: '../../.github/workflows/linux-appimage-release.yml',
-        job: 'build-test-publish',
-        step: 'Upload AppImage and publish complete desktop release',
-        assets: [
-          'Pomodoist-x86_64.AppImage',
-          'Pomodoist-x86_64.AppImage.sha256',
-        ],
-        legacyGh: 'true',
-      ),
-      (
-        path: '../../.github/workflows/windows-exe-preview.yml',
-        job: 'publish',
-        step: 'Upload EXE and publish complete desktop release',
-        assets: ['Pomodoist-Setup.exe', 'Pomodoist-Setup.exe.sha256'],
-        legacyGh: 'false',
-      ),
-      (
-        path: '../../.github/workflows/android-release.yml',
-        job: 'signed-apk-and-bundle',
-        step: 'Publish Android artifacts to the GitHub release',
-        assets: ['Pomodoist-Android.apk', 'Pomodoist-Android.apk.sha256'],
-        legacyGh: 'false',
-      ),
-    ];
-    final scripts = <String>[];
-    for (final publisher in publishers) {
-      final job = _job(publisher.path, publisher.job);
-      final step = (job['steps'] as YamlList).cast<YamlMap>().singleWhere(
-        (step) => step['name'] == publisher.step,
-      );
-      expect(
-        (step['env'] as YamlMap?)?['GH_REPO'] ??
-            (job['env'] as YamlMap?)?['GH_REPO'],
-        r'${{ github.repository }}',
-        reason: publisher.path,
-      );
-      scripts.add(step['run'] as String);
-    }
+  test(
+    'tag publication waits for automated platforms and preserves RC status',
+    () {
+      final publishers = [
+        (
+          path: '../../.github/workflows/linux-appimage-release.yml',
+          job: 'build-test-publish',
+          step: 'Upload AppImage and publish complete desktop release',
+          assets: [
+            'Pomodoist-x86_64.AppImage',
+            'Pomodoist-x86_64.AppImage.sha256',
+          ],
+          legacyGh: 'true',
+        ),
+        (
+          path: '../../.github/workflows/windows-exe-preview.yml',
+          job: 'publish',
+          step: 'Upload EXE and publish complete desktop release',
+          assets: ['Pomodoist-Setup.exe', 'Pomodoist-Setup.exe.sha256'],
+          legacyGh: 'false',
+        ),
+        (
+          path: '../../.github/workflows/android-release.yml',
+          job: 'signed-apk-and-bundle',
+          step: 'Publish Android artifacts to the GitHub release',
+          assets: ['Pomodoist-Android.apk', 'Pomodoist-Android.apk.sha256'],
+          legacyGh: 'false',
+        ),
+      ];
+      final scripts = <String>[];
+      for (final publisher in publishers) {
+        final job = _job(publisher.path, publisher.job);
+        final step = (job['steps'] as YamlList).cast<YamlMap>().singleWhere(
+          (step) => step['name'] == publisher.step,
+        );
+        expect(
+          (step['env'] as YamlMap?)?['GH_REPO'] ??
+              (job['env'] as YamlMap?)?['GH_REPO'],
+          r'${{ github.repository }}',
+          reason: publisher.path,
+        );
+        scripts.add(step['run'] as String);
+      }
 
-    for (final tag in ['v1.0.3', 'v1.0.3-rc.1']) {
-      for (final order in [
-        [0, 1, 2],
-        [1, 2, 0],
-        [2, 1, 0],
-      ]) {
-        final temp = Directory.systemTemp.createTempSync('release-publish-');
-        try {
-          final prerelease = tag.contains('-rc.');
-          final environment = {
-            'GITHUB_REF_NAME': tag,
-            'GITHUB_REPOSITORY': 'example/pomodoist',
-            'GH_REPO': 'example/pomodoist',
-            'GITHUB_SHA': '0123456789abcdef0123456789abcdef01234567',
-          };
-          ProcessResult publish(int position) {
-            final publisher = publishers[order[position]];
-            return _bash('$_fakeGh\n${scripts[order[position]]}', temp, {
-              ...environment,
-              'LEGACY_GH': publisher.legacyGh,
-            });
-          }
+      for (final tag in ['v1.0.3', 'v1.0.3-rc.1']) {
+        for (final order in [
+          [0, 1, 2],
+          [1, 2, 0],
+          [2, 1, 0],
+        ]) {
+          final temp = Directory.systemTemp.createTempSync('release-publish-');
+          try {
+            final prerelease = tag.contains('-rc.');
+            final environment = {
+              'GITHUB_REF_NAME': tag,
+              'GITHUB_REPOSITORY': 'example/pomodoist',
+              'GH_REPO': 'example/pomodoist',
+              'GITHUB_SHA': '0123456789abcdef0123456789abcdef01234567',
+            };
+            ProcessResult publish(int position) {
+              final publisher = publishers[order[position]];
+              return _bash('$_fakeGh\n${scripts[order[position]]}', temp, {
+                ...environment,
+                'LEGACY_GH': publisher.legacyGh,
+              });
+            }
 
-          // Missing an automated platform keeps the release in draft.
-          for (final position in [0, 1, 0]) {
-            final publisher = publishers[order[position]];
-            final result = publish(position);
-            expect(result.exitCode, 0, reason: '${result.stderr}');
+            // Missing an automated platform keeps the release in draft.
+            for (final position in [0, 1, 0]) {
+              final publisher = publishers[order[position]];
+              final result = publish(position);
+              expect(result.exitCode, 0, reason: '${result.stderr}');
+              expect(
+                result.stdout,
+                contains(
+                  'Release remains draft until all release assets are present.',
+                ),
+                reason: publisher.path,
+              );
+              expect(
+                File('${temp.path}/gh.log').readAsStringSync(),
+                isNot(contains('--method PATCH')),
+                reason: publisher.path,
+              );
+              expect(
+                File('${temp.path}/assets').readAsLinesSync(),
+                containsAll(publisher.assets),
+                reason: publisher.path,
+              );
+            }
+
+            final last = publish(2);
+            expect(last.exitCode, 0, reason: '${last.stderr}');
+            final log = File('${temp.path}/gh.log').readAsLinesSync();
+            final publication = log.singleWhere(
+              (line) => line.startsWith('api --method PATCH'),
+            );
+            expect(publication, contains('--raw-field tag_name=$tag'));
+            expect(publication, contains('--field draft=false'));
+            expect(publication, contains('--field prerelease=$prerelease'));
             expect(
-              result.stdout,
-              contains(
-                'Release remains draft until all release assets are present.',
+              publication,
+              contains('--raw-field make_latest=${!prerelease}'),
+            );
+            expect(
+              log.where(
+                (line) =>
+                    line.startsWith('release create ') ||
+                    line.startsWith(
+                      'api --method POST repos/example/pomodoist/releases ',
+                    ),
               ),
-              reason: publisher.path,
+              hasLength(1),
             );
-            expect(
-              File('${temp.path}/gh.log').readAsStringSync(),
-              isNot(contains('--method PATCH')),
-              reason: publisher.path,
-            );
-            expect(
-              File('${temp.path}/assets').readAsLinesSync(),
-              containsAll(publisher.assets),
-              reason: publisher.path,
-            );
+            expect(log.where((line) => line == 'generate-notes'), hasLength(1));
+            expect(File('${temp.path}/assets').readAsLinesSync().toSet(), {
+              for (final publisher in publishers) ...publisher.assets,
+            });
+          } finally {
+            temp.deleteSync(recursive: true);
           }
-
-          final last = publish(2);
-          expect(last.exitCode, 0, reason: '${last.stderr}');
-          final log = File('${temp.path}/gh.log').readAsLinesSync();
-          final publication = log.singleWhere(
-            (line) => line.startsWith('api --method PATCH'),
-          );
-          expect(publication, contains('--raw-field tag_name=$tag'));
-          expect(publication, contains('--field draft=false'));
-          expect(publication, contains('--field prerelease=$prerelease'));
-          expect(
-            publication,
-            contains('--raw-field make_latest=${!prerelease}'),
-          );
-          expect(
-            log.where(
-              (line) =>
-                  line.startsWith('release create ') ||
-                  line.startsWith(
-                    'api --method POST repos/example/pomodoist/releases ',
-                  ),
-            ),
-            hasLength(1),
-          );
-          expect(log.where((line) => line == 'generate-notes'), hasLength(1));
-          expect(File('${temp.path}/assets').readAsLinesSync().toSet(), {
-            for (final publisher in publishers) ...publisher.assets,
-          });
-        } finally {
-          temp.deleteSync(recursive: true);
         }
       }
-    }
-  });
+    },
+  );
 
   test('Linux reuses a draft created during a concurrent publish', () {
-    final steps = _job(
-      '../../.github/workflows/linux-appimage-release.yml',
-      'build-test-publish',
-    )['steps'] as YamlList;
-    final script = (steps.cast<YamlMap>().singleWhere(
-      (step) =>
-          step['name'] == 'Upload AppImage and publish complete desktop release',
-    ))['run'] as String;
+    final steps =
+        _job(
+              '../../.github/workflows/linux-appimage-release.yml',
+              'build-test-publish',
+            )['steps']
+            as YamlList;
+    final script =
+        (steps.cast<YamlMap>().singleWhere(
+              (step) =>
+                  step['name'] ==
+                  'Upload AppImage and publish complete desktop release',
+            ))['run']
+            as String;
     final temp = Directory.systemTemp.createTempSync('release-race-');
     try {
       final result = _bash('$_fakeGh\n$script', temp, {

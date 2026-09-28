@@ -53,6 +53,37 @@ class TaskListStyleSettings extends ConsumerWidget {
           ),
         ),
         SettingsRow(
+          title: l10n.settingsTaskBranchStyle,
+          control: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final option in TaskBranchStyle.values)
+                ChoiceChip(
+                  label: Text(switch (option) {
+                    TaskBranchStyle.connected =>
+                      l10n.settingsTaskBranchConnected,
+                    TaskBranchStyle.grouped => l10n.settingsTaskBranchGrouped,
+                  }),
+                  selected: state.branchStyle == option,
+                  onSelected: (_) async {
+                    try {
+                      await ref
+                          .read(taskListSettingsViewModelProvider.notifier)
+                          .setBranchStyle(option);
+                    } catch (_) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(l10n.settingsSaveError)),
+                        );
+                      }
+                    }
+                  },
+                ),
+            ],
+          ),
+        ),
+        SettingsRow(
           title: l10n.settingsTaskRowSpacing,
           control: Wrap(
             spacing: 8,

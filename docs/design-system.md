@@ -66,6 +66,10 @@ including during theme transitions.
   action meanings, icon sizes, and accessible labels.
 - Corner radii: controls **8 px**, cards **10 px**, dialogs **12 px**. Circular
   timers, indicators, and decorative marks may retain their own shapes.
+- Input focus outlines stay inside the field bounds, with the same corner
+  radius as the field. Shadcn inputs use a 2 px accent outline with zero outward
+  offset so scrollable containers cannot clip its sides; focusing does not change
+  field spacing or size.
 - Align spacing to a **4 px** grid while preserving the current density.
 - Keep main screens flat. Use shadows to separate floating surfaces.
   Decorative gradients, glow, and spring transitions are not the backdrop
@@ -166,7 +170,7 @@ not synchronize or require new dependencies.
 
 ## Interface zoom
 
-Native windows share a locally saved interface zoom of 70–150%, initially 100%.
+Native windows share a locally saved interface zoom of 50–200%, initially 100%.
 Command + / − changes it by 10 percentage points and Command 0 resets it;
 Windows and Linux use Control. Accept both Command = and Command Shift = for
 zooming in, plus the numeric keypad equivalents. Reserve these shortcuts from
@@ -587,23 +591,41 @@ color. In the shared column layout, project (120 px), focus progress (56 px), an
 descendant progress (72 px) share one vertically centered metadata row to the
 right of the title block, before row actions. Reserve all three slots even when
 a value is absent, with 12 px gaps; scale slot widths with text size. Narrow
-layouts place these same slots below the heading, aligned to the trailing edge,
-and wrap only when they do not fit. A task's nesting depth must not change the
+desktop layouts place these slots below the heading, aligned to the trailing
+edge, and wrap only when they do not fit. A task's nesting depth must not change the
 list's column-layout breakpoint. Subtask disclosure stays before the completion
 circle on desktop and in the trailing action slot on mobile. Progress controls
 remain outside task drag targets.
+Native mobile rows use a separate, flat composition in both Modern and Classic.
+The completion circle and disclosure have 44 px targets aligned with the first
+title line, independently of the row's total height. Titles and schedule labels
+wrap without a line limit, ellipsis, or font shrinking. Description previews
+retain their existing limit. Parent context, description, schedule, and metadata
+follow the heading with 4 px gaps (2 px in Compact) only between present blocks. Schedule and
+metadata occupy the full text width, including the space below disclosure.
+
+Mobile metadata puts the project on the leading side and reserves two trailing
+slots for focus (56 px) and descendant progress (72 px), scaled with text size.
+Slots have a 4 px gap and never exchange places when a value is absent. If less
+than 64 scaled pixels remain for the project, move the counter group below it;
+at extreme text sizes the group itself may wrap to avoid overflow. Project
+names may ellipsize; task titles and times may not. Omit an empty metadata block.
 Touch actions stay available. Project and timing colors retain their semantics.
 Custom Kanban and Timeline blocks keep their specialized layouts.
 Kanban card action menus open on activation; pointer hover only highlights the
 ellipsis button and must not open its menu (`ShadMenubar.selectOnHover: false`).
 
 Task row spacing is independent of Modern / Classic. The local
-`tasks.rowSpacing` preference selects Compact (4 px), Comfortable (10 px), or
-Spacious (16 px) vertical padding on each side of a row. Comfortable is the
+`tasks.rowSpacing` preference selects Compact (0 px), Comfortable (8 px), or
+Spacious (20 px) vertical padding on each side of a row. Comfortable is the
 default for missing or unknown values. Changes apply immediately without a new
 animation; a late preference load must not replace a local selection. A failed
 save keeps the current session's selection and reports the error in Settings.
-Font sizes, icons, metadata placement, and horizontal spacing stay unchanged.
+Compact also caps existing vertical gaps between text blocks and wrapped metadata
+rows at 2 px; Comfortable and Spacious retain their existing internal gaps.
+`TaskRowGeometry` defines both spacing rules for shared mobile and desktop rows,
+including grouped branches. Font sizes, icons, metadata placement, horizontal
+spacing, separator heights, and touch targets of at least 44 px stay unchanged.
 
 All shared task lists use `TaskListDivider` between rows, including completed
 groups, subtasks, and the priority matrix. The line is 1 px in `appColors.border`,
@@ -640,10 +662,13 @@ details include their IDs. Preserve local interaction over delayed preference
 loading; keep the current choice and show save feedback if persistence fails.
 
 Draw 1 px theme-border connectors through rows and their separators, with 28 px
-per level, 20 px horizontal arms, and a maximum visual indentation of two levels.
-End rails at the last
-visible sibling. Keep actual ancestry at deeper levels and show its path above
-the title. With an absent visible parent, promote the row visually to the root
+per level and a maximum visual indentation of two levels. Horizontal arms stop
+at the completion ring's outer edge, including its stroke (16.75 px arms for the
+24 px completion control), never inside the circle.
+On mobile, connector endpoints follow the completion circle's first-line anchor,
+not the row's vertical center. End rails at the last visible sibling. Keep actual
+ancestry at deeper levels and show its path beside the title block (below the
+title on mobile). With an absent visible parent, promote the row visually to the root
 and show a parent link instead of phantom indentation. An unavailable parent has
 neutral, noninteractive text. Paths and connectors respect text direction.
 
@@ -659,6 +684,23 @@ explicit task creation or nesting in the current destination. Completion, Undo,
 row density and drag semantics remain independent of disclosure. Interactive
 disclosure and parent links have at least 44 px touch targets; compact summaries rely
 on the containing task's accessible activation target.
+
+The local `tasks.branchStyle` preference independently selects Connected lines
+(default) or Grouped branch on all platforms. Keep Modern/Classic, row spacing,
+and expansion choices independent. Persist immediately with ordered writes;
+late loading must not replace a local choice. Unknown values use Connected lines.
+A failed write keeps session state and uses the existing settings error feedback.
+
+Grouped branch paints one surface around a visible root with eligible children
+and its displayed descendants, with a 1 px border, 14 px outer corners, and no
+shadow or nested cards. Collapsed roots retain their single-row block. Standalone
+tasks remain flat. Within a block replace connector rails with 12 px indentation
+per level, capped at two levels relative to the displayed group root. Compute
+first/last segments from the displayed forest, including retained motion rows;
+paint through internal separators without replacing lazy rows or their keys.
+Details recompute group boundaries after omitting their owning task. Upcoming
+never joins groups across dates. Apply this to hierarchical lists and details;
+do not regroup Search, Priority Matrix, Kanban, Calendar, Timeline, Focus, or Map.
 
 ### Project map
 

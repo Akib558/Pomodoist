@@ -3709,4 +3709,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get projectCatalogSearch => 'Buscar proyectos y tareas';
+
+  @override
+  String get settingsTaskBranchStyle => 'Aspecto de las subtareas';
+
+  @override
+  String get settingsTaskBranchConnected => 'Líneas de conexión';
+
+  @override
+  String get settingsTaskBranchGrouped => 'Bloque agrupado';
 }

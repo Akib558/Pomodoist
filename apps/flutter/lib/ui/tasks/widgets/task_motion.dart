@@ -1,3 +1,4 @@
+import 'package:pomodoist/ui/tasks/widgets/task_row_geometry.dart';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -251,7 +252,7 @@ class TaskCompletionControl extends StatelessWidget {
           dimension: hitSize,
           child: Center(
             child: SizedBox.square(
-              dimension: 24,
+              dimension: TaskRowGeometry.completionSize,
               child: TweenAnimationBuilder<double>(
                 key: ValueKey('task-completion-${event?.revision}-$target'),
                 tween: Tween(
@@ -296,14 +297,16 @@ class TaskCompletionPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = size.center(Offset.zero);
-    final radius = math.min(size.width, size.height) / 2 - 1.5;
+    final radius = TaskRowGeometry.completionRadius(
+      math.min(size.width, size.height),
+    );
     canvas.drawCircle(
       center,
       radius,
       Paint()
         ..color = color
         ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.5,
+        ..strokeWidth = TaskRowGeometry.completionStrokeWidth,
     );
     final ringProgress = Curves.easeOutCubic.transform(
       (progress / (80 / 180)).clamp(0.0, 1.0),

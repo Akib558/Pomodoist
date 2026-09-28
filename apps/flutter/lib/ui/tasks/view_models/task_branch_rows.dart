@@ -68,7 +68,39 @@ List<VisibleTaskRow> visibleTaskRows(
   }
 
   walk(childrenByParent[null] ?? const [], const []);
-  return List.unmodifiable(rows);
+  return withTaskBranchGroups(rows);
+}
+
+/// Annotate the displayed forest without changing its order or membership.
+/// Also works when details omit the task that owns the displayed subtree.
+List<VisibleTaskRow> withTaskBranchGroups(List<VisibleTaskRow> rows) {
+  final roots = <String, VisibleTaskRow>{};
+  final rootByTask = <String, String?>{};
+  final lastByRoot = <String, String>{};
+  for (final row in rows) {
+    final parentRoot = rootByTask[row.visibleParentId];
+    final isRoot = !rootByTask.containsKey(row.visibleParentId);
+    final root = isRoot && row.hasVisibleChildren ? row.task.id : parentRoot;
+    if (root == row.task.id) roots[root!] = row;
+    rootByTask[row.task.id] = root;
+    if (root != null) lastByRoot[root] = row.task.id;
+  }
+  return List.unmodifiable([
+    for (final row in rows)
+      VisibleTaskRow(
+        task: row.task,
+        depth: row.depth,
+        visibleParentId: row.visibleParentId,
+        ancestors: row.ancestors,
+        hasVisibleChildren: row.hasVisibleChildren,
+        expanded: row.expanded,
+        ancestorContinuations: row.ancestorContinuations,
+        isLastSibling: row.isLastSibling,
+        groupRootId: rootByTask[row.task.id],
+        groupRootDepth: roots[rootByTask[row.task.id]]?.depth ?? 0,
+        endsGroup: lastByRoot[rootByTask[row.task.id]] == row.task.id,
+      ),
+  ]);
 }
 
 List<TaskItem> taskAncestorPath(TaskItem task, Map<String, TaskItem> byId) {
@@ -120,6 +152,9 @@ class VisibleTaskRow {
     bool? expanded,
     this.ancestorContinuations = const [],
     this.isLastSibling = true,
+    this.groupRootId,
+    this.groupRootDepth = 0,
+    this.endsGroup = false,
   }) : expanded = expanded ?? depth == 0;
 
   final TaskItem task;
@@ -131,6 +166,11 @@ class VisibleTaskRow {
   final bool expanded;
   final List<bool> ancestorContinuations;
   final bool isLastSibling;
+  final String? groupRootId;
+  final int groupRootDepth;
+  final bool endsGroup;
+  bool get startsGroup => groupRootId == task.id;
+  int get groupDisplayDepth => (depth - groupRootDepth).clamp(0, 2);
   bool get needsAncestorContext =>
       ancestors.isNotEmpty && (visibleParentId == null || depth > 2);
 }

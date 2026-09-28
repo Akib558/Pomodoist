@@ -5,6 +5,34 @@ import 'package:pomodoist/ui/core/themes/app_theme.dart';
 import 'package:pomodoist/ui/settings/view_models/theme_settings_view_model.dart';
 
 void main() {
+  test('input focus outline stays inside the field in every theme', () {
+    for (final preset in builtinAppThemes) {
+      for (final theme in [
+        AppTheme.light(palette: preset.light),
+        AppTheme.dark(palette: preset.dark),
+      ]) {
+        final shad = AppTheme.shadFromMaterial(theme);
+        final decoration = shad.decoration.merge(shad.inputTheme.decoration);
+        final outline = decoration.secondaryFocusedBorder!;
+        expect(outline.offset, 0);
+        expect(outline.radius, decoration.border!.radius);
+        for (final side in [
+          outline.top!,
+          outline.right!,
+          outline.bottom!,
+          outline.left!,
+        ]) {
+          expect(side.color, shad.colorScheme.ring);
+          expect(side.width, 2);
+          expect(
+            side.strokeAlign ?? BorderSide.strokeAlignInside,
+            BorderSide.strokeAlignInside,
+          );
+        }
+      }
+    }
+  });
+
   test(
     'Sepia and Graphite retain readable button text and independent status colors',
     () {
