@@ -44,20 +44,21 @@ class _CalendarOverviewPanelState extends ConsumerState<CalendarOverviewPanel> {
 
   Future<void> _runFocusAction(
     Future<void> Function() action, {
-    required String successMessage,
-    required IconData successIcon,
+    String? successMessage,
+    IconData successIcon = LucideIcons.circlePlay,
   }) async {
     if (_actionPending) return;
     setState(() => _actionPending = true);
     try {
       await action();
-      if (!mounted) return;
-      showActionFeedback(
-        context,
-        message: successMessage,
-        icon: successIcon,
-        haptic: AppHapticCue.none,
-      );
+      if (mounted && successMessage != null) {
+        showActionFeedback(
+          context,
+          message: successMessage,
+          icon: successIcon,
+          haptic: AppHapticCue.none,
+        );
+      }
     } catch (_) {
       if (!mounted) return;
       showActionFeedback(
@@ -179,8 +180,6 @@ class _CalendarOverviewPanelState extends ConsumerState<CalendarOverviewPanel> {
                       () => ref
                           .read(focusViewModelProvider.notifier)
                           .startFocus(preset),
-                      successMessage: l10n.focusStarted,
-                      successIcon: LucideIcons.circlePlay,
                     ),
                   ),
             icon: const Icon(LucideIcons.play, size: 18),
@@ -270,9 +269,7 @@ class _CalendarOverviewPanelState extends ConsumerState<CalendarOverviewPanel> {
                   : () => unawaited(
                       _runFocusAction(
                         action,
-                        successMessage: ready
-                            ? l10n.intervalStarted
-                            : actionLabel,
+                        successMessage: ready ? null : actionLabel,
                         successIcon: ready || paused
                             ? LucideIcons.circlePlay
                             : LucideIcons.circlePause,
@@ -289,8 +286,6 @@ class _CalendarOverviewPanelState extends ConsumerState<CalendarOverviewPanel> {
                         () => ref
                             .read(focusViewModelProvider.notifier)
                             .stopActiveRun(reason: StopFocusReason.stopped),
-                        successMessage: l10n.focusStopped,
-                        successIcon: LucideIcons.circleStop,
                       ),
                     ),
               icon: const Icon(LucideIcons.square, size: 16),

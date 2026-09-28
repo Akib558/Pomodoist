@@ -350,6 +350,8 @@
   "settingsShortcutsTitle": "اختصارات لوحة المفاتيح",
   "settingsShortcutsSubtitle": "خصّص الأوامر المتاحة من لوحة مفاتيح فعلية.",
   "settingsShortcutsToggleSidebar": "إظهار الشريط الجانبي أو إخفاؤه",
+  "settingsShortcutsToggleTaskDetails": "إظهار تفاصيل المهمة أو إخفاؤها",
+  "settingsShortcutsToggleTaskDetailsAlternate": "تفاصيل المهمة (الاختصار الثاني)",
   "settingsShortcutsGlobalQuickAdd": "إضافة سريعة عامة",
   "settingsShortcutsGlobalQuickAddSubtitle": "يعمل حتى عندما لا يكون Pomodoist نشطًا.",
   "settingsShortcutsRecordTitle": "اضغط اختصارًا",

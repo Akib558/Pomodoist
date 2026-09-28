@@ -123,12 +123,7 @@ class _FocusActiveActions extends StatelessWidget {
         onPressed: blocked
             ? null
             : () => unawaited(
-                _performFocusAction(
-                  context,
-                  actions.completeActiveInterval,
-                  message: context.l10n.intervalCompleted,
-                  icon: LucideIcons.circleCheck,
-                ),
+                _performFocusAction(context, actions.completeActiveInterval),
               ),
         icon: const Icon(LucideIcons.check, size: 18),
         label: Text(context.l10n.completeInterval),
@@ -196,14 +191,8 @@ Widget _buildFocusPrimaryAction(
   final paused = interval.status == 'paused';
   final allowPause = selectedPreset?.allowPause ?? true;
   final onPressed = ready
-      ? () => unawaited(
-          _performFocusAction(
-            context,
-            actions.startReadyInterval,
-            message: l10n.intervalStarted,
-            icon: LucideIcons.circlePlay,
-          ),
-        )
+      ? () =>
+            unawaited(_performFocusAction(context, actions.startReadyInterval))
       : paused || allowPause
       ? () => unawaited(
           _performFocusAction(
@@ -447,14 +436,7 @@ void _handleFocusMoreAction(
   switch (action.kind) {
     case _FocusMoreActionKind.complete:
       if (actions != null) {
-        unawaited(
-          _performFocusAction(
-            context,
-            actions.completeActiveInterval,
-            message: l10n.intervalCompleted,
-            icon: LucideIcons.circleCheck,
-          ),
-        );
+        unawaited(_performFocusAction(context, actions.completeActiveInterval));
       }
     case _FocusMoreActionKind.skip:
       if (actions != null) {
@@ -466,9 +448,6 @@ void _handleFocusMoreAction(
           _performFocusAction(
             context,
             () => actions.stopActiveRun(reason: StopFocusReason.stopped),
-            message: l10n.focusStopped,
-            icon: LucideIcons.circleStop,
-            haptic: AppHapticCue.light,
           ),
         );
       }
@@ -507,7 +486,6 @@ Future<void> _performFocusAction(
   Future<void> Function() action, {
   String? message,
   IconData icon = LucideIcons.circleCheck,
-  AppHapticCue haptic = AppHapticCue.none,
 }) async {
   try {
     await action();
@@ -524,7 +502,12 @@ Future<void> _performFocusAction(
     return;
   }
   if (context.mounted && message != null) {
-    showActionFeedback(context, message: message, icon: icon, haptic: haptic);
+    showActionFeedback(
+      context,
+      message: message,
+      icon: icon,
+      haptic: AppHapticCue.none,
+    );
   }
 }
 

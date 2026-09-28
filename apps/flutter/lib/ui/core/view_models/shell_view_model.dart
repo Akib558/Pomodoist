@@ -37,6 +37,11 @@ final shellTodayFocusStripVisibleProvider = Provider<bool>(
   (ref) => ref.watch(todayFocusStripVisibleProvider),
 );
 
+final shellTaskForDetailsProvider = FutureProvider.autoDispose
+    .family<TaskItem?, String>(
+      (ref, id) => ref.read(taskRepositoryProvider).watchTask(id).first,
+    );
+
 final class ShellSidebarState {
   const ShellSidebarState({
     required this.displayName,

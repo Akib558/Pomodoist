@@ -44,6 +44,7 @@ import 'package:pomodoist/ui/core/themes/macos_glass.dart';
 import 'package:pomodoist/ui/core/widgets/mini_focus_player.dart';
 import 'package:pomodoist/ui/core/widgets/app_context_menu_region.dart';
 import 'package:pomodoist/ui/core/widgets/task_details_host.dart';
+import 'package:pomodoist/routing/task_detail_navigation.dart';
 import 'package:pomodoist/ui/onboarding/widgets/learning_tour_overlay.dart';
 import 'package:pomodoist/ui/onboarding/view_models/learning_tour_view_model.dart';
 
@@ -89,6 +90,7 @@ class _AdaptiveShellState extends ConsumerState<AdaptiveShell> {
   double _lastExpandedSidebarWidth = _wideSidebarDefaultWidth;
   bool _quickAddShortcutDialogOpen = false;
   bool _searchPaletteOpen = false;
+  String? _lastTaskDetailsId;
 
   @override
   void didUpdateWidget(covariant AdaptiveShell oldWidget) {
@@ -180,6 +182,9 @@ class _AdaptiveShellState extends ConsumerState<AdaptiveShell> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedTaskId =
+        widget.taskId ?? selectedTaskDetailsId(Uri.parse(widget.location));
+    if (selectedTaskId != null) _lastTaskDetailsId = selectedTaskId;
     final keyboard = ref.watch(shellKeyboardViewModelProvider);
     final menuController = _appMenuController;
     if (menuController != null) {
@@ -456,6 +461,9 @@ class _AdaptiveShellState extends ConsumerState<AdaptiveShell> {
     switch (command) {
       case AppShortcutCommand.toggleSidebar:
         _toggleSidebar();
+      case AppShortcutCommand.toggleTaskDetails ||
+          AppShortcutCommand.toggleTaskDetailsAlternate:
+        unawaited(_toggleTaskDetails());
       case AppShortcutCommand.quickAdd:
         _openQuickAddFromShortcut();
       case AppShortcutCommand.browse:
@@ -482,6 +490,30 @@ class _AdaptiveShellState extends ConsumerState<AdaptiveShell> {
         _goFromShortcut('/reports');
       case AppShortcutCommand.settings:
         _goFromShortcut('/settings');
+    }
+  }
+
+  Future<void> _toggleTaskDetails() async {
+    final router = GoRouter.of(context);
+    final current = router.state.uri;
+    final selected = selectedTaskDetailsId(current);
+    if (selected != null) {
+      _lastTaskDetailsId = selected;
+      closeTaskDetails(context);
+      return;
+    }
+    final last = _lastTaskDetailsId;
+    if (last == null) return;
+    try {
+      final task = await ref.read(shellTaskForDetailsProvider(last).future);
+      if (!mounted || router.state.uri != current) return;
+      if (task == null || task.isDeleted) {
+        _lastTaskDetailsId = null;
+        return;
+      }
+      openTaskDetails(context, last);
+    } catch (_) {
+      _lastTaskDetailsId = null;
     }
   }
 

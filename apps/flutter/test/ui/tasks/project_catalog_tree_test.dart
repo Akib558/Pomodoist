@@ -65,9 +65,37 @@ void main() {
       expect(tree.nodes[tree.rootKey]!.progress.total, 4);
       expect(tree.nodes[tree.rootKey]!.progress.completed, 1);
       expect(tree.visibleKeys, contains('t:one'));
-      expect(tree.visibleKeys, isNot(contains('t:two')));
+      expect(tree.visibleKeys.toSet(), tree.nodes.keys.toSet());
     },
   );
+  test('catalog opens deep task branches and respects saved collapse', () {
+    final deepTasks = [
+      ...tasks,
+      buildTask(id: 'four', projectId: 'nested', parentId: 'three'),
+    ];
+    final open = projectTreeData(null, projects, deepTasks);
+    expect(open.visibleKeys, containsAll(['t:two', 't:three', 't:four']));
+    expect(open.visibleKeys, isNot(contains('t:done')));
+    final closed = projectTreeData(
+      null,
+      projects,
+      deepTasks,
+      expansion: {'t:two': false},
+    );
+    expect(closed.visibleKeys, contains('t:two'));
+    expect(closed.visibleKeys, isNot(contains('t:three')));
+    expect(closed.visibleKeys, isNot(contains('t:four')));
+    expect(closed.nodes.keys.toSet(), open.nodes.keys.toSet());
+    expect(
+      closed.nodes[closed.rootKey]!.progress.total,
+      open.nodes[open.rootKey]!.progress.total,
+    );
+    expect(
+      data(expansion: {'p:nested': false}).visibleKeys,
+      isNot(contains('t:two')),
+    );
+    expect(data(completed: true).visibleKeys, contains('t:done'));
+  });
   test(
     'task search keeps ancestors, reveals paths, and does not persist expansion',
     () {

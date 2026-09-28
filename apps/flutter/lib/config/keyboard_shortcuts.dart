@@ -202,6 +202,17 @@ Map<AppShortcutCommand, AppShortcutBinding> defaultAppShortcutBindings(
 
   return {
     AppShortcutCommand.toggleSidebar: binding(PhysicalKeyboardKey.keyB, 'B'),
+    AppShortcutCommand.toggleTaskDetails: _platformBinding(
+      platform,
+      PhysicalKeyboardKey.keyB,
+      'B',
+      alt: true,
+    ),
+    AppShortcutCommand.toggleTaskDetailsAlternate: binding(
+      PhysicalKeyboardKey.keyB,
+      'B',
+      shift: true,
+    ),
     AppShortcutCommand.quickAdd: binding(PhysicalKeyboardKey.keyN, 'N'),
     AppShortcutCommand.browse: binding(PhysicalKeyboardKey.digit1, '1'),
     AppShortcutCommand.search: binding(PhysicalKeyboardKey.digit2, '2'),
@@ -415,6 +426,14 @@ class KeyboardShortcutsController
             _platformBinding(_platform, key, label, shift: true, alt: alt),
       ].firstWhere((binding) => !used.contains(binding.signature));
     }
+    for (final command in [
+      AppShortcutCommand.toggleTaskDetails,
+      AppShortcutCommand.toggleTaskDetailsAlternate,
+    ]) {
+      if (!decodedMap.containsKey(command.storageKey)) {
+        _preserveTaskDetailsShortcut(loaded, _platform, command);
+      }
+    }
     if (loaded.values.map((value) => value.signature).toSet().length !=
         AppShortcutCommand.values.length) {
       return;
@@ -459,7 +478,25 @@ class KeyboardShortcutsController
             entry.key != command &&
             entry.value.signature == candidate.signature,
       );
-      if (!conflictsWithNumberedLayout) loaded[command] = candidate;
+      if (!conflictsWithNumberedLayout) {
+        loaded[command] = candidate;
+      } else {
+        for (final detailsCommand in [
+          AppShortcutCommand.toggleTaskDetails,
+          AppShortcutCommand.toggleTaskDetailsAlternate,
+        ]) {
+          if (loaded[detailsCommand]?.signature == candidate.signature) {
+            _preserveTaskDetailsShortcut(
+              loaded,
+              _platform,
+              detailsCommand,
+              candidate,
+            );
+            loaded[command] = candidate;
+            break;
+          }
+        }
+      }
     }
     if (!ref.mounted) return;
     state = Map.unmodifiable(loaded);
@@ -476,5 +513,33 @@ class KeyboardShortcutsController
               }),
             ))
         .getOrThrow();
+  }
+}
+
+void _preserveTaskDetailsShortcut(
+  Map<AppShortcutCommand, AppShortcutBinding> bindings,
+  TargetPlatform platform,
+  AppShortcutCommand command, [
+  AppShortcutBinding? incoming,
+]) {
+  final used = {
+    for (final entry in bindings.entries)
+      if (entry.key != command) entry.value.signature,
+    if (incoming != null) incoming.signature,
+  };
+  if (!used.contains(bindings[command]!.signature)) return;
+  final firstLetter = PhysicalKeyboardKey.keyA.usbHidUsage;
+  for (final letter in 'BCDEFGHIJKLMNOPQRSTUVWXYZ'.codeUnits) {
+    final candidate = _platformBinding(
+      platform,
+      PhysicalKeyboardKey.findKeyByCode(firstLetter + letter - 65)!,
+      String.fromCharCode(letter),
+      alt: command == AppShortcutCommand.toggleTaskDetails,
+      shift: true,
+    );
+    if (!used.contains(candidate.signature)) {
+      bindings[command] = candidate;
+      return;
+    }
   }
 }

@@ -52,6 +52,13 @@ Uri taskDetailUri(Uri background, String? taskId) {
   );
 }
 
+String? selectedTaskDetailsId(Uri location) {
+  if (location.pathSegments.firstOrNull == 'task') {
+    return location.pathSegments.length > 1 ? location.pathSegments[1] : null;
+  }
+  return location.queryParameters['task'];
+}
+
 void openTaskDetails(BuildContext context, String taskId) {
   final router = GoRouter.of(context);
   final current = router.state.uri;

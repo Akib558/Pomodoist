@@ -413,6 +413,8 @@
   "settingsShortcutsTitle": "キーボードショートカット",
   "settingsShortcutsSubtitle": "物理キーボードで使えるコマンドをカスタマイズします。",
   "settingsShortcutsToggleSidebar": "サイドバーを切り替え",
+  "settingsShortcutsToggleTaskDetails": "タスクの詳細を表示・非表示",
+  "settingsShortcutsToggleTaskDetailsAlternate": "タスクの詳細（2つ目のショートカット）",
   "settingsShortcutsGlobalQuickAdd": "グローバルクイック追加",
   "settingsShortcutsGlobalQuickAddSubtitle": "Pomodoistがアクティブでないときも使えます。",
   "settingsShortcutsRecordTitle": "ショートカットを押してください",

@@ -940,6 +940,14 @@ class AppLocalizationsRu extends AppLocalizations {
       'Показать или скрыть боковую панель';
 
   @override
+  String get settingsShortcutsToggleTaskDetails =>
+      'Показать или скрыть карточку задачи';
+
+  @override
+  String get settingsShortcutsToggleTaskDetailsAlternate =>
+      'Карточка задачи (второе сочетание)';
+
+  @override
   String get settingsShortcutsGlobalQuickAdd => 'Глобальное быстрое добавление';
 
   @override

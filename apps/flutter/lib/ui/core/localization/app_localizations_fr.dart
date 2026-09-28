@@ -947,6 +947,14 @@ class AppLocalizationsFr extends AppLocalizations {
       'Afficher ou masquer la barre latérale';
 
   @override
+  String get settingsShortcutsToggleTaskDetails =>
+      'Afficher ou masquer les détails de la tâche';
+
+  @override
+  String get settingsShortcutsToggleTaskDetailsAlternate =>
+      'Détails de la tâche (deuxième raccourci)';
+
+  @override
   String get settingsShortcutsGlobalQuickAdd => 'Ajout rapide global';
 
   @override

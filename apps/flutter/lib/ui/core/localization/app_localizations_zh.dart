@@ -875,6 +875,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsShortcutsToggleSidebar => '显示或隐藏侧边栏';
 
   @override
+  String get settingsShortcutsToggleTaskDetails => '显示或隐藏任务详情';
+
+  @override
+  String get settingsShortcutsToggleTaskDetailsAlternate => '任务详情（第二个快捷键）';
+
+  @override
   String get settingsShortcutsGlobalQuickAdd => '全局快速添加';
 
   @override

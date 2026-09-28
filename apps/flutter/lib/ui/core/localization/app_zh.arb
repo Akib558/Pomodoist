@@ -350,6 +350,8 @@
   "settingsShortcutsTitle": "键盘快捷键",
   "settingsShortcutsSubtitle": "自定义实体键盘可用的命令。",
   "settingsShortcutsToggleSidebar": "显示或隐藏侧边栏",
+  "settingsShortcutsToggleTaskDetails": "显示或隐藏任务详情",
+  "settingsShortcutsToggleTaskDetailsAlternate": "任务详情（第二个快捷键）",
   "settingsShortcutsGlobalQuickAdd": "全局快速添加",
   "settingsShortcutsGlobalQuickAddSubtitle": "即使 Pomodoist 未激活也可使用。",
   "settingsShortcutsRecordTitle": "按下快捷键",

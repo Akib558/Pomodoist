@@ -9,6 +9,7 @@ import 'package:shadcn_ui/shadcn_ui.dart'
     show LucideIcons, ShadDialog, ShadInput, ShadButton, ShadContextMenuItem;
 import 'package:pomodoist/domain/models/tasks/project_hierarchy.dart';
 import 'package:pomodoist/domain/models/tasks/task_models.dart';
+import 'package:pomodoist/routing/task_detail_navigation.dart';
 import 'package:pomodoist/ui/core/localization/app_l10n.dart';
 import 'package:pomodoist/ui/core/themes/app_theme.dart';
 import 'package:pomodoist/ui/core/widgets/action_feedback.dart';
@@ -201,86 +202,94 @@ class _ProjectDiagramState extends ConsumerState<ProjectDiagram> {
                 controller: _projectTree,
                 child: SizedBox.expand(
                   key: _viewport,
-                  child: Scrollbar(
-                    controller: _horizontal,
-                    thumbVisibility: true,
-                    notificationPredicate: (n) =>
-                        n.metrics.axis == Axis.horizontal,
-                    child: SingleChildScrollView(
-                      controller: _horizontal,
-                      scrollDirection: Axis.horizontal,
-                      child: SizedBox(
-                        width: layout.size.width,
-                        child: Scrollbar(
-                          controller: _vertical,
-                          thumbVisibility: true,
-                          notificationPredicate: (n) =>
-                              n.metrics.axis == Axis.vertical,
-                          child: SingleChildScrollView(
-                            controller: _vertical,
-                            child: SizedBox(
-                              width: layout.size.width,
-                              height: layout.size.height,
-                              child: Stack(
-                                children: [
-                                  Positioned.fill(
-                                    child: IgnorePointer(
-                                      child: CustomPaint(
-                                        painter: _Connections(
-                                          layout,
-                                          colors.border,
-                                          rtl,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  for (final entry in layout.rects.entries)
-                                    Positioned.fromRect(
-                                      rect: entry.value,
-                                      child: _DiagramNode(
-                                        key: ValueKey(entry.key),
-                                        tree: tree,
-                                        node: tree.nodes[entry.key]!,
-                                        selected:
-                                            selectedId != null &&
-                                            tree.nodes[entry.key]!.task?.id ==
-                                                selectedId,
-                                        onExpand: () => _action(
-                                          () => _model.expand(
-                                            entry.key,
-                                            !tree.expandedKeys.contains(
-                                              entry.key,
-                                            ),
+                  child: ScrollConfiguration(
+                    behavior: ScrollConfiguration.of(
+                      context,
+                    ).copyWith(scrollbars: false),
+                    child: Scrollbar(
+                      controller: _vertical,
+                      thumbVisibility: true,
+                      scrollbarOrientation: ScrollbarOrientation.right,
+                      notificationPredicate: (n) =>
+                          n.metrics.axis == Axis.vertical,
+                      child: Scrollbar(
+                        controller: _horizontal,
+                        thumbVisibility: true,
+                        notificationPredicate: (n) =>
+                            n.metrics.axis == Axis.horizontal,
+                        child: SingleChildScrollView(
+                          controller: _horizontal,
+                          scrollDirection: Axis.horizontal,
+                          child: SizedBox(
+                            width: layout.size.width,
+                            child: SingleChildScrollView(
+                              controller: _vertical,
+                              child: SizedBox(
+                                width: layout.size.width,
+                                height: layout.size.height,
+                                child: Stack(
+                                  children: [
+                                    Positioned.fill(
+                                      child: IgnorePointer(
+                                        child: CustomPaint(
+                                          painter: _Connections(
+                                            layout,
+                                            colors.border,
+                                            rtl,
                                           ),
                                         ),
-                                        onDrop: (target) {
-                                          _stopDrag();
-                                          unawaited(
-                                            _action(() => _model.place(target)),
-                                          );
-                                        },
-                                        onDrag: _drag,
-                                        onDragEnd: _stopDrag,
-                                        onAddTask: () => _action(() async {
-                                          await _model.reveal(entry.key);
-                                          if (context.mounted) {
-                                            showQuickAddDialog(
-                                              context,
-                                              projectId: tree
-                                                  .nodes[entry.key]!
-                                                  .project!
-                                                  .id,
-                                            );
-                                          }
-                                        }),
-                                        onAddSubtask: () => _addSubtask(
-                                          tree.nodes[entry.key]!.task!,
-                                        ),
-                                        onMoveTask: () =>
-                                            _moveTask(tree, entry.key),
                                       ),
                                     ),
-                                ],
+                                    for (final entry in layout.rects.entries)
+                                      Positioned.fromRect(
+                                        rect: entry.value,
+                                        child: _DiagramNode(
+                                          key: ValueKey(entry.key),
+                                          tree: tree,
+                                          node: tree.nodes[entry.key]!,
+                                          selected:
+                                              selectedId != null &&
+                                              tree.nodes[entry.key]!.task?.id ==
+                                                  selectedId,
+                                          onExpand: () => _action(
+                                            () => _model.expand(
+                                              entry.key,
+                                              !tree.expandedKeys.contains(
+                                                entry.key,
+                                              ),
+                                            ),
+                                          ),
+                                          onDrop: (target) {
+                                            _stopDrag();
+                                            unawaited(
+                                              _action(
+                                                () => _model.place(target),
+                                              ),
+                                            );
+                                          },
+                                          onDrag: _drag,
+                                          onDragEnd: _stopDrag,
+                                          onAddTask: () => _action(() async {
+                                            await _model.reveal(entry.key);
+                                            if (context.mounted) {
+                                              showQuickAddDialog(
+                                                context,
+                                                projectId: tree
+                                                    .nodes[entry.key]!
+                                                    .project!
+                                                    .id,
+                                              );
+                                            }
+                                          }),
+                                          onAddSubtask: () => _addSubtask(
+                                            tree.nodes[entry.key]!.task!,
+                                          ),
+                                          onMoveTask: () =>
+                                              _moveTask(tree, entry.key),
+                                        ),
+                                      ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
@@ -573,6 +582,20 @@ class _DiagramNodeState extends ConsumerState<_DiagramNode> {
         ),
       ],
     );
+    if (node.task case final task?) {
+      final selection = TaskSelectionScope.maybeOf(context);
+      content = Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(10),
+          hoverColor: Colors.transparent,
+          onTap: () => selection?.active == true
+              ? selection!.toggle(task.id)
+              : openTaskDetails(context, task.id),
+          child: content,
+        ),
+      );
+    }
     content = DecoratedBox(
       decoration: BoxDecoration(
         color: project == null ? colors.surface : colors.surfaceTint,

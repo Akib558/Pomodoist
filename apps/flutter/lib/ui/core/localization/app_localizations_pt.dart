@@ -942,6 +942,14 @@ class AppLocalizationsPt extends AppLocalizations {
   String get settingsShortcutsToggleSidebar => 'Alternar barra lateral';
 
   @override
+  String get settingsShortcutsToggleTaskDetails =>
+      'Mostrar ou ocultar detalhes da tarefa';
+
+  @override
+  String get settingsShortcutsToggleTaskDetailsAlternate =>
+      'Detalhes da tarefa (segundo atalho)';
+
+  @override
   String get settingsShortcutsGlobalQuickAdd => 'Adição rápida global';
 
   @override

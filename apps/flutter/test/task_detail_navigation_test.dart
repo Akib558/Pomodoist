@@ -29,4 +29,10 @@ void main() {
       expect(taskDetailUri(Uri.parse('/task/old'), null).path, '/today');
     },
   );
+
+  test('selected detail id comes from the panel or standalone route', () {
+    expect(selectedTaskDetailsId(Uri.parse('/today?task=one')), 'one');
+    expect(selectedTaskDetailsId(Uri.parse('/task/two')), 'two');
+    expect(selectedTaskDetailsId(Uri.parse('/today')), isNull);
+  });
 }

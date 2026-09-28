@@ -159,34 +159,29 @@ class MiniFocusPlayer extends ConsumerWidget {
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: InkWell(
-                  onTap: task == null
-                      ? null
-                      : () => openTaskDetails(context, task.id),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(minHeight: 44),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${ready ? '${l10n.readyShort} · ' : ''}'
-                          '${_intervalLabel(context, interval)} · '
-                          '${formatDurationCompact(remaining)}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.merge(AppTheme.monoTextStyle)
-                              .copyWith(
-                                color: colors.primaryText,
-                                fontWeight: FontWeight.w600,
-                              ),
-                        ),
-                        if (task != null)
-                          TaskHierarchySummary(task: task, compact: true),
-                      ],
-                    ),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 44),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${ready ? '${l10n.readyShort} · ' : ''}'
+                        '${_intervalLabel(context, interval)} · '
+                        '${formatDurationCompact(remaining)}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.merge(AppTheme.monoTextStyle)
+                            .copyWith(
+                              color: colors.primaryText,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                      if (task != null)
+                        TaskHierarchySummary(task: task, compact: true),
+                    ],
                   ),
                 ),
               ),
@@ -288,33 +283,28 @@ class _MinimalMiniFocusPlayer extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Expanded(
-                child: InkWell(
-                  onTap: task == null
-                      ? null
-                      : () => openTaskDetails(context, task.id),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(minHeight: 44),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${ready ? '${l10n.readyShort} · ' : ''}'
-                          '${formatDurationCompact(remaining)}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.merge(AppTheme.monoTextStyle)
-                              .copyWith(
-                                color: colors.primaryText,
-                                fontWeight: FontWeight.w700,
-                              ),
-                        ),
-                        if (task != null)
-                          TaskHierarchySummary(task: task, compact: true),
-                      ],
-                    ),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 44),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${ready ? '${l10n.readyShort} · ' : ''}'
+                        '${formatDurationCompact(remaining)}',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.merge(AppTheme.monoTextStyle)
+                            .copyWith(
+                              color: colors.primaryText,
+                              fontWeight: FontWeight.w700,
+                            ),
+                      ),
+                      if (task != null)
+                        TaskHierarchySummary(task: task, compact: true),
+                    ],
                   ),
                 ),
               ),
@@ -386,15 +376,6 @@ Future<void> _startReadyInterval(
     if (context.mounted) _showFocusActionError(context);
     return;
   }
-  if (!context.mounted) {
-    return;
-  }
-  showActionFeedback(
-    context,
-    message: context.l10n.intervalStarted,
-    icon: LucideIcons.circlePlay,
-    haptic: AppHapticCue.none,
-  );
 }
 
 Future<void> _toggleFocusPause(
@@ -429,14 +410,6 @@ Future<void> _stopFocus(
     if (context.mounted) _showFocusActionError(context);
     return;
   }
-  if (!context.mounted) {
-    return;
-  }
-  showActionFeedback(
-    context,
-    message: context.l10n.focusStopped,
-    icon: LucideIcons.circleStop,
-  );
 }
 
 void _showFocusActionError(BuildContext context) {

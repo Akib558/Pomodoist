@@ -902,6 +902,13 @@ class AppLocalizationsKo extends AppLocalizations {
   String get settingsShortcutsToggleSidebar => '사이드바 전환';
 
   @override
+  String get settingsShortcutsToggleTaskDetails => '작업 세부 정보 표시 또는 숨기기';
+
+  @override
+  String get settingsShortcutsToggleTaskDetailsAlternate =>
+      '작업 세부 정보 (두 번째 단축키)';
+
+  @override
   String get settingsShortcutsGlobalQuickAdd => '전역 빠른 추가';
 
   @override

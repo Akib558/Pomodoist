@@ -22,6 +22,8 @@ void main() {
           .toList(),
       const [
         '⌘B',
+        '⌥⌘B',
+        '⇧⌘B',
         '⌘N',
         '⌘1',
         '⌘2',
@@ -47,12 +49,120 @@ void main() {
       'Ctrl+N',
     );
     expect(
+      bindings[AppShortcutCommand.toggleTaskDetails]!.labelFor(
+        TargetPlatform.windows,
+      ),
+      'Ctrl+Alt+B',
+    );
+    expect(
+      bindings[AppShortcutCommand.toggleTaskDetailsAlternate]!.labelFor(
+        TargetPlatform.windows,
+      ),
+      'Ctrl+Shift+B',
+    );
+    expect(
       bindings[AppShortcutCommand.focus]!.labelFor(TargetPlatform.windows),
       'Ctrl+5',
     );
     expect(
       bindings.values.last.labelFor(TargetPlatform.windows),
       'Ctrl+Shift+1',
+    );
+  });
+
+  test(
+    'new task details shortcut preserves an existing custom binding',
+    () async {
+      final saved = defaultAppShortcutBindings(TargetPlatform.macOS);
+      saved[AppShortcutCommand.quickAdd] =
+          saved[AppShortcutCommand.toggleTaskDetails]!;
+      SharedPreferences.setMockInitialValues({
+        keyboardShortcutsPreferenceKey: jsonEncode({
+          for (final entry in saved.entries)
+            if (entry.key != AppShortcutCommand.toggleTaskDetails)
+              entry.key.storageKey: entry.value.toJson(),
+        }),
+      });
+      final container = ProviderContainer(
+        overrides: [
+          shortcutTargetPlatformProvider.overrideWithValue(
+            TargetPlatform.macOS,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(keyboardShortcutsLoadedProvider.future);
+      final loaded = container.read(keyboardShortcutsProvider);
+      expect(
+        loaded[AppShortcutCommand.quickAdd],
+        saved[AppShortcutCommand.quickAdd],
+      );
+      expect(
+        loaded[AppShortcutCommand.toggleTaskDetails]!.labelFor(
+          TargetPlatform.macOS,
+        ),
+        '⌥⇧⌘B',
+      );
+    },
+  );
+
+  test('legacy custom binding also keeps the new default free', () async {
+    final occupied = defaultAppShortcutBindings(
+      TargetPlatform.macOS,
+    )[AppShortcutCommand.toggleTaskDetails]!;
+    SharedPreferences.setMockInitialValues({
+      keyboardShortcutsPreferenceKey: jsonEncode({
+        AppShortcutCommand.quickAdd.storageKey: occupied.toJson(),
+      }),
+    });
+    final container = ProviderContainer(
+      overrides: [
+        shortcutTargetPlatformProvider.overrideWithValue(TargetPlatform.macOS),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(keyboardShortcutsLoadedProvider.future);
+    final loaded = container.read(keyboardShortcutsProvider);
+    expect(loaded[AppShortcutCommand.quickAdd], occupied);
+    expect(
+      loaded[AppShortcutCommand.toggleTaskDetails]!.labelFor(
+        TargetPlatform.macOS,
+      ),
+      '⌥⇧⌘B',
+    );
+  });
+
+  test('second task details shortcut preserves an occupied Shift+B', () async {
+    final saved = defaultAppShortcutBindings(TargetPlatform.macOS);
+    saved[AppShortcutCommand.quickAdd] =
+        saved[AppShortcutCommand.toggleTaskDetailsAlternate]!;
+    SharedPreferences.setMockInitialValues({
+      keyboardShortcutsPreferenceKey: jsonEncode({
+        for (final entry in saved.entries)
+          if (entry.key != AppShortcutCommand.toggleTaskDetailsAlternate)
+            entry.key.storageKey: entry.value.toJson(),
+      }),
+    });
+    final container = ProviderContainer(
+      overrides: [
+        shortcutTargetPlatformProvider.overrideWithValue(TargetPlatform.macOS),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(keyboardShortcutsLoadedProvider.future);
+    final loaded = container.read(keyboardShortcutsProvider);
+    expect(
+      loaded[AppShortcutCommand.quickAdd],
+      saved[AppShortcutCommand.quickAdd],
+    );
+    expect(
+      loaded[AppShortcutCommand.toggleTaskDetailsAlternate]!.labelFor(
+        TargetPlatform.macOS,
+      ),
+      '⇧⌘C',
     );
   });
 
@@ -453,6 +563,8 @@ void main() {
             .toList(),
         const [
           '⌘B',
+          '⌥⌘B',
+          '⇧⌘B',
           '⌘N',
           '⌘1',
           '⌘2',

@@ -3,11 +3,13 @@ import 'task_branch_rows.dart';
 import 'package:pomodoist/config/account_providers.dart';
 import 'package:pomodoist/config/providers.dart';
 import 'package:pomodoist/config/focus_dependencies.dart';
+import 'package:pomodoist/config/task_focus_dependencies.dart';
 import 'package:pomodoist/config/task_preferences_dependencies.dart';
 import 'package:pomodoist/domain/models/tasks/task_models.dart';
 import 'package:pomodoist/domain/models/tasks/task_focus_estimate.dart';
 import 'package:pomodoist/domain/models/focus/focus_models.dart';
 import 'package:pomodoist/data/repositories/tasks/task_repository.dart';
+import 'package:pomodoist/data/repositories/focus/focus_repository.dart';
 import 'package:pomodoist/domain/models/tasks/task_time.dart';
 
 typedef TaskDetailState = ({
@@ -15,7 +17,62 @@ typedef TaskDetailState = ({
   bool calendarLinked,
   FocusPresetItem? preset,
   int? focusEstimate,
+  TaskDetailFocusAction? focusAction,
+  String? focusRunId,
 });
+
+enum TaskDetailFocusAction {
+  startFocus,
+  pause,
+  pauseUnavailable,
+  resume,
+  startInterval,
+}
+
+TaskDetailFocusAction? taskDetailFocusAction({
+  required String taskId,
+  required FocusRunItem? run,
+  required FocusIntervalItem? interval,
+  bool allowPause = true,
+}) {
+  if (run?.taskId != taskId) return TaskDetailFocusAction.startFocus;
+  if (interval?.runId != run!.id) return null;
+  return switch (interval!.status) {
+    'ready' => TaskDetailFocusAction.startInterval,
+    'paused' => TaskDetailFocusAction.resume,
+    'running' =>
+      allowPause
+          ? TaskDetailFocusAction.pause
+          : TaskDetailFocusAction.pauseUnavailable,
+    _ => null,
+  };
+}
+
+Future<bool> performTaskDetailFocusAction(
+  FocusRepository repository, {
+  required String taskId,
+  required String runId,
+  required TaskDetailFocusAction action,
+}) async {
+  final run = await repository.watchActiveRun().first;
+  final interval = await repository.watchActiveInterval().first;
+  if (run?.id != runId || run?.taskId != taskId || interval?.runId != runId) {
+    return false;
+  }
+  final result = switch (action) {
+    TaskDetailFocusAction.pause when interval!.status == 'running' =>
+      await repository.pauseActiveInterval(),
+    TaskDetailFocusAction.resume when interval!.status == 'paused' =>
+      await repository.resumeActiveInterval(),
+    TaskDetailFocusAction.startInterval when interval!.status == 'ready' =>
+      await repository.startReadyInterval(),
+    _ => null,
+  };
+  if (result == null) return false;
+  result.getOrThrow();
+  return true;
+}
+
 final taskDetailViewModelProvider = NotifierProvider.autoDispose
     .family<TaskDetailViewModel, TaskDetailState, String>(
       TaskDetailViewModel.new,
@@ -25,14 +82,20 @@ class TaskDetailViewModel extends Notifier<TaskDetailState> {
   TaskDetailViewModel(this.taskId);
   final String taskId;
   late TaskRepository _tasks;
+  bool _focusActionBusy = false;
   @override
   TaskDetailState build() {
     _tasks = ref.watch(taskRepositoryProvider);
     final task = ref.watch(taskProvider(taskId));
+    final presets =
+        ref.watch(focusPresetsProvider).value ?? const <FocusPresetItem>[];
     final preset = selectedFocusPresetOrDefault(
-      ref.watch(focusPresetsProvider).value ?? const [],
+      presets,
       ref.watch(lastFocusPresetIdProvider),
     );
+    final run = ref.watch(activeFocusRunProvider).value;
+    final interval = ref.watch(activeFocusIntervalProvider).value;
+    final activePreset = selectedFocusPresetOrDefault(presets, run?.presetId);
     return (
       task: task,
       calendarLinked:
@@ -41,6 +104,13 @@ class TaskDetailViewModel extends Notifier<TaskDetailState> {
       focusEstimate: task.value == null
           ? null
           : targetFocusIntervalsForTask(task.value!, preset),
+      focusAction: taskDetailFocusAction(
+        taskId: taskId,
+        run: run,
+        interval: interval,
+        allowPause: activePreset?.allowPause ?? true,
+      ),
+      focusRunId: run?.taskId == taskId ? run?.id : null,
     );
   }
 
@@ -62,25 +132,30 @@ class TaskDetailViewModel extends Notifier<TaskDetailState> {
     return current();
   }
 
-  Future<void> startFocus() async {
+  Future<bool> startFocus(Future<bool> Function() confirmSwitch) async {
     final task = state.task.value;
-    if (task == null || task.isDeleted || task.isCompleted) return;
-    final estimate = state.focusEstimate;
-    (await ref
-            .read(focusRepositoryProvider)
-            .startRun(
-              StartFocusRunInput(
-                taskId: task.id,
-                projectId: task.projectId,
-                presetId: state.preset?.id,
-                targetWorkIntervals: estimate == null
-                    ? null
-                    : estimate < 1
-                    ? 1
-                    : estimate,
-              ),
-            ))
-        .getOrThrow();
+    if (task == null || task.isDeleted || task.isCompleted) return false;
+    return ref
+        .read(taskFocusLauncherProvider)
+        .open(task, preset: state.preset, confirmSwitch: confirmSwitch);
+  }
+
+  Future<bool> performFocusAction(
+    TaskDetailFocusAction action,
+    String runId,
+  ) async {
+    if (_focusActionBusy) return false;
+    _focusActionBusy = true;
+    try {
+      return await performTaskDetailFocusAction(
+        ref.read(focusRepositoryProvider),
+        taskId: taskId,
+        runId: runId,
+        action: action,
+      );
+    } finally {
+      _focusActionBusy = false;
+    }
   }
 }
 

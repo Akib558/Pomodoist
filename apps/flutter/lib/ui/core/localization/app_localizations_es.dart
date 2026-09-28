@@ -946,6 +946,14 @@ class AppLocalizationsEs extends AppLocalizations {
       'Mostrar u ocultar la barra lateral';
 
   @override
+  String get settingsShortcutsToggleTaskDetails =>
+      'Mostrar u ocultar detalles de la tarea';
+
+  @override
+  String get settingsShortcutsToggleTaskDetailsAlternate =>
+      'Detalles de la tarea (segundo atajo)';
+
+  @override
   String get settingsShortcutsGlobalQuickAdd =>
       'Añadir rápidamente de forma global';
 

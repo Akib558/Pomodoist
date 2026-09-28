@@ -1058,10 +1058,9 @@ void main() {
     await tester.pump();
 
     expect(fake.stopReasons, [StopFocusReason.stopped]);
-    expect(find.text('Focus stopped'), findsOneWidget);
   });
 
-  testWidgets('MiniFocusPlayer starts ready interval with feedback', (
+  testWidgets('MiniFocusPlayer starts ready interval', (
     tester,
   ) async {
     final now = DateTime.utc(2026, 4, 27, 10);
@@ -1075,7 +1074,6 @@ void main() {
     await tester.pump();
 
     expect(fake.startReadyCount, 1);
-    expect(find.text('Interval started'), findsOneWidget);
   });
 
   testWidgets(

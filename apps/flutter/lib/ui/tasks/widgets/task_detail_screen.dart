@@ -102,6 +102,61 @@ class TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     }
   }
 
+  Future<bool> _confirmFocusSwitch(String title) async {
+    if (!mounted) return false;
+    return await showDialog<bool>(
+              context: context,
+              animationStyle: AnimationStyle(
+                duration: AppMotion.duration(context, AppMotion.popup),
+                reverseDuration: AppMotion.duration(context, AppMotion.popup),
+                curve: AppMotion.curve,
+              ),
+              builder: (dialogContext) => AlertDialog(
+                title: Text(context.l10n.taskFocusSwitchTitle),
+                content: Text(context.l10n.taskFocusSwitchMessage(title)),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(dialogContext, false),
+                    child: Text(context.l10n.commonCancel),
+                  ),
+                  FilledButton(
+                    onPressed: () => Navigator.pop(dialogContext, true),
+                    child: Text(context.l10n.taskFocusSwitchConfirm),
+                  ),
+                ],
+              ),
+            ) ==
+            true &&
+        mounted;
+  }
+
+  Future<void> _runFocusAction(
+    TaskDetailFocusAction action,
+    String? runId,
+    String taskTitle,
+  ) async {
+    final viewModel = ref.read(
+      taskDetailViewModelProvider(widget.taskId).notifier,
+    );
+    try {
+      if (action == TaskDetailFocusAction.startFocus) {
+        await viewModel.startFocus(() => _confirmFocusSwitch(taskTitle));
+      } else {
+        if (runId == null) return;
+        await viewModel.performFocusAction(action, runId);
+      }
+    } catch (_) {
+      if (!mounted) return;
+      showActionFeedback(
+        context,
+        message: context.l10n.focusActionFailed,
+        icon: LucideIcons.circleAlert,
+        sound: ActionFeedbackSound.none,
+        haptic: AppHapticCue.none,
+      );
+    }
+  }
+
   Widget _header(BuildContext context, [TaskItem? item]) {
     final l10n = context.l10n;
     return Row(
@@ -172,6 +227,19 @@ class TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                 return _status(Text(l10n.taskNotFound));
               }
               final focusEstimate = viewState.focusEstimate;
+              final focusAction = viewState.focusAction;
+              final focusLabel = switch (focusAction) {
+                TaskDetailFocusAction.pause ||
+                TaskDetailFocusAction.pauseUnavailable => l10n.pause,
+                TaskDetailFocusAction.resume => l10n.resume,
+                TaskDetailFocusAction.startInterval => l10n.startInterval,
+                _ => l10n.startFocus,
+              };
+              final focusDisabled =
+                  focusAction == null ||
+                  focusAction == TaskDetailFocusAction.pauseUnavailable ||
+                  (item.isCompleted &&
+                      focusAction == TaskDetailFocusAction.startFocus);
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -211,30 +279,32 @@ class TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                               spacing: 8,
                               runSpacing: 8,
                               children: [
-                                ShadButton(
-                                  onPressed: item.isCompleted
-                                      ? null
-                                      : () async {
-                                          final router = GoRouter.of(context);
-                                          await viewModel.startFocus();
-                                          if (!context.mounted) {
-                                            return;
-                                          }
-                                          showActionFeedback(
-                                            context,
-                                            message: l10n.focusStarted,
-                                            icon: LucideIcons.circlePlay,
-                                            haptic: AppHapticCue.none,
-                                            action: SnackBarAction(
-                                              label: l10n.commonOpen,
-                                              onPressed: () =>
-                                                  router.go('/focus'),
-                                            ),
-                                          );
-                                        },
-                                  enabled: !(item.isCompleted),
-                                  leading: const Icon(LucideIcons.play),
-                                  child: Text(l10n.startFocus),
+                                Tooltip(
+                                  message:
+                                      focusAction ==
+                                          TaskDetailFocusAction.pauseUnavailable
+                                      ? l10n.focusPauseUnavailable
+                                      : focusLabel,
+                                  child: ShadButton(
+                                    onPressed: focusDisabled
+                                        ? null
+                                        : () => _runFocusAction(
+                                            focusAction,
+                                            viewState.focusRunId,
+                                            item.content,
+                                          ),
+                                    enabled: !focusDisabled,
+                                    leading: Icon(
+                                      focusAction ==
+                                                  TaskDetailFocusAction.pause ||
+                                              focusAction ==
+                                                  TaskDetailFocusAction
+                                                      .pauseUnavailable
+                                          ? LucideIcons.pause
+                                          : LucideIcons.play,
+                                    ),
+                                    child: Text(focusLabel),
+                                  ),
                                 ),
                                 ShadButton.outline(
                                   onPressed: () async {

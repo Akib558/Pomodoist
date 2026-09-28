@@ -213,7 +213,7 @@ ProjectTreeData projectTreeData(
     visibleKeys.add(key);
     if (key == rootKey ||
         searchExpanded.contains(key) ||
-        (expansion[key] ?? depth <= 1)) {
+        (expansion[key] ?? (catalog || depth <= 1))) {
       expanded.add(key);
       for (final child in nodes[key]!.children.reversed) {
         stack.add((child, depth + 1));

@@ -420,6 +420,8 @@
   "settingsShortcutsTitle": "Keyboard shortcuts",
   "settingsShortcutsSubtitle": "Customize commands available from a hardware keyboard.",
   "settingsShortcutsToggleSidebar": "Toggle sidebar",
+  "settingsShortcutsToggleTaskDetails": "Toggle task details",
+  "settingsShortcutsToggleTaskDetailsAlternate": "Toggle task details (second shortcut)",
   "settingsShortcutsGlobalQuickAdd": "Global quick add",
   "settingsShortcutsGlobalQuickAddSubtitle": "Works even when Pomodoist is not active.",
   "settingsShortcutsRecordTitle": "Press a shortcut",

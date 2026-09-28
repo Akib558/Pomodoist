@@ -1,5 +1,7 @@
 enum AppShortcutCommand {
   toggleSidebar,
+  toggleTaskDetails,
+  toggleTaskDetailsAlternate,
   quickAdd,
   browse,
   search,

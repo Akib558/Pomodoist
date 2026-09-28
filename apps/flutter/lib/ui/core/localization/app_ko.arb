@@ -413,6 +413,8 @@
   "settingsShortcutsTitle": "키보드 단축키",
   "settingsShortcutsSubtitle": "하드웨어 키보드에서 사용할 명령을 사용자화하세요.",
   "settingsShortcutsToggleSidebar": "사이드바 전환",
+  "settingsShortcutsToggleTaskDetails": "작업 세부 정보 표시 또는 숨기기",
+  "settingsShortcutsToggleTaskDetailsAlternate": "작업 세부 정보 (두 번째 단축키)",
   "settingsShortcutsGlobalQuickAdd": "전역 빠른 추가",
   "settingsShortcutsGlobalQuickAddSubtitle": "Pomodoist가 활성 상태가 아니어도 작동합니다.",
   "settingsShortcutsRecordTitle": "단축키를 누르세요",

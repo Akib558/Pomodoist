@@ -1759,6 +1759,18 @@ abstract class AppLocalizations {
   /// **'Toggle sidebar'**
   String get settingsShortcutsToggleSidebar;
 
+  /// No description provided for @settingsShortcutsToggleTaskDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle task details'**
+  String get settingsShortcutsToggleTaskDetails;
+
+  /// No description provided for @settingsShortcutsToggleTaskDetailsAlternate.
+  ///
+  /// In en, this message translates to:
+  /// **'Toggle task details (second shortcut)'**
+  String get settingsShortcutsToggleTaskDetailsAlternate;
+
   /// No description provided for @settingsShortcutsGlobalQuickAdd.
   ///
   /// In en, this message translates to:

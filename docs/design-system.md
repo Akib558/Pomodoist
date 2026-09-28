@@ -202,6 +202,11 @@ Keep the close/back and overflow actions pinned at the top of task details,
 inside the safe area, with task content scrolling below them.
 When compact details replace the shell header, preserve the inherited top
 MediaQuery padding so their SafeArea still clears the system status bar.
+Command-Option-B and Command-Shift-B (Control-Alt-B and Control-Shift-B on
+Windows and Linux) both toggle the last opened task details. Both bindings are
+configurable. Before any task is opened, or after that task is deleted, they
+do nothing. Reuse the existing full-screen details layout below the shell
+breakpoint.
 
 ### Calendar planning view
 
@@ -722,14 +727,19 @@ independently of filtering and disclosure. Order projects before tasks, retainin
 each entity type's existing sibling order.
 
 Use measured, text-scaled cards, theme surfaces and 1 px border connectors;
-mirror geometry in RTL. Keep controls at least 44 px and title tooltips available.
+mirror geometry in RTL. Anchor the vertical scrollbar to the right edge of the
+map viewport, outside the horizontally scrolling canvas; avoid duplicate
+automatic scrollbars. Keep controls at least 44 px and title tooltips available.
 Cards use existing details, menus, completion/Undo and Focus actions. New tasks
 and subprojects use the existing composers; adding a subtask uses the existing
 subtask editor logic. Explicit creation and successful drops reveal the parent.
 
 On Map, task title activation opens a rename dialog for editable tasks; read-only
 titles open details. Keep Open in the task menu for detail navigation and preserve
-bulk selection on title activation. Task and project title regions have no hover
+bulk selection on title activation. Clicking the rest of a task card opens its
+detail panel (or toggles selection in bulk mode); nested buttons retain their
+own actions. Limit the rename hit area to the title, not its surrounding empty
+space. Task and project title regions have no hover
 fill; retain rounded keyboard focus feedback. Rename uses the existing title
 editor, keeps failed drafts available for retry, and disables dismissal while
 saving. Project title navigation and the card's drag behavior remain unchanged.
@@ -749,7 +759,9 @@ Its view preference and map expansion scope are local and
 independent of the view inside individual projects. A display-only Projects root
 connects the project forest; it is never a stored project or a task destination.
 Exclude Inbox. Keep empty projects and promote projects whose parent is excluded
-by the active/archive filter. Root and first-level projects start expanded.
+by the active/archive filter. All catalog project and task branches start
+expanded so nested subtasks are visible on entry. Explicit saved collapse
+choices still take precedence; completed-task filtering is unchanged.
 
 Catalog diagrams search project names and task titles case-insensitively. Project
 matches retain their contents; task matches retain their ancestor paths. Reveal
@@ -798,6 +810,10 @@ existing active or paused session for the same task without restarting it. Ask
 before replacing a different session, revalidate after confirmation, and preserve
 it on cancellation. Share the in-flight guard across rows, report failures, and
 open Focus after a successful action. Completion remains on the checkbox.
+The task-details Focus action follows its linked interval: Start focus, Pause,
+Resume, or Start interval. Keep the details open and honor preset pause rules.
+Clicking the mini Focus player's non-control surface opens the Focus screen;
+its pause and stop controls keep their own actions.
 
 ### Minimal Focus timer
 
@@ -841,6 +857,10 @@ Keep preset selection in the header and retain existing strict-mode constraints,
 localized feedback, accessible timer summaries and Reduce Motion behavior.
 
 ### Focus completion actions
+
+Starting or stopping Focus and starting or completing an interval do not show
+bottom success snackbars on any surface. Preserve action errors, timer sounds,
+system notifications, and the Focus completion screen.
 
 When the current task is open and a next scheduled task is available, completing
 it and starting the next task is the primary action. Completing only the current
@@ -1152,6 +1172,10 @@ and comments. Center it within the Browse content width.
   the side with more free space when opened, in overlay coordinates so interface
   zoom is respected. Bound scrolling to that side, leaving room for the menu
   border, padding, anchor gap and safe-area/keyboard insets.
+- Pointer context menus use the same side selection at the click position and
+  exclude bottom panels from the available space. Near the bottom, expand upward
+  instead of shrinking to the space below the pointer. Button and keyboard
+  activation of the same menu also recompute placement when opened.
 - Menubar popovers use the shared automatic anchor so actions remain inside
   the viewport near window edges. `ShadAnchorAuto` uses different follower
   alignment semantics from `CompositedTransformFollower`: bottom followers place

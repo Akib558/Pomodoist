@@ -350,6 +350,8 @@
   "settingsShortcutsTitle": "Atajos de teclado",
   "settingsShortcutsSubtitle": "Personaliza los comandos disponibles con un teclado físico.",
   "settingsShortcutsToggleSidebar": "Mostrar u ocultar la barra lateral",
+  "settingsShortcutsToggleTaskDetails": "Mostrar u ocultar detalles de la tarea",
+  "settingsShortcutsToggleTaskDetailsAlternate": "Detalles de la tarea (segundo atajo)",
   "settingsShortcutsGlobalQuickAdd": "Añadir rápidamente de forma global",
   "settingsShortcutsGlobalQuickAddSubtitle": "Funciona incluso cuando Pomodoist no está activo.",
   "settingsShortcutsRecordTitle": "Pulsa un atajo",

@@ -937,6 +937,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsShortcutsToggleSidebar => 'Toggle sidebar';
 
   @override
+  String get settingsShortcutsToggleTaskDetails => 'Toggle task details';
+
+  @override
+  String get settingsShortcutsToggleTaskDetailsAlternate =>
+      'Toggle task details (second shortcut)';
+
+  @override
   String get settingsShortcutsGlobalQuickAdd => 'Global quick add';
 
   @override

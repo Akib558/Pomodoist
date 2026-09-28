@@ -350,6 +350,8 @@
   "settingsShortcutsTitle": "Tastaturkurzbefehle",
   "settingsShortcutsSubtitle": "Passe Befehle für eine Hardwaretastatur an.",
   "settingsShortcutsToggleSidebar": "Seitenleiste ein-/ausblenden",
+  "settingsShortcutsToggleTaskDetails": "Aufgabendetails ein-/ausblenden",
+  "settingsShortcutsToggleTaskDetailsAlternate": "Aufgabendetails (zweites Kürzel)",
   "settingsShortcutsGlobalQuickAdd": "Globales schnelles Hinzufügen",
   "settingsShortcutsGlobalQuickAddSubtitle": "Funktioniert auch, wenn Pomodoist nicht aktiv ist.",
   "settingsShortcutsRecordTitle": "Tastenkürzel drücken",

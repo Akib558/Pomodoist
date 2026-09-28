@@ -350,6 +350,8 @@
   "settingsShortcutsTitle": "Быстрые команды",
   "settingsShortcutsSubtitle": "Настройте команды для аппаратной клавиатуры.",
   "settingsShortcutsToggleSidebar": "Показать или скрыть боковую панель",
+  "settingsShortcutsToggleTaskDetails": "Показать или скрыть карточку задачи",
+  "settingsShortcutsToggleTaskDetailsAlternate": "Карточка задачи (второе сочетание)",
   "settingsShortcutsGlobalQuickAdd": "Глобальное быстрое добавление",
   "settingsShortcutsGlobalQuickAddSubtitle": "Работает, даже когда Pomodoist неактивен.",
   "settingsShortcutsRecordTitle": "Нажмите сочетание клавиш",

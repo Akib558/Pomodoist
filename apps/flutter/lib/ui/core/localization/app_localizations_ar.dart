@@ -928,6 +928,14 @@ class AppLocalizationsAr extends AppLocalizations {
   String get settingsShortcutsToggleSidebar => 'إظهار الشريط الجانبي أو إخفاؤه';
 
   @override
+  String get settingsShortcutsToggleTaskDetails =>
+      'إظهار تفاصيل المهمة أو إخفاؤها';
+
+  @override
+  String get settingsShortcutsToggleTaskDetailsAlternate =>
+      'تفاصيل المهمة (الاختصار الثاني)';
+
+  @override
   String get settingsShortcutsGlobalQuickAdd => 'إضافة سريعة عامة';
 
   @override

@@ -946,6 +946,14 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsShortcutsToggleSidebar => 'Seitenleiste ein-/ausblenden';
 
   @override
+  String get settingsShortcutsToggleTaskDetails =>
+      'Aufgabendetails ein-/ausblenden';
+
+  @override
+  String get settingsShortcutsToggleTaskDetailsAlternate =>
+      'Aufgabendetails (zweites Kürzel)';
+
+  @override
   String get settingsShortcutsGlobalQuickAdd => 'Globales schnelles Hinzufügen';
 
   @override

@@ -523,7 +523,6 @@ void main() {
       await tester.tap(find.widgetWithText(ShadButton, 'Start focus'));
       await _pumpFrames(tester);
       expect(harness.focusRepository.startInputs.single.taskId, 'task-1');
-      expect(find.text('Focus started'), findsOneWidget);
 
       await tester.tap(find.widgetWithText(ShadButton, 'Mark complete'));
       await _pumpFrames(tester);
@@ -3165,11 +3164,9 @@ void main() {
     expect(find.text('Log distraction'), findsNothing);
     await tester.tap(find.text('Complete interval'));
     await tester.pump();
-    expect(find.text('Interval completed'), findsOneWidget);
     await _tapFullFocusMenuItem(tester, 'Skip');
     await _tapFullFocusMenuItem(tester, 'Stop');
     await tester.pump();
-    expect(find.text('Focus stopped'), findsOneWidget);
 
     expect(focusRepository.pauseCount, 1);
     expect(focusRepository.completeCount, 1);

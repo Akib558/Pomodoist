@@ -343,21 +343,21 @@ class TaskListItem extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Expanded(
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(8),
-                  hoverColor: Colors.transparent,
-                  mouseCursor: task.canEdit
-                      ? SystemMouseCursors.text
-                      : SystemMouseCursors.click,
-                  onTap: () => selection?.active == true
-                      ? selection!.toggle(task.id)
-                      : task.canEdit
-                      ? unawaited(showTaskTitleDialog(context, task))
-                      : openTaskDetails(context, task.id),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-                    child: Align(
-                      alignment: AlignmentDirectional.centerStart,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                  child: Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      hoverColor: Colors.transparent,
+                      mouseCursor: task.canEdit
+                          ? SystemMouseCursors.text
+                          : SystemMouseCursors.click,
+                      onTap: () => selection?.active == true
+                          ? selection!.toggle(task.id)
+                          : task.canEdit
+                          ? unawaited(showTaskTitleDialog(context, task))
+                          : openTaskDetails(context, task.id),
                       child: Tooltip(
                         message: task.content,
                         child: Text(

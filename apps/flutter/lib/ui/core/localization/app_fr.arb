@@ -350,6 +350,8 @@
   "settingsShortcutsTitle": "Raccourcis clavier",
   "settingsShortcutsSubtitle": "Personnalisez les commandes disponibles avec un clavier physique.",
   "settingsShortcutsToggleSidebar": "Afficher ou masquer la barre latérale",
+  "settingsShortcutsToggleTaskDetails": "Afficher ou masquer les détails de la tâche",
+  "settingsShortcutsToggleTaskDetailsAlternate": "Détails de la tâche (deuxième raccourci)",
   "settingsShortcutsGlobalQuickAdd": "Ajout rapide global",
   "settingsShortcutsGlobalQuickAddSubtitle": "Fonctionne même lorsque Pomodoist n’est pas actif.",
   "settingsShortcutsRecordTitle": "Appuyez sur un raccourci",

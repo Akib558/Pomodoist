@@ -256,15 +256,6 @@ class _FocusScreenState extends ConsumerState<FocusScreen> {
       }
       return;
     }
-    if (!mounted) {
-      return;
-    }
-    showActionFeedback(
-      context,
-      message: context.l10n.focusStarted,
-      icon: LucideIcons.circlePlay,
-      haptic: AppHapticCue.none,
-    );
   }
 
   void _selectPreset(String id) => unawaited(

@@ -896,6 +896,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsShortcutsToggleSidebar => 'サイドバーを切り替え';
 
   @override
+  String get settingsShortcutsToggleTaskDetails => 'タスクの詳細を表示・非表示';
+
+  @override
+  String get settingsShortcutsToggleTaskDetailsAlternate =>
+      'タスクの詳細（2つ目のショートカット）';
+
+  @override
   String get settingsShortcutsGlobalQuickAdd => 'グローバルクイック追加';
 
   @override

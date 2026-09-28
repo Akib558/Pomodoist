@@ -13,6 +13,10 @@ extension AppL10nContext on BuildContext {
 String appShortcutLabel(AppLocalizations l10n, AppShortcutCommand command) =>
     switch (command) {
       AppShortcutCommand.toggleSidebar => l10n.settingsShortcutsToggleSidebar,
+      AppShortcutCommand.toggleTaskDetails =>
+        l10n.settingsShortcutsToggleTaskDetails,
+      AppShortcutCommand.toggleTaskDetailsAlternate =>
+        l10n.settingsShortcutsToggleTaskDetailsAlternate,
       AppShortcutCommand.quickAdd => l10n.addTask,
       AppShortcutCommand.browse => l10n.navBrowse,
       AppShortcutCommand.search => l10n.navSearch,
