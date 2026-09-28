@@ -270,7 +270,7 @@ void main() {
     expect(find.byKey(const Key('agenda-schedule-label')), findsOneWidget);
     expect(
       find.byKey(const ValueKey('agenda-overflow-action-task')),
-      findsOneWidget,
+      findsNothing,
     );
   });
 

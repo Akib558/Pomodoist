@@ -199,10 +199,10 @@ void main() {
     const cardKey = ValueKey('upcoming-day-card-2030-01-17');
     final card = find.byKey(cardKey);
     expect(card, findsOneWidget);
-    expect(find.ancestor(of: laterHeading, matching: card), findsNothing);
+    expect(find.ancestor(of: laterHeading, matching: card), findsOneWidget);
     expect(
       tester.getBottomLeft(laterHeading).dy,
-      lessThan(tester.getTopLeft(card).dy),
+      lessThan(tester.getTopLeft(find.text('Поздняя задача')).dy),
     );
   });
 

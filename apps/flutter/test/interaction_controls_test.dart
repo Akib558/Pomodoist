@@ -1107,8 +1107,24 @@ void main() {
     await tester.tap(find.text('Labels'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('coding'));
-    await tester.tap(find.text('Done'));
+    await tester.pump();
+    expect(
+      tester
+          .widget<FilledButton>(
+            find.widgetWithText(FilledButton, 'Add to tasks'),
+          )
+          .onPressed,
+      isNotNull,
+    );
+    await tester.tap(find.text('Add to tasks'));
     await tester.pumpAndSettle();
+    await _pumpFrames(tester);
+    expect(
+      harness.taskRepository.updatePatches.where(
+        (patch) => patch.labelNames != null,
+      ),
+      hasLength(2),
+    );
     expect(
       harness.taskRepository.updatePatches
           .where((patch) => patch.labelNames != null)
@@ -1207,7 +1223,7 @@ void main() {
   });
 
   testWidgets(
-    'touch long press does not open actions or show a separate handle',
+    'touch long press opens task actions without a drag handle',
     (tester) async {
       debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
       try {
@@ -1220,8 +1236,8 @@ void main() {
         await tester.longPress(find.text('Today task'));
         await tester.pumpAndSettle();
 
-        expect(find.text('Select'), findsNothing);
-        expect(find.text('Schedule'), findsNothing);
+        expect(find.text('Select'), findsOneWidget);
+        expect(find.text('Schedule'), findsOneWidget);
       } finally {
         debugDefaultTargetPlatformOverride = null;
       }
@@ -1294,9 +1310,11 @@ void main() {
     ]) {
       router.go(target.$1);
       await _pumpFrames(tester);
+      await tester.pumpAndSettle();
       expect(find.text(target.$2), findsOneWidget, reason: target.$1);
       await _openTaskContextMenu(tester, target.$2);
       expect(find.text('Select'), findsOneWidget, reason: target.$1);
+      await tester.ensureVisible(find.text('Select').last);
       await tester.tap(find.text('Select').last);
       await tester.pumpAndSettle();
       expect(
@@ -1446,6 +1464,7 @@ void main() {
     router.go('/task/parent-1');
     await _pumpFrames(tester);
     await _openTaskContextMenu(tester, 'Timed child');
+    await tester.ensureVisible(find.text('Tomorrow').last);
     await tester.tap(find.text('Tomorrow').last);
     await _pumpFrames(tester);
 
@@ -1489,248 +1508,6 @@ void main() {
       );
     },
   );
-
-  testWidgets('dragging a task onto another task makes it a subtask', (
-    tester,
-  ) async {
-    final today = _todaySchedule();
-    final harness = await _pumpApp(
-      tester,
-      tasks: [
-        _task('target-1', 'Target task', schedule: today, orderKey: '1'),
-        _task('dragged-1', 'Dragged task', schedule: today, orderKey: '2'),
-      ],
-    );
-
-    await _dragTaskOnto(tester, 'Dragged task', 'Target task');
-
-    expect(harness.taskRepository.movedParentIds.last, 'target-1');
-    expect(harness.taskRepository.movedProjectIds.last, inboxProjectId);
-  });
-
-  testWidgets('mobile drag to empty list space makes a subtask a root task', (
-    tester,
-  ) async {
-    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
-    try {
-      final today = _todaySchedule();
-      final harness = await _pumpApp(
-        tester,
-        tasks: [
-          _task('parent-1', 'Parent task', schedule: today, orderKey: '1'),
-          _task(
-            'child-1',
-            'Child task',
-            schedule: today,
-            parentId: 'parent-1',
-            orderKey: '2',
-          ),
-        ],
-      );
-
-      await _dragTaskToRootDropZone(tester, 'Child task');
-
-      final movedTask = await harness.taskRepository.watchTask('child-1').first;
-      expect(movedTask?.parentId, isNull);
-      expect(movedTask?.orderKey, isNot('2'));
-    } finally {
-      debugDefaultTargetPlatformOverride = null;
-    }
-  });
-
-  testWidgets(
-    'mobile drag to task gap makes a subtask root in normal list order',
-    (tester) async {
-      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
-      try {
-        final today = _todaySchedule();
-        final harness = await _pumpApp(
-          tester,
-          tasks: [
-            _task(
-              'parent-1',
-              'Parent task',
-              schedule: today,
-              orderKey: '00000000000000000001',
-            ),
-            _task(
-              'child-1',
-              'Child task',
-              schedule: today,
-              parentId: 'parent-1',
-              orderKey: '00000000000000000002',
-            ),
-            _task(
-              'later-root',
-              'Later root',
-              schedule: today,
-              orderKey: '00000000000000000003',
-            ),
-          ],
-        );
-        final gap = find.byKey(const Key('task-root-gap-0'));
-
-        expect(gap, findsOneWidget);
-        expect(tester.getSize(gap).height, 12);
-
-        final gesture = await tester.startGesture(
-          tester.getCenter(_taskDragSource('Child task')),
-        );
-        await tester.pump(const Duration(milliseconds: 600));
-        await gesture.moveTo(tester.getCenter(gap));
-        await tester.pump();
-
-        expect(tester.getSize(gap).height, 12);
-        await tester.pump(const Duration(milliseconds: 80));
-        expect(tester.getSize(gap).height, inExclusiveRange(12, 32));
-        await tester.pump(const Duration(milliseconds: 80));
-        expect(tester.getSize(gap).height, 32);
-        expect(find.text('Make parent task'), findsOneWidget);
-
-        await gesture.up();
-        await tester.pumpAndSettle();
-
-        final movedTask = await harness.taskRepository
-            .watchTask('child-1')
-            .first;
-        expect(movedTask?.parentId, isNull);
-        expect(
-          movedTask!.orderKey.compareTo('00000000000000000003'),
-          greaterThan(0),
-        );
-      } finally {
-        debugDefaultTargetPlatformOverride = null;
-      }
-    },
-  );
-
-  testWidgets('mobile task gap ignores a task that is already a root', (
-    tester,
-  ) async {
-    debugDefaultTargetPlatformOverride = TargetPlatform.android;
-    try {
-      final harness = await _pumpApp(
-        tester,
-        tasks: [
-          _task(
-            'root-1',
-            'First root',
-            schedule: _todaySchedule(),
-            orderKey: '1',
-          ),
-          _task(
-            'root-2',
-            'Second root',
-            schedule: _todaySchedule(),
-            orderKey: '2',
-          ),
-        ],
-      );
-
-      await _dragTaskToRootGap(tester, 'First root');
-
-      expect(harness.taskRepository.movedParentIds, isEmpty);
-    } finally {
-      debugDefaultTargetPlatformOverride = null;
-    }
-  });
-
-  testWidgets('mobile root drop ignores a task that is already a root', (
-    tester,
-  ) async {
-    debugDefaultTargetPlatformOverride = TargetPlatform.android;
-    try {
-      final harness = await _pumpApp(
-        tester,
-        tasks: [
-          _task(
-            'root-1',
-            'Root task',
-            schedule: _todaySchedule(),
-            orderKey: '1',
-          ),
-        ],
-      );
-
-      await _dragTaskToRootDropZone(tester, 'Root task');
-
-      expect(harness.taskRepository.movedParentIds, isEmpty);
-    } finally {
-      debugDefaultTargetPlatformOverride = null;
-    }
-  });
-
-  testWidgets('empty list drop zone is limited to mobile platforms', (
-    tester,
-  ) async {
-    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
-    try {
-      await _pumpApp(
-        tester,
-        tasks: [
-          _task('mobile-root', 'Mobile root', schedule: _todaySchedule()),
-          _task('mobile-root-2', 'Mobile root 2', schedule: _todaySchedule()),
-        ],
-      );
-      expect(find.byKey(const Key('task-root-drop-zone')), findsOneWidget);
-      expect(find.byKey(const Key('task-root-gap-0')), findsOneWidget);
-
-      debugDefaultTargetPlatformOverride = TargetPlatform.macOS;
-      await _pumpApp(
-        tester,
-        tasks: [
-          _task('desktop-root', 'Desktop root', schedule: _todaySchedule()),
-          _task('desktop-root-2', 'Desktop root 2', schedule: _todaySchedule()),
-        ],
-      );
-      expect(find.byKey(const Key('task-root-drop-zone')), findsNothing);
-      expect(find.byKey(const Key('task-root-gap-0')), findsNothing);
-    } finally {
-      debugDefaultTargetPlatformOverride = null;
-    }
-  });
-
-  testWidgets('mobile root drop reports move errors', (tester) async {
-    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
-    try {
-      final today = _todaySchedule();
-      await _pumpApp(
-        tester,
-        taskMoveError: StateError('move failed'),
-        tasks: [
-          _task('parent-1', 'Parent task', schedule: today),
-          _task('child-1', 'Child task', schedule: today, parentId: 'parent-1'),
-        ],
-      );
-
-      await _dragTaskToRootDropZone(tester, 'Child task');
-
-      expect(find.text('1 task could not be updated'), findsOneWidget);
-    } finally {
-      debugDefaultTargetPlatformOverride = null;
-    }
-  });
-
-  testWidgets('mobile task gap reports move errors', (tester) async {
-    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
-    try {
-      final today = _todaySchedule();
-      await _pumpApp(
-        tester,
-        taskMoveError: StateError('move failed'),
-        tasks: [
-          _task('parent-1', 'Parent task', schedule: today),
-          _task('child-1', 'Child task', schedule: today, parentId: 'parent-1'),
-        ],
-      );
-
-      await _dragTaskToRootGap(tester, 'Child task');
-
-      expect(find.text('1 task could not be updated'), findsOneWidget);
-    } finally {
-      debugDefaultTargetPlatformOverride = null;
-    }
-  });
 
   testWidgets('macOS mouse drag on task text makes it a subtask', (
     tester,
@@ -1899,31 +1676,36 @@ void main() {
   testWidgets('priority matrix drag updates priority without moving task', (
     tester,
   ) async {
-    late GoRouter router;
-    final schedule = _timedSchedule(19);
-    final harness = await _pumpApp(
-      tester,
-      onRouter: (value) => router = value,
-      tasks: [
-        _task(
-          'dragged-p1',
-          'Matrix drag task',
-          priority: 1,
-          schedule: schedule,
-        ),
-      ],
-    );
+    debugDefaultTargetPlatformOverride = TargetPlatform.macOS;
+    try {
+      late GoRouter router;
+      final schedule = _timedSchedule(19);
+      final harness = await _pumpApp(
+        tester,
+        onRouter: (value) => router = value,
+        tasks: [
+          _task(
+            'dragged-p1',
+            'Matrix drag task',
+            priority: 1,
+            schedule: schedule,
+          ),
+        ],
+      );
 
-    router.go('/priority-matrix');
-    await _pumpFrames(tester);
+      router.go('/priority-matrix');
+      await _pumpFrames(tester);
 
-    await _dragTaskToPriority(tester, 'Matrix drag task', 2);
+      await _dragTaskToPriority(tester, 'Matrix drag task', 2);
 
-    expect(harness.taskRepository.updatePatches.single.priority, 2);
-    expect(harness.taskRepository.updatePatches.single.schedule, isNull);
-    expect(harness.taskRepository.updatePatches.single.clearSchedule, isFalse);
-    expect(harness.taskRepository.movedParentIds, isEmpty);
-    expect(harness.taskRepository.movedProjectIds, isEmpty);
+      expect(harness.taskRepository.updatePatches.single.priority, 2);
+      expect(harness.taskRepository.updatePatches.single.schedule, isNull);
+      expect(harness.taskRepository.updatePatches.single.clearSchedule, isFalse);
+      expect(harness.taskRepository.movedParentIds, isEmpty);
+      expect(harness.taskRepository.movedProjectIds, isEmpty);
+    } finally {
+      debugDefaultTargetPlatformOverride = null;
+    }
   });
 
   testWidgets('priority matrix quick add creates task with quadrant priority', (
@@ -4060,42 +3842,13 @@ Future<void> _dragTaskOnto(
   WidgetTester tester,
   String draggedTitle,
   String targetTitle, {
-  Duration holdDuration = const Duration(milliseconds: 600),
-  PointerDeviceKind kind = PointerDeviceKind.touch,
+  Duration holdDuration = Duration.zero,
+  PointerDeviceKind kind = PointerDeviceKind.mouse,
 }) async {
   final source = tester.getCenter(_taskDragSource(draggedTitle));
   final target = tester.getCenter(find.text(targetTitle).first);
   final gesture = await tester.startGesture(source, kind: kind);
   await tester.pump(holdDuration);
-  await gesture.moveTo(target);
-  await tester.pump();
-  await gesture.up();
-  await tester.pumpAndSettle();
-}
-
-Future<void> _dragTaskToRootDropZone(
-  WidgetTester tester,
-  String draggedTitle,
-) async {
-  final source = tester.getCenter(_taskDragSource(draggedTitle));
-  final target = tester.getCenter(find.byKey(const Key('task-root-drop-zone')));
-  final gesture = await tester.startGesture(source);
-  await tester.pump(const Duration(milliseconds: 600));
-  await gesture.moveTo(target);
-  await tester.pump();
-  await gesture.up();
-  await tester.pumpAndSettle();
-}
-
-Future<void> _dragTaskToRootGap(
-  WidgetTester tester,
-  String draggedTitle, {
-  int gapIndex = 0,
-}) async {
-  final source = tester.getCenter(_taskDragSource(draggedTitle));
-  final target = tester.getCenter(find.byKey(Key('task-root-gap-$gapIndex')));
-  final gesture = await tester.startGesture(source);
-  await tester.pump(const Duration(milliseconds: 600));
   await gesture.moveTo(target);
   await tester.pump();
   await gesture.up();
@@ -4124,6 +3877,7 @@ Finder _taskDragSource(String title) {
     of: find.text(title).first,
     matching: find.byType(InkWell),
   );
+  if (row.evaluate().isEmpty) return find.text(title).first;
   final handle = find.descendant(
     of: row.first,
     matching: find.byIcon(LucideIcons.gripVertical),
