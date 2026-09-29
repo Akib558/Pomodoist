@@ -14,3 +14,12 @@ and official client binaries remain available under `AGPL-3.0-only`.
 Run root `make check` for architecture boundaries, Flutter analysis and unit tests.
 Direct Flutter commands run from `apps/flutter`. Keep dependencies directed as
 described in the [repository architecture](docs/architecture/repository.md).
+
+Local macOS staging targets (`macos-debug-staging`, `macos-profile-staging`,
+and `macos-release-staging`) opt into the in-process test StoreKit catalog,
+matching staging TestFlight. Purchases in this mode are simulated and do not
+validate Apple networking, real payments, or server entitlement verification.
+Pro is not automatically unlocked. To intentionally query the staging app's
+App Store catalog, pass `MACOS_STAGING_STOREKIT_DEFINES=` to Make. Production
+continues to use the remote App Store catalog. Build configuration changes
+require rebuilding the app; pushing source does not update an existing binary.

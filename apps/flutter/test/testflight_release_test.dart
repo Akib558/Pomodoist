@@ -4,6 +4,51 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  for (final mode in ['debug', 'profile', 'release']) {
+    test('local macOS $mode staging opts into the test store', () async {
+      if (Platform.isWindows) return;
+      final result = await Process.run('make', [
+        '-n',
+        'macos-$mode-staging',
+        'MACOS_STAGING_CONFIG=apps/flutter/pubspec.yaml',
+      ], workingDirectory: _repoRoot);
+      expect(result.exitCode, 0, reason: result.stderr.toString());
+      final output = result.stdout.toString();
+      expect(output, contains('--flavor "staging"'));
+      expect(output, contains('--dart-define=POMODOIST_LOCAL_STOREKIT=1'));
+      expect(output, isNot(contains('POMODOIST_DEV_UNLOCK=1')));
+    });
+  }
+
+  test('local macOS staging can explicitly use the remote store', () async {
+    if (Platform.isWindows) return;
+    final result = await Process.run('make', [
+      '-n',
+      'macos-release-staging',
+      'MACOS_STAGING_CONFIG=apps/flutter/pubspec.yaml',
+      'MACOS_STAGING_STOREKIT_DEFINES=',
+    ], workingDirectory: _repoRoot);
+    expect(result.exitCode, 0, reason: result.stderr.toString());
+    expect(
+      result.stdout.toString(),
+      isNot(contains('POMODOIST_LOCAL_STOREKIT')),
+    );
+  });
+
+  test('local macOS production keeps the remote store', () async {
+    if (Platform.isWindows) return;
+    final result = await Process.run('make', [
+      '-n',
+      'macos-release-production',
+      'MACOS_PRODUCTION_CONFIG=apps/flutter/pubspec.yaml',
+    ], workingDirectory: _repoRoot);
+    expect(result.exitCode, 0, reason: result.stderr.toString());
+    expect(
+      result.stdout.toString(),
+      isNot(contains('POMODOIST_LOCAL_STOREKIT')),
+    );
+  });
+
   test(
     'TestFlight preflight accepts matching production or staging config',
     () async {

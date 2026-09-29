@@ -25,9 +25,9 @@ const pomodoistLocalStoreKit =
 /// `POMODOIST_LOCAL_STOREKIT=1` is the only thing that selects the local store.
 /// It is the explicit opt-in, used by local runs and by uploads that want a
 /// hermetic store. `POMODOIST_DEV_UNLOCK=1` unlocks the dev-only purchase
-/// surfaces but never redirects StoreKit, so a staging TestFlight upload — which
-/// sets the dev unlock and nothing else — still initialises the remote store
-/// unless `POMODOIST_LOCAL_STOREKIT=1` is passed as well.
+/// surfaces but never redirects StoreKit. Staging TestFlight and local macOS
+/// staging targets explicitly pass `POMODOIST_LOCAL_STOREKIT=1`; the flavor
+/// alone never redirects StoreKit.
 ///
 /// [devUnlock] and [flavor] stay in the signature so a call site can state the
 /// define combination a build carries; neither changes the result.

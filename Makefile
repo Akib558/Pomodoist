@@ -167,6 +167,10 @@ MACOS_DEVELOPMENT_CONFIG ?= $(LOCAL_CONFIG)
 MACOS_DEVELOPMENT_TARGET ?= $(LOCAL_TARGET)
 MACOS_STAGING_CONFIG     ?= $(STAGING_CONFIG)
 MACOS_STAGING_TARGET     ?= $(STAGING_TARGET)
+# Local staging uses the test store, as staging TestFlight does. Set this to
+# empty only when intentionally querying the staging app's App Store catalog.
+MACOS_STAGING_STOREKIT_DEFINES ?= --dart-define=POMODOIST_LOCAL_STOREKIT=1
+macos_storekit_defines = $(if $(filter $(FLAVOR_STAGING),$1),$(MACOS_STAGING_STOREKIT_DEFINES),)
 MACOS_PRODUCTION_CONFIG  ?= $(TESTFLIGHT_CONFIG)
 MACOS_PRODUCTION_TARGET  ?= $(PRODUCTION_TARGET)
 
@@ -671,6 +675,7 @@ macos-profile:
 		--dart-define-from-file="$(call repo_path,$(MACOS_PROFILE_CONFIG))" \
 		--dart-define=POMODOIST_RELEASE="$(POMODOIST_RELEASE)" \
 		--dart-define=POMODOIST_BILLING_CHANNEL="$(POMODOIST_BILLING_CHANNEL)" \
+		$(call macos_storekit_defines,$(MACOS_PROFILE_FLAVOR)) \
 		$(MACOS_LOCAL_SIGNING_FLAGS) 2>&1 \
 		| awk -f "$(REPO_ROOT)/tool/xcode-warnings.awk"
 
@@ -683,6 +688,7 @@ macos-run:
 		--dart-define-from-file="$(call repo_path,$(MACOS_DEBUG_CONFIG))" \
 		--dart-define=POMODOIST_RELEASE="$(POMODOIST_RELEASE)" \
 		--dart-define=POMODOIST_BILLING_CHANNEL="$(POMODOIST_BILLING_CHANNEL)" \
+		$(call macos_storekit_defines,$(MACOS_DEBUG_FLAVOR)) \
 		$(MACOS_LOCAL_SIGNING_FLAGS)
 
 macos-release: testflight-preflight flutter-build-link
@@ -691,7 +697,8 @@ macos-release: testflight-preflight flutter-build-link
 		--target "$(MACOS_RELEASE_TARGET)" \
 		--dart-define-from-file="$(call repo_path,$(MACOS_RELEASE_CONFIG))" \
 		--dart-define=POMODOIST_RELEASE="$(POMODOIST_RELEASE)" \
-		--dart-define=POMODOIST_BILLING_CHANNEL=storekit
+		--dart-define=POMODOIST_BILLING_CHANNEL=storekit \
+		$(call macos_storekit_defines,$(MACOS_RELEASE_FLAVOR))
 
 # Per-environment builds: macos-<mode>-<environment>. macos-debug is the
 # development case, so the two spellings build the same app. The staging and
@@ -705,6 +712,7 @@ define macos_flavor_target
 		--dart-define-from-file="$(call repo_path,$(MACOS_$(2)_CONFIG))" \
 		--dart-define=POMODOIST_RELEASE="$(POMODOIST_RELEASE)" \
 		--dart-define=POMODOIST_BILLING_CHANNEL=storekit \
+		$(call macos_storekit_defines,$(MACOS_$(2)_FLAVOR)) \
 		$(3) $(MACOS_LOCAL_SIGNING_FLAGS) 2>&1 \
 		| awk -f "$(REPO_ROOT)/tool/xcode-warnings.awk"
 endef
