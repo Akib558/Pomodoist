@@ -790,6 +790,7 @@
   "taskMore": "Ещё",
   "taskSchedule": "Запланировать",
   "taskMove": "Перенести",
+  "taskChangeProject": "Сменить проект",
   "taskDuplicate": "Дублировать",
   "taskDuplicateTitle": "Дублировать задачи",
   "taskDuplicateSelectedOnly": "Только выбранные",

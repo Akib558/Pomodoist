@@ -2465,6 +2465,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get taskMove => 'نقل';
 
   @override
+  String get taskChangeProject => 'تغيير المشروع';
+
+  @override
   String get taskDuplicate => 'تكرار';
 
   @override

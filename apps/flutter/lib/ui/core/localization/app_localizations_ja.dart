@@ -2419,6 +2419,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get taskMove => '移動';
 
   @override
+  String get taskChangeProject => 'プロジェクトを変更';
+
+  @override
   String get taskDuplicate => '複製';
 
   @override

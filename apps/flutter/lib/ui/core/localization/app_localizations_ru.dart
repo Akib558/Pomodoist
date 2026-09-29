@@ -2497,6 +2497,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get taskMove => 'Перенести';
 
   @override
+  String get taskChangeProject => 'Сменить проект';
+
+  @override
   String get taskDuplicate => 'Дублировать';
 
   @override

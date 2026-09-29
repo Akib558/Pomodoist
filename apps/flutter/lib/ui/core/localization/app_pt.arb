@@ -1339,6 +1339,7 @@
   "taskMore": "Mais",
   "taskSchedule": "Agendar",
   "taskMove": "Mover",
+  "taskChangeProject": "Alterar projeto",
   "taskDuplicate": "Duplicar",
   "taskDuplicateTitle": "Duplicar tarefas",
   "taskDuplicateSelectedOnly": "Apenas selecionadas",

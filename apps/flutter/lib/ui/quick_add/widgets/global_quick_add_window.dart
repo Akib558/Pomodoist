@@ -22,13 +22,25 @@ import 'package:pomodoist/ui/core/themes/theme_background.dart';
 import 'package:pomodoist/ui/core/widgets/keyboard_dismiss_region.dart';
 
 const globalQuickAddCompactSize = Size(680, 200);
+const globalQuickAddCommentSize = Size(680, 340);
 const globalQuickAddVoiceSize = Size(720, 720);
+
+Size globalQuickAddWindowSize({
+  required bool voiceExpanded,
+  required bool commentExpanded,
+}) => voiceExpanded
+    ? globalQuickAddVoiceSize
+    : commentExpanded
+    ? globalQuickAddCommentSize
+    : globalQuickAddCompactSize;
 
 final globalQuickAddWindowManager = GlobalQuickAddWindowManager();
 
 class GlobalQuickAddWindowManager extends WindowObserver {
   int? _viewId;
   Future<int>? _opening;
+  bool _voiceExpanded = false;
+  bool _commentExpanded = false;
 
   Future<void> show() async {
     final existingId = _viewId;
@@ -47,10 +59,14 @@ class GlobalQuickAddWindowManager extends WindowObserver {
       return;
     }
 
+    _voiceExpanded = false;
+    _commentExpanded = false;
     final opening = openWindow(
       (context, id) => GlobalQuickAddWindowApp(
         onClose: () => unawaited(close()),
         onVoiceModeChanged: (active) => unawaited(setVoiceMode(active)),
+        onCommentExpandedChanged: (active) =>
+            unawaited(setCommentExpanded(active)),
       ),
       options: WindowOptions(
         size: globalQuickAddCompactSize,
@@ -77,11 +93,24 @@ class GlobalQuickAddWindowManager extends WindowObserver {
   }
 
   Future<void> setVoiceMode(bool active) async {
+    _voiceExpanded = active;
+    await _resize();
+  }
+
+  Future<void> setCommentExpanded(bool active) async {
+    _commentExpanded = active;
+    await _resize();
+  }
+
+  Future<void> _resize() async {
     final id = _viewId;
     if (id == null || !MultiViewDesktop.allWindowViewIds.contains(id)) return;
-    await MultiViewDesktop.fromId(
-      id,
-    ).setSize(active ? globalQuickAddVoiceSize : globalQuickAddCompactSize);
+    await MultiViewDesktop.fromId(id).setSize(
+      globalQuickAddWindowSize(
+        voiceExpanded: _voiceExpanded,
+        commentExpanded: _commentExpanded,
+      ),
+    );
   }
 
   @override
@@ -94,11 +123,13 @@ class GlobalQuickAddWindowApp extends ConsumerWidget {
   const GlobalQuickAddWindowApp({
     required this.onClose,
     required this.onVoiceModeChanged,
+    this.onCommentExpandedChanged,
     super.key,
   });
 
   final VoidCallback onClose;
   final ValueChanged<bool> onVoiceModeChanged;
+  final ValueChanged<bool>? onCommentExpandedChanged;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -160,6 +191,7 @@ class GlobalQuickAddWindowApp extends ConsumerWidget {
                 onCompleted: onClose,
                 onCancel: onClose,
                 onVoiceModeChanged: onVoiceModeChanged,
+                onCommentExpandedChanged: onCommentExpandedChanged,
               ),
             ),
           ),

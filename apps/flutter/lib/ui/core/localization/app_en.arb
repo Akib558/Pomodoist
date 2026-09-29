@@ -1346,6 +1346,7 @@
   "taskMore": "More",
   "taskSchedule": "Schedule",
   "taskMove": "Move",
+  "taskChangeProject": "Change project",
   "taskDuplicate": "Duplicate",
   "taskDuplicateTitle": "Duplicate tasks",
   "taskDuplicateSelectedOnly": "Selected only",

@@ -2371,6 +2371,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get taskMove => '移动';
 
   @override
+  String get taskChangeProject => '更改项目';
+
+  @override
   String get taskDuplicate => '复制';
 
   @override

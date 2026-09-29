@@ -308,6 +308,14 @@ class TaskListItem extends ConsumerWidget {
             leading: const Icon(LucideIcons.move, size: 16),
             child: Text(l10n.taskMove),
           ),
+        if (task.canEdit && onDiagramMove != null)
+          ShadContextMenuItem(
+            height: 44,
+            onPressed: () =>
+                unawaited(_runQuickAction(context, ref, _TaskQuickAction.move)),
+            leading: const Icon(LucideIcons.folderInput, size: 16),
+            child: Text(l10n.taskChangeProject),
+          ),
         if (task.canEdit)
           ..._quickActionItems(
             context,

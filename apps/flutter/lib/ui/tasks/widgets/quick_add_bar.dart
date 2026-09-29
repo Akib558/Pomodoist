@@ -8,7 +8,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:shadcn_ui/shadcn_ui.dart'
-    show LucideIcons, ShadButton, ShadIconButton, ShadSwitch;
+    show LucideIcons, ShadButton, ShadButtonSize, ShadIconButton, ShadSwitch;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/services.dart';
@@ -27,6 +27,7 @@ import 'package:pomodoist/ui/tasks/widgets/label_icon.dart';
 
 part 'quick_add_input.dart';
 part 'quick_add_composer.dart';
+part 'quick_add_comment.dart';
 part 'quick_add_voice_host.dart';
 part 'quick_add_voice_panel.dart';
 part 'quick_add_voice_panels.dart';
@@ -66,6 +67,8 @@ class QuickAddBar extends ConsumerStatefulWidget {
 
 class _QuickAddBarState extends ConsumerState<QuickAddBar> {
   final _controller = QuickAddTextController();
+  final _commentController = TextEditingController();
+  bool _commentExpanded = false;
   final _focusNode = FocusNode();
   Timer? _successTimer;
   final _identity = Object();
@@ -76,12 +79,13 @@ class _QuickAddBarState extends ConsumerState<QuickAddBar> {
 
   void _syncDraft() => ref
       .read(quickAddViewModelProvider(_identity).notifier)
-      .updateDraft(_controller.text);
+      .updateDraft(_controller.text, description: _commentController.text);
 
   @override
   void dispose() {
     _successTimer?.cancel();
     _controller.dispose();
+    _commentController.dispose();
     _focusNode.dispose();
     super.dispose();
   }
@@ -138,7 +142,21 @@ class _QuickAddBarState extends ConsumerState<QuickAddBar> {
                       priority: widget.defaultPriority,
                       enabled: !_busy,
                       onChanged: _syncDraft,
+                      trailing: _QuickAddCommentButton(
+                        controller: _commentController,
+                        expanded: _commentExpanded,
+                        enabled: !_busy,
+                        touchTargets: MediaQuery.sizeOf(context).width < 820,
+                        onPressed: _toggleComment,
+                      ),
                     ),
+                    if (_commentExpanded)
+                      _QuickAddCommentField(
+                        controller: _commentController,
+                        enabled: !_busy,
+                        onChanged: _syncDraft,
+                        onClose: _toggleComment,
+                      ),
                   ],
                 ),
               ),
@@ -194,6 +212,11 @@ class _QuickAddBarState extends ConsumerState<QuickAddBar> {
     );
   }
 
+  void _toggleComment() {
+    setState(() => _commentExpanded = !_commentExpanded);
+    if (!_commentExpanded) _focusNode.requestFocus();
+  }
+
   Future<void> _openVoiceSheet() async {
     final created = await showVoiceQuickAddSheet(
       context,
@@ -228,6 +251,8 @@ class _QuickAddBarState extends ConsumerState<QuickAddBar> {
     if (!mounted) return;
     if (task != null) {
       _controller.clear();
+      _commentController.clear();
+      _commentExpanded = false;
       widget.onTaskCreated?.call([task]);
     } else if (ref.read(quickAddViewModelProvider(_identity)).result.hasError) {
       ScaffoldMessenger.of(

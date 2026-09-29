@@ -4367,6 +4367,12 @@ abstract class AppLocalizations {
   /// **'Move'**
   String get taskMove;
 
+  /// No description provided for @taskChangeProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Change project'**
+  String get taskChangeProject;
+
   /// No description provided for @taskDuplicate.
   ///
   /// In en, this message translates to:

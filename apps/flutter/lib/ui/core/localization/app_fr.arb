@@ -790,6 +790,7 @@
   "taskMore": "Plus",
   "taskSchedule": "Planifier",
   "taskMove": "Déplacer",
+  "taskChangeProject": "Changer de projet",
   "taskDuplicate": "Dupliquer",
   "taskDuplicateTitle": "Dupliquer les tâches",
   "taskDuplicateSelectedOnly": "Sélectionnées uniquement",

@@ -126,6 +126,8 @@ class _TaskDraftItem extends ConsumerStatefulWidget {
 
 class _TaskDraftItemState extends ConsumerState<_TaskDraftItem> {
   bool _editing = false;
+  bool _commentExpanded = false;
+  final _commentKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -182,7 +184,9 @@ class _TaskDraftItemState extends ConsumerState<_TaskDraftItem> {
                             priority: widget.priority,
                             enabled: widget.enabled,
                             onChanged: widget.onChanged,
+                            trailing: _commentButton(),
                           ),
+                          if (_commentExpanded) _commentField(),
                         ],
                       ),
               ),
@@ -255,21 +259,26 @@ class _TaskDraftItemState extends ConsumerState<_TaskDraftItem> {
           priority: widget.priority,
           enabled: widget.enabled,
           onChanged: widget.onChanged,
+          trailing: _commentButton(),
         ),
-        const SizedBox(height: 8),
-        TextField(
-          enabled: widget.enabled,
-          controller: widget.controller.description,
-          minLines: 1,
-          maxLines: 3,
-          onChanged: (_) => widget.onChanged(),
-          decoration: InputDecoration(
-            labelText: context.l10n.taskComment,
-            hintText: context.l10n.taskCommentHint,
-            prefixIcon: const Icon(LucideIcons.alignLeft),
-          ),
-        ),
+        if (_commentExpanded) _commentField(),
       ],
     );
   }
+
+  Widget _commentButton() => _QuickAddCommentButton(
+    controller: widget.controller.description,
+    expanded: _commentExpanded,
+    enabled: widget.enabled,
+    touchTargets: true,
+    onPressed: () => setState(() => _commentExpanded = !_commentExpanded),
+  );
+
+  Widget _commentField() => _QuickAddCommentField(
+    key: _commentKey,
+    enabled: widget.enabled,
+    controller: widget.controller.description,
+    onChanged: widget.onChanged,
+    onClose: () => setState(() => _commentExpanded = false),
+  );
 }

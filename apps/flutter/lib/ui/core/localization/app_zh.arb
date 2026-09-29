@@ -790,6 +790,7 @@
   "taskMore": "更多",
   "taskSchedule": "安排",
   "taskMove": "移动",
+  "taskChangeProject": "更改项目",
   "taskDuplicate": "复制",
   "taskDuplicateTitle": "复制任务",
   "taskDuplicateSelectedOnly": "仅所选任务",

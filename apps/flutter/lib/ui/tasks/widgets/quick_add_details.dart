@@ -30,6 +30,7 @@ class QuickAddDetails extends ConsumerWidget {
     this.onChanged,
     this.touchTargets = false,
     this.desktop = false,
+    this.trailing,
   });
 
   final QuickAddTextController controller;
@@ -42,6 +43,7 @@ class QuickAddDetails extends ConsumerWidget {
   final VoidCallback? onChanged;
   final bool touchTargets;
   final bool desktop;
+  final Widget? trailing;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -52,7 +54,9 @@ class QuickAddDetails extends ConsumerWidget {
     return ValueListenableBuilder<TextEditingValue>(
       valueListenable: controller,
       builder: (context, value, _) {
-        if (value.text.trim().isEmpty) return const SizedBox.shrink();
+        if (value.text.trim().isEmpty) {
+          return Wrap(children: [?trailing]);
+        }
         final now = viewModel.now();
         final analysis = viewModel.analyze(
           value.text,
@@ -265,6 +269,7 @@ class QuickAddDetails extends ConsumerWidget {
                   }),
                 ],
               ),
+              ?trailing,
             ],
           ),
         );

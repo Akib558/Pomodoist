@@ -2428,6 +2428,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get taskMove => '이동';
 
   @override
+  String get taskChangeProject => '프로젝트 변경';
+
+  @override
   String get taskDuplicate => '복제';
 
   @override

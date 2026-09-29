@@ -1339,6 +1339,7 @@
   "taskMore": "더 보기",
   "taskSchedule": "일정",
   "taskMove": "이동",
+  "taskChangeProject": "프로젝트 변경",
   "taskDuplicate": "복제",
   "taskDuplicateTitle": "작업 복제",
   "taskDuplicateSelectedOnly": "선택 항목만",

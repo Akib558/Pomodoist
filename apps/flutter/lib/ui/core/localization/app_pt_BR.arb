@@ -69,6 +69,7 @@
   "taskAllSubtasksProgress": "Todas as subtarefas: {completed} de {total} concluídas",
   "taskOpenFullBranch": "Abrir todas as subtarefas",
   "taskParentPath": "Parte de: {path}",
+  "taskChangeProject": "Alterar projeto",
   "projectViewList": "Lista",
   "projectViewMap": "Mapa",
   "projectShowCompleted": "Mostrar concluídas",

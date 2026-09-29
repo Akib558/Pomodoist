@@ -2493,6 +2493,9 @@ class AppLocalizationsPt extends AppLocalizations {
   String get taskMove => 'Mover';
 
   @override
+  String get taskChangeProject => 'Alterar projeto';
+
+  @override
   String get taskDuplicate => 'Duplicar';
 
   @override
@@ -3952,6 +3955,9 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get calendarCurrentTask => 'Tarefa atual';
+
+  @override
+  String get taskChangeProject => 'Alterar projeto';
 
   @override
   String get projectInfoTitle => 'Sobre o projeto';

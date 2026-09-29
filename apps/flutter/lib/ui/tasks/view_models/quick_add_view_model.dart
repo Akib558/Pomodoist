@@ -4,7 +4,11 @@ import 'package:pomodoist/config/providers.dart';
 import 'package:pomodoist/domain/models/tasks/task_models.dart';
 import 'package:pomodoist/domain/models/planning/quick_add_parser.dart';
 
-typedef QuickAddState = ({String draft, AsyncValue<String?> result});
+typedef QuickAddState = ({
+  String draft,
+  String description,
+  AsyncValue<String?> result,
+});
 final quickAddViewModelProvider = NotifierProvider.autoDispose
     .family<QuickAddViewModel, QuickAddState, Object>(QuickAddViewModel.new);
 
@@ -12,17 +16,27 @@ class QuickAddViewModel extends Notifier<QuickAddState> {
   QuickAddViewModel(this.identity);
   final Object identity;
   @override
-  QuickAddState build() => (draft: '', result: const AsyncData(null));
+  QuickAddState build() =>
+      (draft: '', description: '', result: const AsyncData(null));
 
-  void updateDraft(String value) {
+  void updateDraft(String value, {String? description}) {
     if (state.result.isLoading) return;
-    if (state.draft == value && state.result is AsyncData) return;
-    state = (draft: value, result: const AsyncData(null));
+    final comment = description ?? state.description;
+    if (state.draft == value &&
+        state.description == comment &&
+        state.result is AsyncData) {
+      return;
+    }
+    state = (draft: value, description: comment, result: const AsyncData(null));
   }
 
   void clearDraft() {
-    if (state.draft.isEmpty && state.result is AsyncData) return;
-    state = (draft: '', result: const AsyncData(null));
+    if (state.draft.isEmpty &&
+        state.description.isEmpty &&
+        state.result is AsyncData) {
+      return;
+    }
+    state = (draft: '', description: '', result: const AsyncData(null));
   }
 
   Future<String?> submit({
@@ -34,22 +48,33 @@ class QuickAddViewModel extends Notifier<QuickAddState> {
   }) async {
     final input = state.draft.trim();
     if (state.result.isLoading || input.isEmpty) return null;
-    state = (draft: state.draft, result: const AsyncLoading());
+    state = (
+      draft: state.draft,
+      description: state.description,
+      result: const AsyncLoading(),
+    );
     final service = ref.read(quickAddUseCaseProvider);
     try {
       final created = (await service.createTask(
         input,
+        description: state.description,
         priority: priority,
         defaultDate: defaultDate,
         projectId: projectId,
         kanbanStatusId: kanbanStatusId,
         labelId: labelId,
       )).getOrThrow();
-      if (ref.mounted) state = (draft: '', result: AsyncData(created));
+      if (ref.mounted) {
+        state = (draft: '', description: '', result: AsyncData(created));
+      }
       return created;
     } catch (error, stackTrace) {
       if (ref.mounted) {
-        state = (draft: state.draft, result: AsyncError(error, stackTrace));
+        state = (
+          draft: state.draft,
+          description: state.description,
+          result: AsyncError(error, stackTrace),
+        );
       }
       return null;
     }

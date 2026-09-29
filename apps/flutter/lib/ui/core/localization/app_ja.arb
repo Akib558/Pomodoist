@@ -1339,6 +1339,7 @@
   "taskMore": "その他",
   "taskSchedule": "予定",
   "taskMove": "移動",
+  "taskChangeProject": "プロジェクトを変更",
   "taskDuplicate": "複製",
   "taskDuplicateTitle": "タスクを複製",
   "taskDuplicateSelectedOnly": "選択したもののみ",

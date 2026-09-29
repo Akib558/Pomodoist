@@ -9,6 +9,7 @@ class QuickAddComposer extends ConsumerStatefulWidget {
     this.projectId,
     this.labelId,
     this.onVoiceModeChanged,
+    this.onCommentExpandedChanged,
     this.onVoiceSessionChanged,
     this.compact = false,
     super.key,
@@ -21,6 +22,7 @@ class QuickAddComposer extends ConsumerStatefulWidget {
   final String? projectId;
   final String? labelId;
   final ValueChanged<bool>? onVoiceModeChanged;
+  final ValueChanged<bool>? onCommentExpandedChanged;
   final ValueChanged<bool>? onVoiceSessionChanged;
   final bool compact;
 
@@ -30,14 +32,18 @@ class QuickAddComposer extends ConsumerStatefulWidget {
 
 class _QuickAddComposerState extends ConsumerState<QuickAddComposer> {
   final _controller = QuickAddTextController();
+  final _commentController = TextEditingController();
+  final _commentKey = GlobalKey();
+  bool _commentExpanded = false;
   final _identity = Object();
   final _inputKey = GlobalKey();
+  final _inputFocus = FocusNode();
   bool get _busy =>
       ref.read(quickAddViewModelProvider(_identity)).result.isLoading;
 
   void _syncDraft() => ref
       .read(quickAddViewModelProvider(_identity).notifier)
-      .updateDraft(_controller.text);
+      .updateDraft(_controller.text, description: _commentController.text);
 
   @override
   void initState() {
@@ -50,7 +56,9 @@ class _QuickAddComposerState extends ConsumerState<QuickAddComposer> {
 
   @override
   void dispose() {
+    _inputFocus.dispose();
     _controller.dispose();
+    _commentController.dispose();
     super.dispose();
   }
 
@@ -62,6 +70,7 @@ class _QuickAddComposerState extends ConsumerState<QuickAddComposer> {
     final l10n = context.l10n;
     final input = QuickAddInput(
       key: _inputKey,
+      focusNode: _inputFocus,
       textFieldKey: const Key('sidebar-quick-add-input'),
       controller: _controller,
       enabled: !_busy,
@@ -101,6 +110,20 @@ class _QuickAddComposerState extends ConsumerState<QuickAddComposer> {
       touchTargets: widget.compact,
       desktop: !widget.compact,
       onChanged: _syncDraft,
+      trailing: _QuickAddCommentButton(
+        controller: _commentController,
+        expanded: _commentExpanded,
+        enabled: !_busy,
+        touchTargets: widget.compact,
+        onPressed: _toggleComment,
+      ),
+    );
+    final comment = _QuickAddCommentField(
+      key: _commentKey,
+      controller: _commentController,
+      enabled: !_busy,
+      onChanged: _syncDraft,
+      onClose: _toggleComment,
     );
     final submit = ShadButton(
       key: const Key('sidebar-quick-add-submit'),
@@ -174,6 +197,7 @@ class _QuickAddComposerState extends ConsumerState<QuickAddComposer> {
                           const SizedBox(height: 8),
                           input,
                           details,
+                          if (_commentExpanded) comment,
                         ],
                       ),
                     ),
@@ -248,24 +272,41 @@ class _QuickAddComposerState extends ConsumerState<QuickAddComposer> {
                       ),
                     ),
                     Divider(height: 1, color: context.appColors.border),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      child: OverflowBar(
-                        alignment: MainAxisAlignment.spaceBetween,
-                        overflowAlignment: OverflowBarAlignment.end,
-                        spacing: 12,
-                        overflowSpacing: 12,
-                        children: [details, submit],
+                    Flexible(
+                      flex: 2,
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 12,
+                        ),
+                        child: OverflowBar(
+                          alignment: MainAxisAlignment.spaceBetween,
+                          overflowAlignment: OverflowBarAlignment.end,
+                          spacing: 12,
+                          overflowSpacing: 12,
+                          children: [details, submit],
+                        ),
                       ),
                     ),
+                    if (_commentExpanded)
+                      Flexible(
+                        flex: 2,
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          child: comment,
+                        ),
+                      ),
                   ],
                 ),
               ),
       ),
     );
+  }
+
+  void _toggleComment() {
+    setState(() => _commentExpanded = !_commentExpanded);
+    widget.onCommentExpandedChanged?.call(_commentExpanded);
+    if (!_commentExpanded) _inputFocus.requestFocus();
   }
 
   void _cancel() {

@@ -540,6 +540,27 @@ stay unobtrusive.
 `QuickAddComposer` owns this styling, so the dialog and the separate window
 stay consistent. Details stay below the editable input; the separate window
 scrolls when needed.
+
+All Quick Add surfaces (inline lists, dialogs, the separate window and voice
+previews including subtasks) offer a Comment chip alongside date, project and
+priority. The chip remains available before a title is entered. Expanding it
+reveals a softly tinted multiline field below the metadata; collapsing it keeps
+the text, and a checkmark on the chip indicates a nonempty comment. Use the
+existing localized task-comment labels, 40 px desktop and 48 px touch controls,
+and the shared palette in both themes. Enter adds a newline in the comment.
+The comment is literal task description text, never parsed as Quick Add metadata;
+create and synchronize it atomically with the task. Keep both drafts after a
+failure and clear them only after successful text creation.
+
+Opening the comment raises the desktop dialog minimum height to 320 px and the
+separate window to 680 × 340 px. Preserve comment text and selection across
+mobile/desktop layout changes. In constrained windows, scroll the input and
+comment while keeping creation controls outside their scroll regions. Allow the
+metadata/action row to scroll independently when wrapping exceeds the available
+height. Mobile
+keeps the existing keyboard-aware sheet and pinned action row. Returning from
+voice mode restores the separate window's expanded comment size when applicable.
+
 Voice draft titles start at one line and grow with their text up to three lines;
 do not reserve blank lines for short tasks. Keep metadata and comments editable.
 

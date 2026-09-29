@@ -2496,6 +2496,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get taskMove => 'Verschieben';
 
   @override
+  String get taskChangeProject => 'Projekt wechseln';
+
+  @override
   String get taskDuplicate => 'Duplizieren';
 
   @override

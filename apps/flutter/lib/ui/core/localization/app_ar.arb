@@ -790,6 +790,7 @@
   "taskMore": "المزيد",
   "taskSchedule": "جدولة",
   "taskMove": "نقل",
+  "taskChangeProject": "تغيير المشروع",
   "taskDuplicate": "تكرار",
   "taskDuplicateTitle": "تكرار المهام",
   "taskDuplicateSelectedOnly": "المحددة فقط",

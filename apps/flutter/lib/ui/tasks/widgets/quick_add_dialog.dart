@@ -34,6 +34,7 @@ class _SidebarQuickAddDialog extends StatefulWidget {
 
 class _SidebarQuickAddDialogState extends State<_SidebarQuickAddDialog> {
   bool _voiceActive = false;
+  bool _commentExpanded = false;
   bool _disposing = false;
   LocalHistoryEntry? _backEntry;
   final _focus = FocusScopeNode();
@@ -103,6 +104,8 @@ class _SidebarQuickAddDialogState extends State<_SidebarQuickAddDialog> {
       onCompleted: widget.onClose,
       onCancel: widget.onClose,
       onVoiceSessionChanged: _setVoiceActive,
+      onCommentExpandedChanged: (expanded) =>
+          setState(() => _commentExpanded = expanded),
     );
     final dialog = ExcludeFocus(
       excluding: _voiceActive,
@@ -149,7 +152,7 @@ class _SidebarQuickAddDialogState extends State<_SidebarQuickAddDialog> {
                         child: const SizedBox.expand(),
                       ),
                       initialSize: const Size(680, 180),
-                      minSize: const Size(420, 180),
+                      minSize: Size(420, _commentExpanded ? 320 : 180),
                       content: composer,
                       actions: const [],
                     ),
