@@ -212,7 +212,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get billingStoreConnectionFailed =>
-      'Não foi possível conectar à App Store. Tente novamente.';
+      'Desative a VPN e tente novamente.';
 
   @override
   String billingPurchaseError(String error) {

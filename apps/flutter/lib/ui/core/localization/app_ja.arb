@@ -90,7 +90,7 @@
   "billingExternalBrowserMessage": "PomodoistがSafariまたは標準ブラウザでStripe Checkoutを開きます。ブラウザウィンドウを許可して続けてください。",
   "billingAppleOnly": "購入はiPhone、iPad、Macで利用できます。",
   "billingStoreUnavailable": "現在App Storeを利用できません。",
-  "billingStoreConnectionFailed": "App Storeに接続できませんでした。もう一度お試しください。",
+  "billingStoreConnectionFailed": "VPNをオフにして再試行してください。",
   "billingPurchaseError": "購入エラー: {error}",
   "@billingPurchaseError": {
     "placeholders": {

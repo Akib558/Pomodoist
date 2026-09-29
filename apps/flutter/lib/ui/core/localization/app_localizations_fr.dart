@@ -215,7 +215,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get billingStoreConnectionFailed =>
-      'Impossible de se connecter à l’App Store. Réessayez.';
+      'Désactivez votre VPN et réessayez.';
 
   @override
   String billingPurchaseError(String error) {
