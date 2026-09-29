@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/services.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:pomodoist/data/services/billing/billing_offers.dart';
 
@@ -808,9 +809,15 @@ final class AppBillingRepository implements BillingRepository {
   Future<BillingTransactionProof?> _latestSubscriptionTransaction() =>
       _store.latestSubscriptionTransaction();
   bool _isTransientError(Object error) {
+    if (error is TimeoutException) return true;
     final message = '$error';
-    return message.contains('NSURLErrorDomain') &&
-        RegExp(r'-(?:1001|1003|1004|1005|1008|1009)\b').hasMatch(message);
+    if (message.contains('NSURLErrorDomain')) {
+      return RegExp(r'-(?:1001|1003|1004|1005|1008|1009)\b').hasMatch(message);
+    }
+    // StoreKit can return an empty catalog after a connection failure without
+    // preserving the underlying network error. Keep recovery bounded.
+    return (error is IAPError && error.code == 'storekit_no_response') ||
+        (error is PlatformException && error.code == 'storekit_no_response');
   }
 
   @override

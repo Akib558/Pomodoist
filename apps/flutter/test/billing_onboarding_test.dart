@@ -772,6 +772,52 @@ void main() {
     },
   );
 
+  for (final failure in ['no response', 'platform no response', 'timeout']) {
+    test('StoreKit catalog recovers automatically after $failure', () async {
+      final store = _RecoveringCatalogBillingStore(failure);
+      final container = ProviderContainer(
+        overrides: [
+          billingStoreProvider.overrideWithValue(store),
+          applePurchasesSupportedProvider.overrideWithValue(true),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.listen(billingViewModelProvider, (_, _) {});
+      await container.read(billingViewModelProvider.notifier).reload();
+
+      final state = container.read(billingViewModelProvider);
+      expect(state.canPurchase, isTrue);
+      expect(state.catalogError, isNull);
+      expect(state.loading, isFalse);
+      expect(state.productDetailsById, contains(pomodoistAnnualProductId));
+      expect(store.catalogRequests, 2);
+    });
+  }
+
+  test('StoreKit no response stops after bounded catalog retries', () async {
+    final store = _FakeBillingStore()
+      ..catalogError = IAPError(
+        source: 'app_store',
+        code: 'storekit_no_response',
+        message: 'StoreKit: Failed to get response from platform.',
+      );
+    final container = ProviderContainer(
+      overrides: [
+        billingStoreProvider.overrideWithValue(store),
+        applePurchasesSupportedProvider.overrideWithValue(true),
+      ],
+    );
+    addTearDown(container.dispose);
+    container.listen(billingViewModelProvider, (_, _) {});
+    await container.read(billingViewModelProvider.notifier).reload();
+
+    final state = container.read(billingViewModelProvider);
+    expect(state.canPurchase, isFalse);
+    expect(state.loading, isFalse);
+    expect(state.catalogError, isNotNull);
+    expect(store.catalogRequests, 3);
+  });
+
   test(
     'purchase passes account token and links after local activation',
     () async {
@@ -1741,10 +1787,7 @@ void main() {
     container.listen(billingViewModelProvider, (_, _) {});
 
     container.read(billingViewModelProvider);
-    await _waitFor(
-      () => !container.read(billingViewModelProvider).loading,
-      'billing catalog timeout',
-    );
+    await container.read(billingViewModelProvider.notifier).reload();
 
     final state = container.read(billingViewModelProvider);
     expect(state.loading, isFalse);
@@ -2589,6 +2632,37 @@ Future<void> _waitFor(bool Function() condition, String description) async {
       fail('Timed out waiting for $description.');
     }
     await Future<void>.delayed(const Duration(milliseconds: 5));
+  }
+}
+
+class _RecoveringCatalogBillingStore extends _FakeBillingStore {
+  _RecoveringCatalogBillingStore(this.failure);
+
+  final String failure;
+
+  @override
+  Future<ProductDetailsResponse> queryProductDetails(
+    Set<String> productIds,
+  ) async {
+    if (catalogRequests == 0) {
+      catalogRequests++;
+      if (failure == 'timeout') {
+        throw TimeoutException('Billing operation timed out.');
+      }
+      if (failure == 'platform no response') {
+        throw PlatformException(code: 'storekit_no_response');
+      }
+      return ProductDetailsResponse(
+        productDetails: const [],
+        notFoundIDs: productIds.toList(),
+        error: IAPError(
+          source: 'app_store',
+          code: 'storekit_no_response',
+          message: 'StoreKit: Failed to get response from platform.',
+        ),
+      );
+    }
+    return super.queryProductDetails(productIds);
   }
 }
 
