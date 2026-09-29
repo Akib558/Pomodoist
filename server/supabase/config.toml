@@ -70,3 +70,11 @@ verify_jwt = false
 [functions.pomodoist-collaboration]
 # The handler authenticates private actions; publicRead uses an isolated token projection.
 verify_jwt = false
+
+[functions.pomodoist-files]
+# The handler authenticates the session; SQL enforces ownership, roles and quota.
+verify_jwt = false
+
+[functions.pomodoist-files-cleanup]
+# The handler accepts only the configured service-role bearer credential.
+verify_jwt = false

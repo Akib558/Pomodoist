@@ -1,0 +1,81 @@
+# Optional external S3 provider. All S3 settings are server-only.
+# Upstream: https://github.com/supabase/supabase/blob/master/docker/docker-compose.yml
+services:
+  storage-bootstrap:
+    container_name: pomodoist-selfhost-storage-bootstrap
+    image: docker.io/supabase/postgres:17.6.1.127@sha256:be60aee15997daca475b710b734bc6bfe52cd544dcd7e9fd2ff58210b6747d83
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: ${POSTGRES_PASSWORD:?run make setup first}
+    volumes:
+      - ./scripts/storage-bootstrap.sh:/opt/pomodoist/storage-bootstrap.sh:ro
+    entrypoint: ["/bin/sh", "/opt/pomodoist/storage-bootstrap.sh"]
+
+  storage:
+    container_name: pomodoist-selfhost-storage
+    image: docker.io/supabase/storage-api:v1.74.0
+    restart: unless-stopped
+    depends_on:
+      storage-bootstrap:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5000/status"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    environment:
+      ANON_KEY: ${ANON_KEY:?run make setup first}
+      SERVICE_KEY: ${SERVICE_ROLE_KEY:?run make setup first}
+      POSTGREST_URL: http://rest:3000
+      AUTH_JWT_SECRET: ${JWT_SECRET:?run make setup first}
+      JWT_JWKS: ${JWT_JWKS:?run make setup first}
+      DATABASE_URL: postgres://supabase_storage_admin:${POSTGRES_PASSWORD:?run make setup first}@db:5432/postgres
+      STORAGE_PUBLIC_URL: ${SUPABASE_PUBLIC_URL:?SUPABASE_PUBLIC_URL is required}
+      REQUEST_ALLOW_X_FORWARDED_PATH: "true"
+      FILE_SIZE_LIMIT: 20000000
+      STORAGE_BACKEND: s3
+      GLOBAL_S3_BUCKET: ${STORAGE_S3_BUCKET:?set a private S3 bucket}
+      GLOBAL_S3_ENDPOINT: ${STORAGE_S3_ENDPOINT:?set the S3 API endpoint}
+      GLOBAL_S3_PROTOCOL: ${STORAGE_S3_PROTOCOL:-https}
+      GLOBAL_S3_FORCE_PATH_STYLE: ${STORAGE_S3_FORCE_PATH_STYLE:-true}
+      AWS_ACCESS_KEY_ID: ${STORAGE_S3_ACCESS_KEY_ID:?set S3 credentials}
+      AWS_SECRET_ACCESS_KEY: ${STORAGE_S3_SECRET_ACCESS_KEY:?set S3 credentials}
+      REGION: ${STORAGE_S3_REGION:-us-east-1}
+      TENANT_ID: pomodoist
+      ENABLE_IMAGE_TRANSFORMATION: "false"
+
+  storage-config:
+    container_name: pomodoist-selfhost-storage-config
+    image: docker.io/supabase/storage-api:v1.74.0
+    restart: "no"
+    depends_on:
+      storage:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY:?run make setup first}
+    volumes:
+      - ./scripts/storage-config.mjs:/opt/pomodoist/storage-config.mjs:ro
+    entrypoint: ["node", "/opt/pomodoist/storage-config.mjs"]
+
+  migrate:
+    environment:
+      POMODOIST_FILES_STORAGE_ENABLED: "true"
+      POMODOIST_FILES_CLEANUP_URL: http://gateway:8000/functions/v1/pomodoist-files-cleanup
+      SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY:?run make setup first}
+    depends_on:
+      storage:
+        condition: service_healthy
+
+  functions:
+    depends_on:
+      storage-config:
+        condition: service_completed_successfully
+    environment:
+      POMODOIST_FILES_STORAGE_ENABLED: "true"
+      ACCOUNT_STORAGE_BUCKETS: pomodoist-shared

@@ -3830,4 +3830,117 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get learningTourOpenProjects => 'Projekte öffnen';
+
+  @override
+  String get filesTitle => 'Dateien';
+
+  @override
+  String get filesAdd => 'Datei hinzufügen';
+
+  @override
+  String get filesEmpty => 'Noch keine Dateien';
+
+  @override
+  String get filesSearch => 'Dateien suchen';
+
+  @override
+  String get filesList => 'Liste';
+
+  @override
+  String get filesGallery => 'Galerie';
+
+  @override
+  String get filesAllTogether => 'Alle zusammen';
+
+  @override
+  String get filesByTask => 'Nach Aufgaben';
+
+  @override
+  String get filesProjectGroup => 'Projektdateien';
+
+  @override
+  String get filesAllTypes => 'Alle Typen';
+
+  @override
+  String get filesImages => 'Bilder';
+
+  @override
+  String get filesDocuments => 'Dokumente';
+
+  @override
+  String get filesOther => 'Andere Dateien';
+
+  @override
+  String get filesDownload => 'Herunterladen';
+
+  @override
+  String get filesDelete => 'Datei löschen';
+
+  @override
+  String get filesDeleteConfirm => 'Diese Datei dauerhaft löschen?';
+
+  @override
+  String get filesUploadFailed =>
+      'Hochladen fehlgeschlagen. Versuche es erneut.';
+
+  @override
+  String get filesRetry => 'Erneut versuchen';
+
+  @override
+  String get filesProRequired =>
+      'Zum Hochladen von Dateien ist Pro erforderlich.';
+
+  @override
+  String get filesReadOnly => 'Du hast nur Lesezugriff.';
+
+  @override
+  String get filesUnavailable =>
+      'Der Dateispeicher ist nicht verfügbar. Prüfe deine Verbindung und versuche es erneut.';
+
+  @override
+  String get filesSignIn => 'Melde dich an, um auf Dateien zuzugreifen.';
+
+  @override
+  String get filesTooLarge => 'Dateien dürfen höchstens 20 MB groß sein.';
+
+  @override
+  String get filesQuotaExceeded =>
+      'Dein Kontingent zum Hochladen von Dateien ist aufgebraucht.';
+
+  @override
+  String get filesDeleteProjectWarning =>
+      'Direkt an dieses Projekt angehängte Dateien werden dauerhaft gelöscht.';
+
+  @override
+  String get filesUpload => 'Wird hochgeladen';
+
+  @override
+  String get filesFinish => 'Upload wird abgeschlossen';
+
+  @override
+  String get filesLoadError => 'Dateien konnten nicht geladen werden.';
+
+  @override
+  String get filesPreview => 'Vorschau';
+
+  @override
+  String get settingsTaskCard => 'Aufgabenkarte';
+
+  @override
+  String get settingsTaskCardTabs => 'Tabs';
+
+  @override
+  String get settingsTaskCardDescriptionFirst => 'Beschreibung zuerst';
+
+  @override
+  String get taskDetailsTab => 'Details';
+
+  @override
+  String get taskDiscussionTab => 'Diskussion';
+
+  @override
+  String get taskProperties => 'Eigenschaften';
+
+  @override
+  String get filesGrouping => 'Gruppierung';
 }

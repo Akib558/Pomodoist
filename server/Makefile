@@ -1,5 +1,6 @@
 SHELL := /bin/sh
-COMPOSE := docker compose --project-directory . --env-file .env -f compose.yaml
+export COMPOSE_OVERLAYS
+COMPOSE := docker compose --project-directory . --env-file .env -f compose.yaml $(foreach overlay,$(COMPOSE_OVERLAYS),-f $(overlay))
 
 .PHONY: setup validate up core-up down status logs migrate backup restore test-db test-smoke test-openclaw test-openclaw-native
 

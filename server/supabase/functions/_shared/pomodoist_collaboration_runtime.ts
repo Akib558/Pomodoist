@@ -7,6 +7,8 @@ declare const EdgeRuntime: { waitUntil(task: Promise<unknown>): void };
 export function collaborationRuntime(settings: {
   url: string; publicUrl?: string; key: string; webUrl: string; env: { get(name: string): string | undefined };
   fetcher?: typeof fetch;
+  rpcName?: "pomodoist_collaboration" | "pomodoist_files";
+  storageEnabled?: boolean;
   authenticate?: CollaborationDependencies['authenticate'];
   rpc?: CollaborationDependencies['rpc'];
 }): CollaborationDependencies {
@@ -26,25 +28,30 @@ return {
     return error || data.user?.is_anonymous ? null : data.user?.id ?? null;
   }),
   rpc: settings.rpc ?? (async (authorization, input) => {
-    const { data, error } = await client(authorization).rpc("pomodoist_collaboration", { p_request: input }).abortSignal(AbortSignal.timeout(20000));
+    if (input.action === "reserveUpload" && settings.storageEnabled === false) throw new CollaborationError("File storage is unavailable", "storage_unavailable", 503);
+    const { data, error } = await client(authorization).rpc(settings.rpcName ?? "pomodoist_collaboration", { p_request: input }).abortSignal(AbortSignal.timeout(20000));
     if (error) throw new CollaborationError(error.message, error.code, error.code === "42501" ? 403 : error.code === "40001" ? 409 : error.code === "54000" ? 429 : 400);
-    return data;
+    return input.action === "capabilities" && settings.storageEnabled === false
+      ? { ...data, canUpload: false, reason: "storage_unavailable" } : data;
   }),
   upload: async path => {
     const { data, error } = await admin.storage.from("pomodoist-shared").createSignedUploadUrl(path, { upsert: false });
     if (error || !data) throw new Error("Upload URL unavailable");
     return { signedUrl: publicAddress(data.signedUrl), token: data.token };
   },
-  download: async (path, name) => {
-    const { data, error } = await admin.storage.from("pomodoist-shared").createSignedUrl(path, 60, { download: name });
+  download: async (path, name, inline = false) => {
+    const { data, error } = await admin.storage.from("pomodoist-shared").createSignedUrl(path, 60, inline ? {} : { download: name });
     if (error || !data) throw new Error("Download URL unavailable");
     return publicAddress(data.signedUrl);
   },
   cleanup: async () => {
     const { data, error } = await admin.rpc("pomodoist_collaboration_storage_cleanup");
-    if (error || !data?.paths?.length) return;
+    if (error) throw new Error("Storage cleanup queue unavailable");
+    if (!data?.paths?.length) return;
     const result = await admin.storage.from("pomodoist-shared").remove(data.paths);
-    if (!result.error) await admin.rpc("pomodoist_collaboration_storage_cleanup", { p_deleted: data.paths });
+    if (result.error) throw new Error("Storage cleanup failed");
+    const acknowledged = await admin.rpc("pomodoist_collaboration_storage_cleanup", { p_deleted: data.paths });
+    if (acknowledged.error) throw new Error("Storage cleanup acknowledgement failed");
   },
   inviteEmail: (email, link) => sendInvitationEmail(settings.env, email, link),
 };

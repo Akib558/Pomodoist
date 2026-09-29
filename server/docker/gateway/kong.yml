@@ -180,6 +180,17 @@ services:
         strip_path: false
         expression: 'http.path == "/.well-known/oauth-protected-resource/functions/v1/pomodoist-mcp"'
 
+  # Storage verifies signed URLs and JWTs itself; signed downloads have no API key.
+  - name: storage
+    url: http://storage:5000/
+    routes:
+      - name: storage
+        strip_path: true
+        paths:
+          - /storage/v1/
+    plugins:
+      - name: cors
+
   - name: functions
     url: http://functions:9000/
     read_timeout: 150000

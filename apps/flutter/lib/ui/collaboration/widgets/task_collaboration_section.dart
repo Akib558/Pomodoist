@@ -11,9 +11,16 @@ import 'package:pomodoist/ui/collaboration/widgets/collaboration_copy.dart';
 import 'package:pomodoist/ui/collaboration/view_models/task_collaboration_view_model.dart';
 
 class TaskCollaborationSection extends ConsumerStatefulWidget {
-  const TaskCollaborationSection({required this.task, super.key});
+  const TaskCollaborationSection({
+    required this.task,
+    this.showAssignees = true,
+    this.showComments = true,
+    super.key,
+  });
 
   final TaskItem task;
+  final bool showAssignees;
+  final bool showComments;
 
   @override
   ConsumerState<TaskCollaborationSection> createState() =>
@@ -43,9 +50,10 @@ class _TaskCollaborationSectionState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _assignees(context, scope),
-        const SizedBox(height: 16),
-        _comments(context, scope),
+        if (widget.showAssignees) _assignees(context, scope),
+        if (widget.showAssignees && widget.showComments)
+          const SizedBox(height: 16),
+        if (widget.showComments) _comments(context, scope),
       ],
     );
   }

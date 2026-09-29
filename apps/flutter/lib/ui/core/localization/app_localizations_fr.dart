@@ -3833,4 +3833,115 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get learningTourOpenProjects => 'Ouvrir Projets';
+
+  @override
+  String get filesTitle => 'Fichiers';
+
+  @override
+  String get filesAdd => 'Ajouter un fichier';
+
+  @override
+  String get filesEmpty => 'Aucun fichier pour le moment';
+
+  @override
+  String get filesSearch => 'Rechercher des fichiers';
+
+  @override
+  String get filesList => 'Liste';
+
+  @override
+  String get filesGallery => 'Galerie';
+
+  @override
+  String get filesAllTogether => 'Tous ensemble';
+
+  @override
+  String get filesByTask => 'Par tâches';
+
+  @override
+  String get filesProjectGroup => 'Fichiers du projet';
+
+  @override
+  String get filesAllTypes => 'Tous les types';
+
+  @override
+  String get filesImages => 'Images';
+
+  @override
+  String get filesDocuments => 'Documents';
+
+  @override
+  String get filesOther => 'Autres fichiers';
+
+  @override
+  String get filesDownload => 'Télécharger';
+
+  @override
+  String get filesDelete => 'Supprimer le fichier';
+
+  @override
+  String get filesDeleteConfirm => 'Supprimer définitivement ce fichier ?';
+
+  @override
+  String get filesUploadFailed => 'Échec de l’envoi. Réessayez.';
+
+  @override
+  String get filesRetry => 'Réessayer';
+
+  @override
+  String get filesProRequired => 'L’envoi de fichiers nécessite Pro.';
+
+  @override
+  String get filesReadOnly => 'Vous avez un accès en lecture seule.';
+
+  @override
+  String get filesUnavailable =>
+      'Le stockage de fichiers est indisponible. Vérifiez votre connexion et réessayez.';
+
+  @override
+  String get filesSignIn => 'Connectez-vous pour accéder aux fichiers.';
+
+  @override
+  String get filesTooLarge => 'Les fichiers ne doivent pas dépasser 20 Mo.';
+
+  @override
+  String get filesQuotaExceeded =>
+      'Votre limite d’envoi de fichiers est atteinte.';
+
+  @override
+  String get filesDeleteProjectWarning =>
+      'Les fichiers joints directement à ce projet seront définitivement supprimés.';
+
+  @override
+  String get filesUpload => 'Envoi en cours';
+
+  @override
+  String get filesFinish => 'Finalisation de l’envoi';
+
+  @override
+  String get filesLoadError => 'Impossible de charger les fichiers.';
+
+  @override
+  String get filesPreview => 'Aperçu';
+
+  @override
+  String get settingsTaskCard => 'Fiche de tâche';
+
+  @override
+  String get settingsTaskCardTabs => 'Onglets';
+
+  @override
+  String get settingsTaskCardDescriptionFirst => 'Description d’abord';
+
+  @override
+  String get taskDetailsTab => 'Détails';
+
+  @override
+  String get taskDiscussionTab => 'Discussion';
+
+  @override
+  String get taskProperties => 'Propriétés';
+
+  @override
+  String get filesGrouping => 'Regroupement';
 }

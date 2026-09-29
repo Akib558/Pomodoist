@@ -81,13 +81,98 @@ that deployment (`pomodoist-dev`, `pomodoist-stg`, or `pomodoist`).
 
 Then run `make up`. The proxy must forward `X-Forwarded-*` headers and WebSocket upgrades. Caddy does both automatically. Open ports 80 and 443 to the proxy; do not expose PostgreSQL or container-internal service ports.
 
+## Optional file storage
+
+Personal and shared project/task files use the private `pomodoist-shared` logical
+bucket. The base stack leaves uploads unavailable; enable the Storage overlay
+only after provisioning a dedicated private S3-compatible bucket. Configure the
+`STORAGE_S3_*` values in `.env` for your provider (AWS S3, R2, MinIO, or another
+S3 API). Keep credentials server-side and block public bucket access.
+
+```sh
+export COMPOSE_OVERLAYS=compose.storage.yaml
+make up
+```
+
+Keep that environment variable set for subsequent `make` and maintenance commands.
+The overlay starts Storage, initializes existing database credentials, creates or
+updates the private logical bucket with a 20,000,000-byte per-file limit, and
+provisions the cleanup worker's encrypted Vault URL/credential. Application SQL
+owns authorization, Pro eligibility and the reserved account's monthly/yearly quotas.
+The gateway exposes `/storage/v1`; upload URLs never permit overwrite and download
+URLs expire in 60 seconds. Preview URLs permit only the supported raster formats.
+
+For hosted Supabase, deploy `pomodoist-files` and `pomodoist-files-cleanup`, set the
+Edge secret `POMODOIST_FILES_STORAGE_ENABLED=true`, and provision Vault secrets
+`pomodoist-files-cleanup-url` (full function URL) and `pomodoist-files-cleanup-secret`
+(the service-role bearer key). The migration schedules cleanup automatically when
+`pg_cron`/`pg_net` are available. Requests without the exact configured worker key
+are rejected; failed object removals remain queued for retry. Never delete
+`storage.objects` rows to remove files: the worker calls the Storage API so bytes
+and metadata are removed together.
+
+Storage is pinned to `supabase/storage-api:v1.74.0`, matching the
+[upstream Compose configuration](https://github.com/supabase/supabase/blob/master/docker/docker-compose.yml)
+and its [S3 overlay](https://github.com/supabase/supabase/blob/master/docker/docker-compose.s3.yml).
+No image transformation service is required.
+
+### File API and quota ownership
+
+`pomodoist-files` accepts `capabilities`, `reserveUpload`, `finishUpload`,
+`download`, and `deleteAttachment`. Reservation and capabilities identify exactly
+one `projectId` or `taskId`, with `scopeId` for shared content. Clients supply a
+UUID upload ID, name, MIME type and byte length; they cannot choose object paths,
+access owners or quota accounts. Completion returns server-authored attachment
+metadata and its revision; the existing personal/shared sync streams deliver
+subsequent changes. Ordinary sync writes cannot create attachment metadata.
+Legacy collaboration and MCP file actions use the same SQL authority.
+
+Personal uploads require the owner's Pro. Shared uploads require an editor role:
+the uploader's Pro is used first, otherwise the shared owner's Pro sponsors the
+upload. A full uploader quota never falls back to the owner. Each file is limited
+to 20,000,000 bytes; successful uploads consume 1,000,000,000 bytes per UTC calendar
+month and 5,000,000,000 stored bytes per completion year. Reservations hold space;
+completion checks current access, the fixed payer's Pro, actual stored size/MIME,
+and the completion period's limits. Repeated completion never charges again.
+Deleting a file releases that year's storage, but not monthly upload volume.
+
+Pro expiry leaves existing downloads available. Sharing, leaving, changing the
+owner and unsharing never change a file's quota payer or physical path. Unsharing
+restores all current projects/tasks (including those created while shared) and
+files to the owner's personal account. Public project links omit attachments.
+Deleting a project removes its direct attachments; task files follow their task
+when moved and are removed when retained task history is purged. Cleanup retains
+expired/deleted identities long enough to remove late writes from issued upload
+capabilities. Metadata is cached offline; uploads and download links require a
+connection.
+
+The implementation is checked with source analysis and isolated unit tests.
+These checks do not execute migrations, validate RLS on a deployed database, or
+prove a configured S3 provider works.
+
 ## Backup and restore
 
-`make backup` writes a compressed archive under `server/backups`. It captures application, Auth, and Vault data in one database snapshot, along with the instance's Vault encryption key. Treat it as sensitive. Keep a separate protected copy of `.env` as well. To choose another directory:
+`make backup` writes a compressed archive under `server/backups`. It captures application, Auth, Vault, and Storage metadata in one database snapshot, along with the instance's Vault encryption key. Treat it as sensitive. Keep a separate protected copy of `.env` as well. To choose another directory:
 
 ```sh
 make backup BACKUP_DIR=/srv/pomodoist-backups
 ```
+
+With `COMPOSE_OVERLAYS=compose.storage.yaml`, backup also includes the S3 object
+bytes in `storage.tar.gz`. Install AWS CLI v2 and Python 3.12+ on the maintenance
+host. The helper reads the same provider/credentials as Storage through Compose;
+there is no separate bucket setting that can silently back up another provider.
+Backup temporarily stops the running client-facing services and Storage so signed
+uploads and cleanup cannot race the database snapshot, then restarts those services.
+Allow downtime and sufficient local disk space for the complete bucket. A backup
+without the Storage overlay refuses to proceed if object metadata exists.
+
+Restore with the same overlay restores bytes before the transactional database
+restore; it does not delete unrelated S3 keys. On any failure, services remain
+stopped for inspection. Use a dedicated bucket and immutable file paths; do not
+modify object bytes outside Storage. The archive and provider credentials are
+sensitive. The release fingerprint includes active overlays and pins the required
+Storage version as well as application migrations.
 
 Test and copy backups off the server. Restore replaces the current database contents, so it requires both an exact file and an explicit confirmation token:
 

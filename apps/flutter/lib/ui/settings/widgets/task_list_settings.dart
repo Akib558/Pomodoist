@@ -21,6 +21,30 @@ class TaskListStyleSettings extends ConsumerWidget {
     return SettingsGroup(
       children: [
         SettingsRow(
+          title: l10n.settingsTaskCard,
+          control: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final option in TaskDetailLayout.values)
+                ChoiceChip(
+                  label: Text(
+                    option == TaskDetailLayout.tabs
+                        ? l10n.settingsTaskCardTabs
+                        : l10n.settingsTaskCardDescriptionFirst,
+                  ),
+                  selected: state.detailLayout == option,
+                  onSelected: (_) => saveSetting(
+                    context,
+                    ref
+                        .read(taskListSettingsViewModelProvider.notifier)
+                        .setDetailLayout(option),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        SettingsRow(
           title: l10n.settingsTaskListStyle,
           subtitle: l10n.settingsTaskListStyleDescription,
           control: Wrap(

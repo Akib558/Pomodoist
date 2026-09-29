@@ -218,14 +218,22 @@ Future<void> _confirmDeleteProject(
           child: Text(context.l10n.commonDelete),
         ),
       ],
-      child: Text(
-        ref.read(projectContextViewModelProvider(project.id)).hasChildren
-            ? context.l10n.deleteProjectWithChildrenConfirmation(
-                project.displayName(context.l10n),
-              )
-            : context.l10n.deleteProjectConfirmation(
-                project.displayName(context.l10n),
-              ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            ref.read(projectContextViewModelProvider(project.id)).hasChildren
+                ? context.l10n.deleteProjectWithChildrenConfirmation(
+                    project.displayName(context.l10n),
+                  )
+                : context.l10n.deleteProjectConfirmation(
+                    project.displayName(context.l10n),
+                  ),
+          ),
+          const SizedBox(height: 12),
+          Text(context.l10n.filesDeleteProjectWarning),
+        ],
       ),
     ),
   );

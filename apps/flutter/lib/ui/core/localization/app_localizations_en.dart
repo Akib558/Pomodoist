@@ -3816,4 +3816,115 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get learningTourOpenProjects => 'Open Projects';
+
+  @override
+  String get filesTitle => 'Files';
+
+  @override
+  String get filesAdd => 'Add file';
+
+  @override
+  String get filesEmpty => 'No files yet';
+
+  @override
+  String get filesSearch => 'Search files';
+
+  @override
+  String get filesList => 'List';
+
+  @override
+  String get filesGallery => 'Gallery';
+
+  @override
+  String get filesAllTogether => 'All together';
+
+  @override
+  String get filesByTask => 'By tasks';
+
+  @override
+  String get filesProjectGroup => 'Project files';
+
+  @override
+  String get filesAllTypes => 'All types';
+
+  @override
+  String get filesImages => 'Images';
+
+  @override
+  String get filesDocuments => 'Documents';
+
+  @override
+  String get filesOther => 'Other files';
+
+  @override
+  String get filesDownload => 'Download';
+
+  @override
+  String get filesDelete => 'Delete file';
+
+  @override
+  String get filesDeleteConfirm => 'Permanently delete this file?';
+
+  @override
+  String get filesUploadFailed => 'Upload failed. Try again.';
+
+  @override
+  String get filesRetry => 'Retry';
+
+  @override
+  String get filesProRequired => 'Uploading files requires Pro.';
+
+  @override
+  String get filesReadOnly => 'You have read-only access.';
+
+  @override
+  String get filesUnavailable =>
+      'File storage is unavailable. Check your connection and try again.';
+
+  @override
+  String get filesSignIn => 'Sign in to access files.';
+
+  @override
+  String get filesTooLarge => 'Files must be 20 MB or smaller.';
+
+  @override
+  String get filesQuotaExceeded =>
+      'Your file upload allowance has been reached.';
+
+  @override
+  String get filesDeleteProjectWarning =>
+      'Files attached directly to this project will be permanently deleted.';
+
+  @override
+  String get filesUpload => 'Uploading';
+
+  @override
+  String get filesFinish => 'Finishing upload';
+
+  @override
+  String get filesLoadError => 'Could not load files.';
+
+  @override
+  String get filesPreview => 'Preview';
+
+  @override
+  String get settingsTaskCard => 'Task card';
+
+  @override
+  String get settingsTaskCardTabs => 'Tabs';
+
+  @override
+  String get settingsTaskCardDescriptionFirst => 'Description first';
+
+  @override
+  String get taskDetailsTab => 'Details';
+
+  @override
+  String get taskDiscussionTab => 'Discussion';
+
+  @override
+  String get taskProperties => 'Properties';
+
+  @override
+  String get filesGrouping => 'Grouping';
 }

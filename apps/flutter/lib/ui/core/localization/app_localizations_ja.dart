@@ -3687,4 +3687,112 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get learningTourOpenProjects => 'プロジェクトを開く';
+
+  @override
+  String get filesTitle => 'ファイル';
+
+  @override
+  String get filesAdd => 'ファイルを追加';
+
+  @override
+  String get filesEmpty => 'ファイルはまだありません';
+
+  @override
+  String get filesSearch => 'ファイルを検索';
+
+  @override
+  String get filesList => 'リスト';
+
+  @override
+  String get filesGallery => 'ギャラリー';
+
+  @override
+  String get filesAllTogether => 'すべてまとめて';
+
+  @override
+  String get filesByTask => 'タスク別';
+
+  @override
+  String get filesProjectGroup => 'プロジェクトのファイル';
+
+  @override
+  String get filesAllTypes => 'すべての種類';
+
+  @override
+  String get filesImages => '画像';
+
+  @override
+  String get filesDocuments => 'ドキュメント';
+
+  @override
+  String get filesOther => 'その他のファイル';
+
+  @override
+  String get filesDownload => 'ダウンロード';
+
+  @override
+  String get filesDelete => 'ファイルを削除';
+
+  @override
+  String get filesDeleteConfirm => 'このファイルを完全に削除しますか？';
+
+  @override
+  String get filesUploadFailed => 'アップロードに失敗しました。もう一度お試しください。';
+
+  @override
+  String get filesRetry => '再試行';
+
+  @override
+  String get filesProRequired => 'ファイルのアップロードにはProが必要です。';
+
+  @override
+  String get filesReadOnly => '閲覧のみのアクセス権があります。';
+
+  @override
+  String get filesUnavailable => 'ファイルストレージを利用できません。接続を確認してもう一度お試しください。';
+
+  @override
+  String get filesSignIn => 'ファイルにアクセスするにはログインしてください。';
+
+  @override
+  String get filesTooLarge => 'ファイルは20 MB以下にしてください。';
+
+  @override
+  String get filesQuotaExceeded => 'ファイルのアップロード上限に達しました。';
+
+  @override
+  String get filesDeleteProjectWarning => 'このプロジェクトに直接添付されたファイルは完全に削除されます。';
+
+  @override
+  String get filesUpload => 'アップロード中';
+
+  @override
+  String get filesFinish => 'アップロードを完了しています';
+
+  @override
+  String get filesLoadError => 'ファイルを読み込めませんでした。';
+
+  @override
+  String get filesPreview => 'プレビュー';
+
+  @override
+  String get settingsTaskCard => 'タスクカード';
+
+  @override
+  String get settingsTaskCardTabs => 'タブ';
+
+  @override
+  String get settingsTaskCardDescriptionFirst => '説明を先に表示';
+
+  @override
+  String get taskDetailsTab => '詳細';
+
+  @override
+  String get taskDiscussionTab => 'ディスカッション';
+
+  @override
+  String get taskProperties => 'プロパティ';
+
+  @override
+  String get filesGrouping => 'グループ化';
 }

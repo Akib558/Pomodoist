@@ -3602,4 +3602,112 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get learningTourOpenProjects => '打开项目';
+
+  @override
+  String get filesTitle => '文件';
+
+  @override
+  String get filesAdd => '添加文件';
+
+  @override
+  String get filesEmpty => '暂无文件';
+
+  @override
+  String get filesSearch => '搜索文件';
+
+  @override
+  String get filesList => '列表';
+
+  @override
+  String get filesGallery => '图库';
+
+  @override
+  String get filesAllTogether => '全部汇总';
+
+  @override
+  String get filesByTask => '按任务';
+
+  @override
+  String get filesProjectGroup => '项目文件';
+
+  @override
+  String get filesAllTypes => '所有类型';
+
+  @override
+  String get filesImages => '图片';
+
+  @override
+  String get filesDocuments => '文档';
+
+  @override
+  String get filesOther => '其他文件';
+
+  @override
+  String get filesDownload => '下载';
+
+  @override
+  String get filesDelete => '删除文件';
+
+  @override
+  String get filesDeleteConfirm => '永久删除此文件？';
+
+  @override
+  String get filesUploadFailed => '上传失败，请重试。';
+
+  @override
+  String get filesRetry => '重试';
+
+  @override
+  String get filesProRequired => '上传文件需要 Pro。';
+
+  @override
+  String get filesReadOnly => '您拥有只读权限。';
+
+  @override
+  String get filesUnavailable => '文件存储不可用，请检查连接后重试。';
+
+  @override
+  String get filesSignIn => '登录以访问文件。';
+
+  @override
+  String get filesTooLarge => '文件大小不得超过 20 MB。';
+
+  @override
+  String get filesQuotaExceeded => '已达到文件上传限额。';
+
+  @override
+  String get filesDeleteProjectWarning => '直接附加到此项目的文件将被永久删除。';
+
+  @override
+  String get filesUpload => '正在上传';
+
+  @override
+  String get filesFinish => '正在完成上传';
+
+  @override
+  String get filesLoadError => '无法加载文件。';
+
+  @override
+  String get filesPreview => '预览';
+
+  @override
+  String get settingsTaskCard => '任务卡片';
+
+  @override
+  String get settingsTaskCardTabs => '选项卡';
+
+  @override
+  String get settingsTaskCardDescriptionFirst => '描述优先';
+
+  @override
+  String get taskDetailsTab => '详情';
+
+  @override
+  String get taskDiscussionTab => '讨论';
+
+  @override
+  String get taskProperties => '属性';
+
+  @override
+  String get filesGrouping => '分组';
 }

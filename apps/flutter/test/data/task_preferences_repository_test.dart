@@ -9,6 +9,74 @@ import 'package:pomodoist/data/repositories/settings/task_preferences_repository
 
 void main() {
   test(
+    'task card layout defaults to tabs for missing or invalid settings',
+    () async {
+      for (final value in [null, 'future-layout', 42, 'tabs']) {
+        SharedPreferences.setMockInitialValues({
+          if (value case final Object storedValue)
+            taskDetailLayoutPreferenceKey: storedValue,
+          taskListStylePreferenceKey: 'classic',
+        });
+        final repository = LocalTaskPreferencesRepository(
+          PreferencesService(SharedPreferences.getInstance),
+        );
+        addTearDown(repository.dispose);
+        (await repository.load()).getOrThrow();
+        expect(repository.state.detailLayout, TaskDetailLayout.tabs);
+        expect(repository.state.listStyle, TaskListStyle.classic);
+      }
+    },
+  );
+
+  test(
+    'task card layout survives restart and wins over a delayed load',
+    () async {
+      SharedPreferences.setMockInitialValues({
+        taskDetailLayoutPreferenceKey: 'tabs',
+      });
+      final ready = Completer<SharedPreferences?>();
+      final service = PreferencesService(() => ready.future);
+      final repository = LocalTaskPreferencesRepository(service);
+      addTearDown(repository.dispose);
+      final loading = repository.load();
+      final saving = repository.setDetailLayout(
+        TaskDetailLayout.descriptionFirst,
+      );
+      ready.complete(await SharedPreferences.getInstance());
+      (await loading).getOrThrow();
+      (await saving).getOrThrow();
+      final restored = LocalTaskPreferencesRepository(service);
+      addTearDown(restored.dispose);
+      (await restored.load()).getOrThrow();
+      expect(repository.state.detailLayout, TaskDetailLayout.descriptionFirst);
+      expect(restored.state.detailLayout, TaskDetailLayout.descriptionFirst);
+    },
+  );
+
+  test(
+    'rapid task card choices persist in order and allow retry after failure',
+    () async {
+      SharedPreferences.setMockInitialValues({});
+      final service = _ControlledPreferences()..failNextWrite = true;
+      final repository = LocalTaskPreferencesRepository(service);
+      addTearDown(repository.dispose);
+      final first = repository.setDetailLayout(
+        TaskDetailLayout.descriptionFirst,
+      );
+      await service.started.future;
+      final last = repository.setDetailLayout(TaskDetailLayout.tabs);
+      expect(repository.state.detailLayout, TaskDetailLayout.tabs);
+      service.release.complete();
+      expect(await first, isA<Failure<void>>());
+      (await last).getOrThrow();
+      final restored = LocalTaskPreferencesRepository(service);
+      addTearDown(restored.dispose);
+      (await restored.load()).getOrThrow();
+      expect(restored.state.detailLayout, TaskDetailLayout.tabs);
+    },
+  );
+
+  test(
     'branch style defaults safely and remains independent of row settings',
     () async {
       for (final value in [null, 'unknown', 42, 'connected']) {

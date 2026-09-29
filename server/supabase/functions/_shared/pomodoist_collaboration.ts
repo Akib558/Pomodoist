@@ -7,7 +7,7 @@ export type CollaborationDependencies = {
   authenticate: (authorization: string) => Promise<string | null>;
   rpc: (authorization: string | null, request: Json) => Promise<Json>;
   upload: (path: string) => Promise<{ signedUrl: string; token: string }>;
-  download: (path: string, name: string) => Promise<string>;
+  download: (path: string, name: string, inline?: boolean) => Promise<string>;
   cleanup: () => Promise<void>;
   waitUntil?: (task: Promise<unknown>) => void;
   inviteEmail: (email: string, url: string) => Promise<void>;
@@ -18,12 +18,12 @@ export class CollaborationError extends Error {
 }
 const actions = new Set(["state", "share", "pull", "push", "invite", "accept", "members", "role", "remove", "leave", "transfer", "delete", "unshare", "publicLink", "publicRead", "notifications", "readNotification", "reserveUpload", "finishUpload", "deleteAttachment", "download", "export", "preferences"]);
 const noScope = new Set(["state", "share", "accept", "publicRead", "notifications", "readNotification"]);
-function required(map: Json, key: string, limit = 200): string {
+export function required(map: Json, key: string, limit = 200): string {
   const value = map[key];
   if (typeof value !== "string" || !value.trim() || value.length > limit) throw new CollaborationError(`Invalid ${key}`);
   return value;
 }
-function integer(map: Json, key: string, max = Number.MAX_SAFE_INTEGER): number {
+export function integer(map: Json, key: string, max = Number.MAX_SAFE_INTEGER): number {
   const value = map[key];
   if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 0 || value > max) throw new CollaborationError(`Invalid ${key}`);
   return value;
@@ -55,7 +55,8 @@ export function validateCollaborationRequest(value: unknown): Json {
     if (!request.data || typeof request.data !== "object" || Array.isArray(request.data)) throw new CollaborationError("Invalid preference data");
   }
   if (action === "reserveUpload") {
-    for (const key of ["taskId", "uploadId", "contentType"]) required(request, key);
+    validateFileTarget(request);
+    for (const key of ["uploadId", "contentType"]) required(request, key);
     required(request, "name", 255);
     if (!integer(request, "bytes", 20_000_000)) throw new CollaborationError("Empty attachment");
   }
@@ -81,7 +82,13 @@ export function publicCollaborationProjection(result: Json): Json {
   return { scope: { id: result.scopeId, rootProjectId: result.rootProjectId }, projects: ofType("project"), tasks: ofType("task"), comments: ofType("comment") };
 }
 
-export async function handleCollaboration(request: Request, deps: CollaborationDependencies): Promise<Response> {
+export function validateFileTarget(request: Json): void {
+  const targets = ["taskId", "projectId"].filter(key => request[key] != null);
+  if (targets.length !== 1) throw new CollaborationError("Exactly one taskId or projectId is required");
+  required(request, targets[0]);
+}
+
+export async function handleCollaboration(request: Request, deps: CollaborationDependencies, validate = validateCollaborationRequest): Promise<Response> {
   const headers = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, apikey, content-type, x-client-info", "Access-Control-Allow-Methods": "POST, OPTIONS", "Cache-Control": "no-store", "X-Robots-Tag": "noindex, nofollow", "Content-Type": "application/json" };
   const reply = (data: Json, status = 200) => new Response(JSON.stringify(data), { status, headers });
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers });
@@ -91,7 +98,7 @@ export async function handleCollaboration(request: Request, deps: CollaborationD
     if (!parsed.ok) return reply({ error: parsed.error, code: "invalid_request" }, parsed.status);
     const versionError = apiVersionError(parsed.value);
     if (versionError) return reply(versionError, 400);
-    const input = validateCollaborationRequest(parsed.value);
+    const input = validate(parsed.value);
     delete input.apiVersion;
     const action = String(input.action);
     const authorization = request.headers.get("Authorization");
@@ -116,7 +123,7 @@ export async function handleCollaboration(request: Request, deps: CollaborationD
     }
     if (action === "download") {
       const { objectPath, ...safe } = result;
-      return reply({ ...safe, url: await deps.download(String(objectPath), String(result.name)) });
+      return reply({ ...safe, url: await deps.download(String(objectPath), String(result.name), input.preview === true && /^(image\/(png|jpeg|gif|webp|avif|bmp))$/.test(String(result.contentType))) });
     }
     if (action === "publicRead") {
       return reply(publicCollaborationProjection(result));

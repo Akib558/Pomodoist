@@ -81,7 +81,8 @@ extension AccountSyncPull on AccountSyncEngine {
         if (change.entityType == 'project' && change.data['scopeId'] != null) {
           continue;
         }
-        if (!change.entityType.startsWith('focus_')) {
+        if (!change.entityType.startsWith('focus_') &&
+            change.entityType != 'attachment') {
           final scoped =
               await (_db.select(_db.sharedEntities)..where(
                     (row) =>
@@ -123,6 +124,44 @@ extension AccountSyncPull on AccountSyncEngine {
   Future<void> _applyUpsert(AccountSyncEntity entity) async {
     final data = syncDataWithoutSyncMetadata(entity.data);
     switch (entity.entityType) {
+      case 'attachment':
+        final cached =
+            await (_db.select(_db.sharedEntities)..where(
+                  (row) =>
+                      row.scopeId.equals('_account') &
+                      row.entityType.equals('attachment') &
+                      row.entityId.equals(entity.entityId),
+                ))
+                .getSingleOrNull();
+        if (cached != null &&
+            (cached.serverRevision > entity.serverRevision ||
+                cached.serverRevision == entity.serverRevision &&
+                    cached.isDeleted)) {
+          return;
+        }
+        await (_db.delete(_db.sharedEntities)..where(
+              (row) =>
+                  row.entityType.equals('attachment') &
+                  row.entityId.equals(entity.entityId) &
+                  row.scopeId.equals('_account').not(),
+            ))
+            .go();
+        await _db
+            .into(_db.sharedEntities)
+            .insertOnConflictUpdate(
+              SharedEntitiesCompanion.insert(
+                scopeId: '_account',
+                entityType: 'attachment',
+                entityId: entity.entityId,
+                dataJson: jsonEncode({
+                  ...data,
+                  'id': entity.entityId,
+                  'scopeId': null,
+                }),
+                serverRevision: Value(entity.serverRevision),
+              ),
+            );
+        return;
       case 'workspace':
         await _upsertWorkspace(entity.entityId, data);
         return;
@@ -186,6 +225,20 @@ extension AccountSyncPull on AccountSyncEngine {
   Future<void> _applyDelete(AccountSyncEntity entity) async {
     final now = entity.deletedAt ?? DateTime.now().toUtc();
     switch (entity.entityType) {
+      case 'attachment':
+        await _db
+            .into(_db.sharedEntities)
+            .insertOnConflictUpdate(
+              SharedEntitiesCompanion.insert(
+                scopeId: '_account',
+                entityType: 'attachment',
+                entityId: entity.entityId,
+                dataJson: jsonEncode(entity.data),
+                isDeleted: const Value(true),
+                serverRevision: Value(entity.serverRevision),
+              ),
+            );
+        return;
       case 'workspace':
         await (_db.update(
           _db.workspaces,

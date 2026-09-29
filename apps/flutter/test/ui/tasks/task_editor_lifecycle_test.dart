@@ -1,3 +1,6 @@
+import 'package:pomodoist/config/task_preferences_dependencies.dart';
+import 'package:pomodoist/domain/models/settings/task_preferences.dart';
+import 'package:pomodoist/ui/settings/view_models/task_settings_view_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pomodoist/config/account_providers.dart';
@@ -14,6 +17,74 @@ import 'package:pomodoist/utils/result.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  test(
+    'changing task card layout preserves retained title and description drafts',
+    () async {
+      final repository = _FakeTaskRepository();
+      final container = _container(repository: repository);
+      addTearDown(container.dispose);
+      final titleIdentity = Object();
+      final descriptionIdentity = Object();
+      for (final identity in [titleIdentity, descriptionIdentity]) {
+        final subscription = container.listen(
+          taskEditorViewModelProvider(identity),
+          (_, _) {},
+        );
+        addTearDown(subscription.close);
+      }
+      final title = container.read(
+        taskEditorViewModelProvider(titleIdentity).notifier,
+      );
+      final description = container.read(
+        taskEditorViewModelProvider(descriptionIdentity).notifier,
+      );
+      title.updateDraft('Unsaved title');
+      description.updateDraft('Unsaved description');
+      repository.failNextUpdate = true;
+      expect(
+        await description.saveDescription(
+          _task('task'),
+          description.state.draft,
+        ),
+        isFalse,
+      );
+      final settings = container.read(
+        taskListSettingsViewModelProvider.notifier,
+      );
+      for (final layout in [
+        TaskDetailLayout.descriptionFirst,
+        TaskDetailLayout.tabs,
+      ]) {
+        await settings.setDetailLayout(layout);
+        await pumpEventQueue();
+        expect(
+          container.read(taskPreferencesStateProvider).detailLayout,
+          layout,
+        );
+        expect(
+          container.read(taskEditorViewModelProvider(titleIdentity)).draft,
+          'Unsaved title',
+        );
+        expect(
+          container.read(taskEditorViewModelProvider(titleIdentity)).dirty,
+          isTrue,
+        );
+        expect(
+          container
+              .read(taskEditorViewModelProvider(descriptionIdentity))
+              .draft,
+          'Unsaved description',
+        );
+        expect(
+          container
+              .read(taskEditorViewModelProvider(descriptionIdentity))
+              .failed,
+          isTrue,
+        );
+      }
+    },
+  );
 
   test(
     'map title editor retains a failed draft and retries without changing other fields',

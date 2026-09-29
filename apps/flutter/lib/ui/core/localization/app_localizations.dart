@@ -6526,6 +6526,222 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open Projects'**
   String get learningTourOpenProjects;
+
+  /// No description provided for @filesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Files'**
+  String get filesTitle;
+
+  /// No description provided for @filesAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add file'**
+  String get filesAdd;
+
+  /// No description provided for @filesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No files yet'**
+  String get filesEmpty;
+
+  /// No description provided for @filesSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search files'**
+  String get filesSearch;
+
+  /// No description provided for @filesList.
+  ///
+  /// In en, this message translates to:
+  /// **'List'**
+  String get filesList;
+
+  /// No description provided for @filesGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery'**
+  String get filesGallery;
+
+  /// No description provided for @filesAllTogether.
+  ///
+  /// In en, this message translates to:
+  /// **'All together'**
+  String get filesAllTogether;
+
+  /// No description provided for @filesByTask.
+  ///
+  /// In en, this message translates to:
+  /// **'By tasks'**
+  String get filesByTask;
+
+  /// No description provided for @filesProjectGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'Project files'**
+  String get filesProjectGroup;
+
+  /// No description provided for @filesAllTypes.
+  ///
+  /// In en, this message translates to:
+  /// **'All types'**
+  String get filesAllTypes;
+
+  /// No description provided for @filesImages.
+  ///
+  /// In en, this message translates to:
+  /// **'Images'**
+  String get filesImages;
+
+  /// No description provided for @filesDocuments.
+  ///
+  /// In en, this message translates to:
+  /// **'Documents'**
+  String get filesDocuments;
+
+  /// No description provided for @filesOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other files'**
+  String get filesOther;
+
+  /// No description provided for @filesDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get filesDownload;
+
+  /// No description provided for @filesDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete file'**
+  String get filesDelete;
+
+  /// No description provided for @filesDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Permanently delete this file?'**
+  String get filesDeleteConfirm;
+
+  /// No description provided for @filesUploadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload failed. Try again.'**
+  String get filesUploadFailed;
+
+  /// No description provided for @filesRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get filesRetry;
+
+  /// No description provided for @filesProRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading files requires Pro.'**
+  String get filesProRequired;
+
+  /// No description provided for @filesReadOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'You have read-only access.'**
+  String get filesReadOnly;
+
+  /// No description provided for @filesUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'File storage is unavailable. Check your connection and try again.'**
+  String get filesUnavailable;
+
+  /// No description provided for @filesSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to access files.'**
+  String get filesSignIn;
+
+  /// No description provided for @filesTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Files must be 20 MB or smaller.'**
+  String get filesTooLarge;
+
+  /// No description provided for @filesQuotaExceeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Your file upload allowance has been reached.'**
+  String get filesQuotaExceeded;
+
+  /// No description provided for @filesDeleteProjectWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Files attached directly to this project will be permanently deleted.'**
+  String get filesDeleteProjectWarning;
+
+  /// No description provided for @filesUpload.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploading'**
+  String get filesUpload;
+
+  /// No description provided for @filesFinish.
+  ///
+  /// In en, this message translates to:
+  /// **'Finishing upload'**
+  String get filesFinish;
+
+  /// No description provided for @filesLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load files.'**
+  String get filesLoadError;
+
+  /// No description provided for @filesPreview.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get filesPreview;
+
+  /// No description provided for @settingsTaskCard.
+  ///
+  /// In en, this message translates to:
+  /// **'Task card'**
+  String get settingsTaskCard;
+
+  /// No description provided for @settingsTaskCardTabs.
+  ///
+  /// In en, this message translates to:
+  /// **'Tabs'**
+  String get settingsTaskCardTabs;
+
+  /// No description provided for @settingsTaskCardDescriptionFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Description first'**
+  String get settingsTaskCardDescriptionFirst;
+
+  /// No description provided for @taskDetailsTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Details'**
+  String get taskDetailsTab;
+
+  /// No description provided for @taskDiscussionTab.
+  ///
+  /// In en, this message translates to:
+  /// **'Discussion'**
+  String get taskDiscussionTab;
+
+  /// No description provided for @taskProperties.
+  ///
+  /// In en, this message translates to:
+  /// **'Properties'**
+  String get taskProperties;
+
+  /// No description provided for @filesGrouping.
+  ///
+  /// In en, this message translates to:
+  /// **'Grouping'**
+  String get filesGrouping;
 }
 
 class _AppLocalizationsDelegate

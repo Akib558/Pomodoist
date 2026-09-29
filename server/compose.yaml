@@ -212,6 +212,7 @@ services:
       SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY:?run make setup first}
       SUPABASE_DB_URL: postgresql://postgres:${POSTGRES_PASSWORD:?run make setup first}@db:5432/postgres
       ACCOUNT_STORAGE_BUCKETS: ""
+      POMODOIST_FILES_STORAGE_ENABLED: "false"
       SMTP_HOST: ${SMTP_HOST:-localhost}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_ADMIN_EMAIL: ${SMTP_ADMIN_EMAIL:-}

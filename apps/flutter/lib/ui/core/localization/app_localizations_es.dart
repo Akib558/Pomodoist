@@ -3826,4 +3826,116 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get learningTourOpenProjects => 'Abrir Proyectos';
+
+  @override
+  String get filesTitle => 'Archivos';
+
+  @override
+  String get filesAdd => 'Añadir archivo';
+
+  @override
+  String get filesEmpty => 'Aún no hay archivos';
+
+  @override
+  String get filesSearch => 'Buscar archivos';
+
+  @override
+  String get filesList => 'Lista';
+
+  @override
+  String get filesGallery => 'Galería';
+
+  @override
+  String get filesAllTogether => 'Todos juntos';
+
+  @override
+  String get filesByTask => 'Por tareas';
+
+  @override
+  String get filesProjectGroup => 'Archivos del proyecto';
+
+  @override
+  String get filesAllTypes => 'Todos los tipos';
+
+  @override
+  String get filesImages => 'Imágenes';
+
+  @override
+  String get filesDocuments => 'Documentos';
+
+  @override
+  String get filesOther => 'Otros archivos';
+
+  @override
+  String get filesDownload => 'Descargar';
+
+  @override
+  String get filesDelete => 'Eliminar archivo';
+
+  @override
+  String get filesDeleteConfirm => '¿Eliminar este archivo permanentemente?';
+
+  @override
+  String get filesUploadFailed =>
+      'Error al subir el archivo. Inténtalo de nuevo.';
+
+  @override
+  String get filesRetry => 'Reintentar';
+
+  @override
+  String get filesProRequired => 'Se requiere Pro para subir archivos.';
+
+  @override
+  String get filesReadOnly => 'Tienes acceso de solo lectura.';
+
+  @override
+  String get filesUnavailable =>
+      'El almacenamiento de archivos no está disponible. Revisa tu conexión e inténtalo de nuevo.';
+
+  @override
+  String get filesSignIn => 'Inicia sesión para acceder a los archivos.';
+
+  @override
+  String get filesTooLarge => 'Los archivos no deben superar los 20 MB.';
+
+  @override
+  String get filesQuotaExceeded =>
+      'Has alcanzado tu límite de subida de archivos.';
+
+  @override
+  String get filesDeleteProjectWarning =>
+      'Los archivos adjuntos directamente a este proyecto se eliminarán permanentemente.';
+
+  @override
+  String get filesUpload => 'Subiendo';
+
+  @override
+  String get filesFinish => 'Finalizando subida';
+
+  @override
+  String get filesLoadError => 'No se pudieron cargar los archivos.';
+
+  @override
+  String get filesPreview => 'Vista previa';
+
+  @override
+  String get settingsTaskCard => 'Tarjeta de tarea';
+
+  @override
+  String get settingsTaskCardTabs => 'Pestañas';
+
+  @override
+  String get settingsTaskCardDescriptionFirst => 'Descripción primero';
+
+  @override
+  String get taskDetailsTab => 'Detalles';
+
+  @override
+  String get taskDiscussionTab => 'Discusión';
+
+  @override
+  String get taskProperties => 'Propiedades';
+
+  @override
+  String get filesGrouping => 'Agrupación';
 }

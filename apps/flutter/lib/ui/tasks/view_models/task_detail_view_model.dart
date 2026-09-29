@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'task_branch_rows.dart';
+import 'package:pomodoist/domain/models/settings/task_preferences.dart';
 import 'package:pomodoist/config/account_providers.dart';
 import 'package:pomodoist/config/providers.dart';
 import 'package:pomodoist/config/focus_dependencies.dart';
@@ -13,6 +14,7 @@ import 'package:pomodoist/data/repositories/focus/focus_repository.dart';
 import 'package:pomodoist/domain/models/tasks/task_time.dart';
 
 typedef TaskDetailState = ({
+  TaskDetailLayout layout,
   AsyncValue<TaskItem?> task,
   bool calendarLinked,
   FocusPresetItem? preset,
@@ -98,6 +100,7 @@ class TaskDetailViewModel extends Notifier<TaskDetailState> {
     final activePreset = selectedFocusPresetOrDefault(presets, run?.presetId);
     return (
       task: task,
+      layout: ref.watch(taskPreferencesStateProvider).detailLayout,
       calendarLinked:
           ref.watch(googleCalendarLinkProvider(taskId)).value != null,
       preset: preset,

@@ -266,7 +266,25 @@ extension SharedAccountSync on AccountSyncEngine {
                   row.entityId.equals(id),
             ))
             .getSingleOrNull();
-    if (previous != null && revision < previous.serverRevision) return;
+    if (previous != null &&
+        (revision < previous.serverRevision ||
+            type == 'attachment' &&
+                revision == previous.serverRevision &&
+                previous.isDeleted &&
+                !deleted)) {
+      return;
+    }
+    if (type == 'attachment' && !deleted) {
+      await (_db.delete(_db.sharedEntities)..where(
+            (row) =>
+                row.entityType.equals(type) &
+                row.entityId.equals(id) &
+                row.scopeId.equals(scopeId).not(),
+          ))
+          .go();
+      data['id'] = id;
+      data['scopeId'] = scopeId;
+    }
     if (type == 'comment' && !deleted) {
       final local =
           await (_db.select(_db.syncCommands)..where(

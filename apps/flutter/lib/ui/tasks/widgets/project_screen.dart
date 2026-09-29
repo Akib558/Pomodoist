@@ -1,3 +1,4 @@
+import 'package:pomodoist/ui/files/widgets/files_panel.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,6 +31,8 @@ class _ProjectContent extends ConsumerStatefulWidget {
 
 class _ProjectContentState extends ConsumerState<_ProjectContent> {
   final _visited = <ProjectViewMode>{};
+  bool _files = false;
+  bool _visitedFiles = false;
   Future<void> _setMode(ProjectViewMode mode) async {
     try {
       await ref
@@ -54,7 +57,7 @@ class _ProjectContentState extends ConsumerState<_ProjectContent> {
     _visited.add(mode);
     final l10n = context.l10n;
     final title = project?.displayName(l10n) ?? l10n.projectFallbackTitle;
-    final diagram = mode == ProjectViewMode.list
+    final diagram = _files || mode == ProjectViewMode.list
         ? null
         : ref.watch(projectDiagramViewModelProvider(widget.projectId));
     return SafeArea(
@@ -68,21 +71,24 @@ class _ProjectContentState extends ConsumerState<_ProjectContent> {
               children: [
                 Text(title, style: Theme.of(context).textTheme.headlineMedium),
                 const SizedBox(height: 12),
-                ShadTabs<ProjectViewMode>(
-                  value: mode,
-                  onChanged: (value) => unawaited(_setMode(value)),
+                ShadTabs<String>(
+                  value: _files ? 'files' : mode.name,
+                  onChanged: (value) {
+                    setState(() {
+                      _files = value == 'files';
+                      _visitedFiles = _visitedFiles || _files;
+                    });
+                    if (!_files) {
+                      unawaited(_setMode(ProjectViewMode.values.byName(value)));
+                    }
+                  },
                   // ShadTabs owns scrolling and removes Expanded from its tabs.
                   scrollable: true,
                   gap: 0,
                   tabs: [
-                    ShadTab(
-                      value: ProjectViewMode.list,
-                      child: Text(l10n.projectViewList),
-                    ),
-                    ShadTab(
-                      value: ProjectViewMode.map,
-                      child: Text(l10n.projectViewMap),
-                    ),
+                    ShadTab(value: 'list', child: Text(l10n.projectViewList)),
+                    ShadTab(value: 'map', child: Text(l10n.projectViewMap)),
+                    ShadTab(value: 'files', child: Text(l10n.filesTitle)),
                   ],
                 ),
                 if (diagram != null)
@@ -115,7 +121,8 @@ class _ProjectContentState extends ConsumerState<_ProjectContent> {
                           ),
                     ],
                   ),
-                if (project?.canEdit == true &&
+                if (!_files &&
+                    project?.canEdit == true &&
                     project?.isArchived == false) ...[
                   const SizedBox(height: 12),
                   // This composer stays mounted across view changes.
@@ -126,7 +133,7 @@ class _ProjectContentState extends ConsumerState<_ProjectContent> {
           ),
           Expanded(
             child: IndexedStack(
-              index: mode.index,
+              index: _files ? ProjectViewMode.values.length : mode.index,
               children: [
                 for (final view in ProjectViewMode.values)
                   if (!_visited.contains(view))
@@ -140,7 +147,7 @@ class _ProjectContentState extends ConsumerState<_ProjectContent> {
                         projectId: widget.projectId,
                       ),
                       showHeader: false,
-                      isActive: mode == ProjectViewMode.list,
+                      isActive: !_files && mode == ProjectViewMode.list,
                       showQuickAdd: false,
                       quickAddProjectId: widget.projectId,
                     )
@@ -148,8 +155,12 @@ class _ProjectContentState extends ConsumerState<_ProjectContent> {
                     ProjectDiagram(
                       key: ValueKey('${widget.projectId}:${view.name}'),
                       projectId: widget.projectId,
-                      isActive: mode == view,
+                      isActive: !_files && mode == view,
                     ),
+                if (_visitedFiles)
+                  FilesPanel(projectId: widget.projectId)
+                else
+                  const SizedBox.shrink(),
               ],
             ),
           ),

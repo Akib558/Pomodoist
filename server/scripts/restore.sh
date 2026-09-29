@@ -10,26 +10,36 @@ if [ ! -f "$backup_file" ] || [ "$confirmation" != "--replace-current-database" 
   exit 2
 fi
 
-compose() {
-  docker compose --project-directory "$server_dir" --env-file "$server_dir/.env" -f "$server_dir/compose.yaml" "$@"
-}
+. "$server_dir/scripts/compose-command.sh"
 
 work_dir=$(mktemp -d "${TMPDIR:-/tmp}/pomodoist-restore.XXXXXX")
 trap 'rm -rf "$work_dir"' EXIT HUP INT TERM
 members=$(tar -tzf "$backup_file")
-[ "$members" = "database.sql
-pgsodium_root.key" ] || {
-  echo "Backup must contain only database.sql and pgsodium_root.key" >&2
-  exit 1
-}
-tar -tvzf "$backup_file" | awk '
+storage_backup=false
+case "$members" in
+  "database.sql
+pgsodium_root.key") member_count=2;;
+  "database.sql
+pgsodium_root.key
+storage.tar.gz") storage_backup=true; member_count=3;;
+  *) echo "Unexpected backup members" >&2; exit 1;;
+esac
+if [ "$storage_backup" = true ]; then
+  case " ${COMPOSE_OVERLAYS:-} " in *" compose.storage.yaml "*) :;; *) echo "Storage restore requires COMPOSE_OVERLAYS=compose.storage.yaml" >&2; exit 1;; esac
+fi
+
+tar -tvzf "$backup_file" | awk -v count="$member_count" '
   substr($1, 1, 1) != "-" { invalid = 1 }
-  END { exit(invalid || NR != 2) }
+  END { exit(invalid || NR != count) }
 ' || {
   echo "Backup members must be regular files" >&2
   exit 1
 }
 tar -C "$work_dir" -xzf "$backup_file"
+if [ "$storage_backup" = true ]; then
+  python3 "$server_dir/scripts/storage-objects.py" verify "$work_dir/storage.tar.gz"
+  command -v aws >/dev/null || { echo "AWS CLI v2 is required for Storage restore" >&2; exit 1; }
+fi
 if [ "$(wc -c < "$work_dir/pgsodium_root.key" | tr -d ' ')" != 64 ] ||
   ! grep -Eq '^[0-9a-f]{64}$' "$work_dir/pgsodium_root.key"; then
   echo "Backup contains an invalid Vault root key" >&2
@@ -52,7 +62,7 @@ cmp -s "$source_ledger" "$work_dir/installed-migrations" || {
   exit 1
 }
 current_fingerprint=$(
-  { cat "$source_ledger"; cat "$server_dir/compose.yaml"; } |
+  { cat "$source_ledger"; cat "$server_dir/compose.yaml"; for overlay in ${COMPOSE_OVERLAYS:-}; do cat "$server_dir/$overlay"; done; } |
     openssl dgst -sha256 | awk '{print $NF}'
 )
 backup_fingerprint=$(sed -n 's/^-- pomodoist-release-fingerprint: //p' \
@@ -69,6 +79,10 @@ if compose ps --status running --services | grep -qx web; then
 fi
 
 compose stop web functions gateway realtime rest auth
+if [ "$storage_backup" = true ]; then
+  compose stop storage
+  python3 "$server_dir/scripts/storage-objects.py" restore "$work_dir/storage.tar.gz"
+fi
 compose cp db:/etc/postgresql-custom/pgsodium_root.key \
   "$work_dir/current_pgsodium_root.key" >/dev/null 2>&1
 [ "$(wc -c < "$work_dir/current_pgsodium_root.key" | tr -d ' ')" = 64 ] &&
@@ -93,7 +107,7 @@ begin
   where c.relkind in ('r', 'p')
     and not c.relispartition
     and (
-      n.nspname in ('auth', 'public', 'private', 'billing', 'pomodoist_meta')
+      n.nspname in ('auth', 'public', 'private', 'billing', 'pomodoist_meta', 'storage')
       or (n.nspname = 'vault' and c.relname = 'secrets')
     );
   if tables is not null then
@@ -115,6 +129,7 @@ else
   echo "Restore failed; the previous database and Vault key were retained" >&2
   exit 1
 fi
+if [ "$storage_backup" = true ]; then compose up -d --wait storage; fi
 compose up -d --wait db auth realtime migrate rest gateway functions
 if [ "$web_was_running" = true ]; then
   compose up -d --wait web

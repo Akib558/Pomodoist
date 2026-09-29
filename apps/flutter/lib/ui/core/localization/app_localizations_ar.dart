@@ -3742,4 +3742,114 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get learningTourOpenProjects => 'فتح المشاريع';
+
+  @override
+  String get filesTitle => 'الملفات';
+
+  @override
+  String get filesAdd => 'إضافة ملف';
+
+  @override
+  String get filesEmpty => 'لا توجد ملفات بعد';
+
+  @override
+  String get filesSearch => 'البحث في الملفات';
+
+  @override
+  String get filesList => 'قائمة';
+
+  @override
+  String get filesGallery => 'معرض';
+
+  @override
+  String get filesAllTogether => 'الكل معًا';
+
+  @override
+  String get filesByTask => 'حسب المهام';
+
+  @override
+  String get filesProjectGroup => 'ملفات المشروع';
+
+  @override
+  String get filesAllTypes => 'كل الأنواع';
+
+  @override
+  String get filesImages => 'صور';
+
+  @override
+  String get filesDocuments => 'مستندات';
+
+  @override
+  String get filesOther => 'ملفات أخرى';
+
+  @override
+  String get filesDownload => 'تنزيل';
+
+  @override
+  String get filesDelete => 'حذف الملف';
+
+  @override
+  String get filesDeleteConfirm => 'هل تريد حذف هذا الملف نهائيًا؟';
+
+  @override
+  String get filesUploadFailed => 'فشل الرفع. حاول مرة أخرى.';
+
+  @override
+  String get filesRetry => 'إعادة المحاولة';
+
+  @override
+  String get filesProRequired => 'يتطلب رفع الملفات اشتراك Pro.';
+
+  @override
+  String get filesReadOnly => 'لديك صلاحية القراءة فقط.';
+
+  @override
+  String get filesUnavailable =>
+      'تخزين الملفات غير متاح. تحقق من اتصالك وحاول مرة أخرى.';
+
+  @override
+  String get filesSignIn => 'سجّل الدخول للوصول إلى الملفات.';
+
+  @override
+  String get filesTooLarge => 'يجب ألا يتجاوز حجم الملف 20 ميغابايت.';
+
+  @override
+  String get filesQuotaExceeded => 'لقد بلغت الحد المسموح لرفع الملفات.';
+
+  @override
+  String get filesDeleteProjectWarning =>
+      'سيتم حذف الملفات المرفقة مباشرة بهذا المشروع نهائيًا.';
+
+  @override
+  String get filesUpload => 'جارٍ الرفع';
+
+  @override
+  String get filesFinish => 'جارٍ إنهاء الرفع';
+
+  @override
+  String get filesLoadError => 'تعذر تحميل الملفات.';
+
+  @override
+  String get filesPreview => 'معاينة';
+
+  @override
+  String get settingsTaskCard => 'بطاقة المهمة';
+
+  @override
+  String get settingsTaskCardTabs => 'علامات التبويب';
+
+  @override
+  String get settingsTaskCardDescriptionFirst => 'الوصف أولًا';
+
+  @override
+  String get taskDetailsTab => 'التفاصيل';
+
+  @override
+  String get taskDiscussionTab => 'النقاش';
+
+  @override
+  String get taskProperties => 'الخصائص';
+
+  @override
+  String get filesGrouping => 'التجميع';
 }

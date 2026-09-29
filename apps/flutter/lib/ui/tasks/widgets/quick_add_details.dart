@@ -55,7 +55,7 @@ class QuickAddDetails extends ConsumerWidget {
       valueListenable: controller,
       builder: (context, value, _) {
         if (value.text.trim().isEmpty) {
-          return Wrap(children: [?trailing]);
+          return const SizedBox.shrink();
         }
         final now = viewModel.now();
         final analysis = viewModel.analyze(

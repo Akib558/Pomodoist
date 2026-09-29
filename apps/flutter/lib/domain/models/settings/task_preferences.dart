@@ -10,6 +10,7 @@ const quickAddDefaultTimedBlockMinutesPreferenceKey =
 const taskTimeDisplayModePreferenceKey = 'tasks.timeDisplayMode';
 const projectViewModePreferenceKey = 'projects.viewMode';
 const projectCatalogViewModePreferenceKey = 'projects.catalogViewMode';
+const taskDetailLayoutPreferenceKey = 'tasks.detailLayout';
 const taskListStylePreferenceKey = 'tasks.listStyle';
 const taskBranchStylePreferenceKey = 'tasks.branchStyle';
 const taskRowSpacingPreferenceKey = 'tasks.rowSpacing';
@@ -28,6 +29,8 @@ const defaultTimelineHourWidth = 192;
 const timelineHourWidthLevels = <int>[96, 144, 192, 288, 384];
 
 enum ProjectViewMode { list, map }
+
+enum TaskDetailLayout { tabs, descriptionFirst }
 
 enum TaskListStyle { modern, classic }
 
@@ -61,6 +64,7 @@ class TaskPreferences {
     this.reengagementEnabled = true,
     this.quickAddMinutes = defaultQuickAddTimedBlockMinutes,
     this.timeDisplayMode = TaskTimeDisplayMode.smart,
+    this.detailLayout = TaskDetailLayout.tabs,
     this.listStyle = TaskListStyle.modern,
     this.projectViewMode = ProjectViewMode.list,
     this.projectCatalogViewMode = ProjectViewMode.list,
@@ -81,6 +85,7 @@ class TaskPreferences {
   final bool reengagementEnabled;
   final int quickAddMinutes;
   final TaskTimeDisplayMode timeDisplayMode;
+  final TaskDetailLayout detailLayout;
   final TaskListStyle listStyle;
   final ProjectViewMode projectViewMode;
   final ProjectViewMode projectCatalogViewMode;
@@ -94,6 +99,7 @@ class TaskPreferences {
     bool? reengagementEnabled,
     int? quickAddMinutes,
     TaskTimeDisplayMode? timeDisplayMode,
+    TaskDetailLayout? detailLayout,
     TaskListStyle? listStyle,
     ProjectViewMode? projectViewMode,
     ProjectViewMode? projectCatalogViewMode,
@@ -107,6 +113,7 @@ class TaskPreferences {
     reengagementEnabled: reengagementEnabled ?? this.reengagementEnabled,
     quickAddMinutes: quickAddMinutes ?? this.quickAddMinutes,
     timeDisplayMode: timeDisplayMode ?? this.timeDisplayMode,
+    detailLayout: detailLayout ?? this.detailLayout,
     listStyle: listStyle ?? this.listStyle,
     projectViewMode: projectViewMode ?? this.projectViewMode,
     projectCatalogViewMode:

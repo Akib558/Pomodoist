@@ -16,6 +16,9 @@ class LocalTaskPreferencesRepository implements TaskPreferencesRepository {
   Future<Result<void>> _branchWrites = Future.value(const Result.ok(null));
   Future<Result<void>> _projectModeWrites = Future.value(const Result.ok(null));
   Future<Result<void>> _branchStyleWrites = Future.value(const Result.ok(null));
+  Future<Result<void>> _detailLayoutWrites = Future.value(
+    const Result.ok(null),
+  );
   bool _disposed = false;
   TaskPreferences _state = TaskPreferences();
 
@@ -43,6 +46,7 @@ class LocalTaskPreferencesRepository implements TaskPreferencesRepository {
       quickAddDefaultTimedBlockMinutesPreferenceKey,
       taskTimeDisplayModePreferenceKey,
       taskListStylePreferenceKey,
+      taskDetailLayoutPreferenceKey,
       projectViewModePreferenceKey,
       projectCatalogViewModePreferenceKey,
       taskRowSpacingPreferenceKey,
@@ -88,6 +92,9 @@ class LocalTaskPreferencesRepository implements TaskPreferencesRepository {
             .firstOrNull,
         projectCatalogViewMode: ProjectViewMode.values
             .where((v) => v.name == values[projectCatalogViewModePreferenceKey])
+            .firstOrNull,
+        detailLayout: TaskDetailLayout.values
+            .where((v) => v.name == values[taskDetailLayoutPreferenceKey])
             .firstOrNull,
         listStyle: TaskListStyle.values
             .where((v) => v.name == values[taskListStylePreferenceKey])
@@ -250,6 +257,16 @@ class LocalTaskPreferencesRepository implements TaskPreferencesRepository {
           taskBranchStylePreferenceKey: style.name,
         })).getOrThrow();
       }),
+    );
+  }
+
+  @override
+  Future<Result<void>> setDetailLayout(TaskDetailLayout layout) {
+    if (_disposed) return Future.value(const Result.ok(null));
+    _edited.add(taskDetailLayoutPreferenceKey);
+    _publish(state.copyWith(detailLayout: layout));
+    return _detailLayoutWrites = _detailLayoutWrites.then(
+      (_) => _preferences.write({taskDetailLayoutPreferenceKey: layout.name}),
     );
   }
 

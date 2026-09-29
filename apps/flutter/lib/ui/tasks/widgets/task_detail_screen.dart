@@ -1,3 +1,5 @@
+import 'package:pomodoist/domain/models/settings/task_preferences.dart';
+import 'package:pomodoist/ui/files/widgets/files_panel.dart';
 import 'package:pomodoist/ui/tasks/view_models/task_subtask_progress.dart';
 import 'dart:async';
 import 'package:pomodoist/ui/tasks/view_models/task_branch_view_model.dart';
@@ -41,6 +43,8 @@ import 'package:pomodoist/ui/tasks/view_models/quick_add_text_controller.dart';
 import 'package:pomodoist/ui/tasks/widgets/task_list_item.dart';
 import 'package:pomodoist/ui/tasks/widgets/task_motion.dart';
 
+enum _TaskDetailTab { details, files, discussion }
+
 class TaskDetailScreen extends ConsumerStatefulWidget {
   const TaskDetailScreen({
     required this.taskId,
@@ -58,6 +62,8 @@ class TaskDetailScreen extends ConsumerStatefulWidget {
 }
 
 class TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
+  _TaskDetailTab _selectedTab = _TaskDetailTab.details;
+  bool _propertiesExpanded = false;
   final _titleKey = GlobalKey<_EditableTaskTitleState>();
   final _descriptionKey = GlobalKey<_EditableTaskDescriptionState>();
   final _saveIdentity = Object();
@@ -211,6 +217,8 @@ class TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     final taskId = widget.taskId;
     final l10n = context.l10n;
     final viewState = ref.watch(taskDetailViewModelProvider(taskId));
+    final descriptionFirst =
+        viewState.layout == TaskDetailLayout.descriptionFirst;
     final task = viewState.task;
     final viewModel = ref.read(taskDetailViewModelProvider(taskId).notifier);
     return BackButtonListener(
@@ -240,12 +248,144 @@ class TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                   focusAction == TaskDetailFocusAction.pauseUnavailable ||
                   (item.isCompleted &&
                       focusAction == TaskDetailFocusAction.startFocus);
+              final shared = item.scopeId != null;
+              final activeTab =
+                  !shared && _selectedTab == _TaskDetailTab.discussion
+                  ? _TaskDetailTab.details
+                  : _selectedTab;
+              final showDetails =
+                  descriptionFirst || activeTab == _TaskDetailTab.details;
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                     child: _header(context, item),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: _EditableTaskTitle(
+                      key: _titleKey,
+                      identity: _titleEditorIdentity,
+                      task: item,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        Tooltip(
+                          message:
+                              focusAction ==
+                                  TaskDetailFocusAction.pauseUnavailable
+                              ? l10n.focusPauseUnavailable
+                              : focusLabel,
+                          child: ShadButton(
+                            onPressed: focusDisabled
+                                ? null
+                                : () => _runFocusAction(
+                                    focusAction,
+                                    viewState.focusRunId,
+                                    item.content,
+                                  ),
+                            enabled: !focusDisabled,
+                            leading: Icon(
+                              focusAction == TaskDetailFocusAction.pause ||
+                                      focusAction ==
+                                          TaskDetailFocusAction.pauseUnavailable
+                                  ? LucideIcons.pause
+                                  : LucideIcons.play,
+                            ),
+                            child: Text(focusLabel),
+                          ),
+                        ),
+                        ShadButton.outline(
+                          onPressed: () async {
+                            if (item.isCompleted) {
+                              try {
+                                await viewModel.reopen();
+                              } catch (_) {
+                                if (context.mounted) {
+                                  showActionFeedback(
+                                    context,
+                                    message: l10n.taskActionFailedCount(1),
+                                    icon: LucideIcons.circleAlert,
+                                    sound: ActionFeedbackSound.none,
+                                    haptic: AppHapticCue.none,
+                                  );
+                                }
+                                return;
+                              }
+                              if (!context.mounted) {
+                                return;
+                              }
+                              final reopened = await viewModel.current();
+                              if (!context.mounted) {
+                                return;
+                              }
+                              if (reopened != null) {
+                                motion.reopened([reopened]);
+                              }
+                              showActionFeedback(
+                                context,
+                                message: l10n.taskReopened,
+                                icon: LucideIcons.undo2,
+                              );
+                              return;
+                            }
+
+                            await completeTaskWithUndoFeedback(
+                              context,
+                              complete: viewModel.complete,
+                              undo: viewModel.reopen,
+                            );
+                          },
+                          leading: TaskCompletionControl(
+                            taskId: item.id,
+                            isCompleted: item.isCompleted,
+                            color: context.appColors.accent,
+                            fillColor: context.appColors.accentFill,
+                            onPressed: null,
+                          ),
+                          child: Text(
+                            item.isCompleted
+                                ? l10n.markOpen
+                                : l10n.markComplete,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Visibility(
+                    visible: !descriptionFirst,
+                    maintainState: true,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                      child: ShadTabs<_TaskDetailTab>(
+                        scrollable: true,
+                        value: activeTab,
+                        gap: 0,
+                        onChanged: (value) =>
+                            setState(() => _selectedTab = value),
+                        tabs: [
+                          ShadTab(
+                            value: _TaskDetailTab.details,
+                            child: Text(l10n.taskDetailsTab),
+                          ),
+                          ShadTab(
+                            value: _TaskDetailTab.files,
+                            child: Text(l10n.filesTitle),
+                          ),
+                          if (shared)
+                            ShadTab(
+                              value: _TaskDetailTab.discussion,
+                              child: Text(l10n.taskDiscussionTab),
+                            ),
+                        ],
+                      ),
+                    ),
                   ),
                   Expanded(
                     child: SingleChildScrollView(
@@ -255,133 +395,121 @@ class TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            _EditableTaskTitle(
-                              key: _titleKey,
-                              identity: _titleEditorIdentity,
-                              task: item,
+                            // Keep one mounted subtree per section across tabs and layouts.
+                            Visibility(
+                              visible: showDetails,
+                              maintainState: true,
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                child: _EditableTaskDescription(
+                                  key: _descriptionKey,
+                                  identity: _descriptionEditorIdentity,
+                                  task: item,
+                                ),
+                              ),
                             ),
-                            const SizedBox(height: 12),
-                            _EditableTaskDescription(
-                              key: _descriptionKey,
-                              identity: _descriptionEditorIdentity,
-                              task: item,
+                            Visibility(
+                              visible:
+                                  descriptionFirst ||
+                                  activeTab == _TaskDetailTab.files,
+                              maintainState: true,
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                child: FilesPanel(
+                                  taskId: item.id,
+                                  compact: true,
+                                ),
+                              ),
                             ),
-                            const SizedBox(height: 16),
-                            _TaskMetadataChips(
-                              task: item,
-                              calendarLinked: viewState.calendarLinked,
-                              focusEstimate: focusEstimate,
+                            Visibility(
+                              visible: showDetails,
+                              maintainState: true,
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                child: _SubtasksSection(
+                                  identity: _subtaskEditorIdentity,
+                                  task: item,
+                                ),
+                              ),
                             ),
-                            const SizedBox(height: 20),
-                            _ScheduleActions(task: item),
-                            const SizedBox(height: 20),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: [
-                                Tooltip(
-                                  message:
-                                      focusAction ==
-                                          TaskDetailFocusAction.pauseUnavailable
-                                      ? l10n.focusPauseUnavailable
-                                      : focusLabel,
-                                  child: ShadButton(
-                                    onPressed: focusDisabled
-                                        ? null
-                                        : () => _runFocusAction(
-                                            focusAction,
-                                            viewState.focusRunId,
-                                            item.content,
-                                          ),
-                                    enabled: !focusDisabled,
-                                    leading: Icon(
-                                      focusAction ==
-                                                  TaskDetailFocusAction.pause ||
-                                              focusAction ==
-                                                  TaskDetailFocusAction
-                                                      .pauseUnavailable
-                                          ? LucideIcons.pause
-                                          : LucideIcons.play,
+                            Visibility(
+                              visible: showDetails && shared,
+                              maintainState: true,
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                child: TaskCollaborationSection(
+                                  task: item,
+                                  showComments: false,
+                                ),
+                              ),
+                            ),
+                            Visibility(
+                              visible: showDetails,
+                              maintainState: true,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.stretch,
+                                children: [
+                                  Visibility(
+                                    visible: descriptionFirst,
+                                    child: TextButton.icon(
+                                      onPressed: () => setState(
+                                        () => _propertiesExpanded =
+                                            !_propertiesExpanded,
+                                      ),
+                                      icon: Icon(
+                                        _propertiesExpanded
+                                            ? LucideIcons.chevronUp
+                                            : LucideIcons.chevronDown,
+                                      ),
+                                      label: Text(l10n.taskProperties),
                                     ),
-                                    child: Text(focusLabel),
                                   ),
-                                ),
-                                ShadButton.outline(
-                                  onPressed: () async {
-                                    if (item.isCompleted) {
-                                      try {
-                                        await viewModel.reopen();
-                                      } catch (_) {
-                                        if (context.mounted) {
-                                          showActionFeedback(
-                                            context,
-                                            message: l10n.taskActionFailedCount(
-                                              1,
-                                            ),
-                                            icon: LucideIcons.circleAlert,
-                                            sound: ActionFeedbackSound.none,
-                                            haptic: AppHapticCue.none,
-                                          );
-                                        }
-                                        return;
-                                      }
-                                      if (!context.mounted) {
-                                        return;
-                                      }
-                                      final reopened = await viewModel
-                                          .current();
-                                      if (!context.mounted) {
-                                        return;
-                                      }
-                                      if (reopened != null) {
-                                        motion.reopened([reopened]);
-                                      }
-                                      showActionFeedback(
-                                        context,
-                                        message: l10n.taskReopened,
-                                        icon: LucideIcons.undo2,
-                                      );
-                                      return;
-                                    }
-
-                                    await completeTaskWithUndoFeedback(
-                                      context,
-                                      complete: viewModel.complete,
-                                      undo: viewModel.reopen,
-                                    );
-                                  },
-                                  leading: TaskCompletionControl(
-                                    taskId: item.id,
-                                    isCompleted: item.isCompleted,
-                                    color: context.appColors.accent,
-                                    fillColor: context.appColors.accentFill,
-                                    onPressed: null,
+                                  Visibility(
+                                    visible:
+                                        !descriptionFirst ||
+                                        _propertiesExpanded,
+                                    maintainState: true,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
+                                      children: [
+                                        _TaskMetadataChips(
+                                          task: item,
+                                          calendarLinked:
+                                              viewState.calendarLinked,
+                                          focusEstimate: focusEstimate,
+                                        ),
+                                        const SizedBox(height: 20),
+                                        _ScheduleActions(task: item),
+                                        const SizedBox(height: 20),
+                                        ExpansionTile(
+                                          tilePadding: EdgeInsets.zero,
+                                          title: Text(l10n.recurrenceTitle),
+                                          children: [
+                                            _RecurrenceActions(task: item),
+                                          ],
+                                        ),
+                                        ExpansionTile(
+                                          tilePadding: EdgeInsets.zero,
+                                          title: Text(l10n.focusHistory),
+                                          children: [_FocusHistory(task: item)],
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                  child: Text(
-                                    item.isCompleted
-                                        ? l10n.markOpen
-                                        : l10n.markComplete,
-                                  ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                            const SizedBox(height: 20),
-                            _SubtasksSection(
-                              identity: _subtaskEditorIdentity,
-                              task: item,
-                            ),
-                            const SizedBox(height: 16),
-                            TaskCollaborationSection(task: item),
-                            const SizedBox(height: 16),
-                            ExpansionTile(
-                              tilePadding: EdgeInsets.zero,
-                              title: Text(l10n.recurrenceTitle),
-                              children: [_RecurrenceActions(task: item)],
-                            ),
-                            ExpansionTile(
-                              tilePadding: EdgeInsets.zero,
-                              title: Text(l10n.focusHistory),
-                              children: [_FocusHistory(task: item)],
+                            Visibility(
+                              visible:
+                                  shared &&
+                                  (descriptionFirst ||
+                                      activeTab == _TaskDetailTab.discussion),
+                              maintainState: true,
+                              child: TaskCollaborationSection(
+                                task: item,
+                                showAssignees: false,
+                              ),
                             ),
                           ],
                         ),

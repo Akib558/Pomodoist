@@ -208,6 +208,36 @@ configurable. Before any task is opened, or after that task is deleted, they
 do nothing. Reuse the existing full-screen details layout below the shell
 breakpoint.
 
+### Task card and files
+
+Task cards default to Details / Files / Discussion tabs. Keep the title,
+completion action and overflow menu pinned above the content. Hide Discussion
+for personal tasks; assignees remain in Details for shared tasks. The local
+Display setting offers Tabs and Description first. Description first places the
+description, attachments and subtasks in the reading flow and starts secondary
+properties collapsed. Both layouts retain scheduling, recurrence, Focus actions,
+Focus history, metadata and subtasks.
+
+Use the same mounted editor and section instances across tab and layout changes.
+Hide inactive sections with retained state rather than replacing their widget
+trees; preserve title, description, comment and subtask drafts. The layout setting
+does not change task routing, the 440 px desktop panel or compact fullscreen
+behavior. Tabs scroll horizontally at narrow widths and controls retain accessible
+labels and keyboard focus.
+
+Project and task attachments share one Files panel and common empty, loading,
+error and upload states. Offer list and gallery views, search and file-type
+filters; project files may be shown together or grouped by task. View (List /
+Gallery) and Grouping (All together / By task) are independent controls with local
+per-project preferences. On wide screens keep search on the left and the labeled
+grouping/view controls on the right; on narrow screens give search its own row
+and wrap the controls without shrinking tap targets. Keep Add file the primary
+action and avoid a third level of tabs. Keep attachment
+uploads separate from browsing rights: viewers can read and download, while
+uploads follow edit permission and Pro entitlement. Confirm permanent file
+removal, and warn that deleting a project permanently removes files attached
+directly to it. Use palette surfaces and existing controls in both themes.
+
 ### Calendar planning view
 
 Calendar is a separate planning destination before Timeline in Views. Its Day,
@@ -543,7 +573,8 @@ scrolls when needed.
 
 All Quick Add surfaces (inline lists, dialogs, the separate window and voice
 previews including subtasks) offer a Comment chip alongside date, project and
-priority. The chip remains available before a title is entered. Expanding it
+priority. Show the chip only when the task input contains non-whitespace text,
+alongside the other metadata; hide it again when that input is cleared. Expanding it
 reveals a softly tinted multiline field below the metadata; collapsing it keeps
 the text, and a checkmark on the chip indicates a nonempty comment. Use the
 existing localized task-comment labels, 40 px desktop and 48 px touch controls,

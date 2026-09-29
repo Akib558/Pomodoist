@@ -3696,4 +3696,112 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get learningTourOpenProjects => '프로젝트 열기';
+
+  @override
+  String get filesTitle => '파일';
+
+  @override
+  String get filesAdd => '파일 추가';
+
+  @override
+  String get filesEmpty => '아직 파일이 없습니다';
+
+  @override
+  String get filesSearch => '파일 검색';
+
+  @override
+  String get filesList => '목록';
+
+  @override
+  String get filesGallery => '갤러리';
+
+  @override
+  String get filesAllTogether => '모두 함께';
+
+  @override
+  String get filesByTask => '작업별';
+
+  @override
+  String get filesProjectGroup => '프로젝트 파일';
+
+  @override
+  String get filesAllTypes => '모든 유형';
+
+  @override
+  String get filesImages => '이미지';
+
+  @override
+  String get filesDocuments => '문서';
+
+  @override
+  String get filesOther => '기타 파일';
+
+  @override
+  String get filesDownload => '다운로드';
+
+  @override
+  String get filesDelete => '파일 삭제';
+
+  @override
+  String get filesDeleteConfirm => '이 파일을 영구적으로 삭제하시겠습니까?';
+
+  @override
+  String get filesUploadFailed => '업로드에 실패했습니다. 다시 시도하세요.';
+
+  @override
+  String get filesRetry => '다시 시도';
+
+  @override
+  String get filesProRequired => '파일을 업로드하려면 Pro가 필요합니다.';
+
+  @override
+  String get filesReadOnly => '읽기 전용 권한이 있습니다.';
+
+  @override
+  String get filesUnavailable => '파일 저장소를 사용할 수 없습니다. 연결을 확인하고 다시 시도하세요.';
+
+  @override
+  String get filesSignIn => '파일에 접근하려면 로그인하세요.';
+
+  @override
+  String get filesTooLarge => '파일 크기는 20 MB 이하여야 합니다.';
+
+  @override
+  String get filesQuotaExceeded => '파일 업로드 한도에 도달했습니다.';
+
+  @override
+  String get filesDeleteProjectWarning => '이 프로젝트에 직접 첨부된 파일은 영구적으로 삭제됩니다.';
+
+  @override
+  String get filesUpload => '업로드 중';
+
+  @override
+  String get filesFinish => '업로드 마무리 중';
+
+  @override
+  String get filesLoadError => '파일을 불러오지 못했습니다.';
+
+  @override
+  String get filesPreview => '미리보기';
+
+  @override
+  String get settingsTaskCard => '작업 카드';
+
+  @override
+  String get settingsTaskCardTabs => '탭';
+
+  @override
+  String get settingsTaskCardDescriptionFirst => '설명 먼저';
+
+  @override
+  String get taskDetailsTab => '세부 정보';
+
+  @override
+  String get taskDiscussionTab => '토론';
+
+  @override
+  String get taskProperties => '속성';
+
+  @override
+  String get filesGrouping => '그룹화';
 }

@@ -8,6 +8,7 @@ final taskListSettingsViewModelProvider =
     NotifierProvider<
       TaskListSettingsViewModel,
       ({
+        TaskDetailLayout detailLayout,
         TaskListStyle style,
         TaskRowSpacing spacing,
         TaskBranchStyle branchStyle,
@@ -18,6 +19,7 @@ class TaskListSettingsViewModel
     extends
         Notifier<
           ({
+            TaskDetailLayout detailLayout,
             TaskListStyle style,
             TaskRowSpacing spacing,
             TaskBranchStyle branchStyle,
@@ -25,17 +27,25 @@ class TaskListSettingsViewModel
         > {
   late TaskPreferencesRepository _repository;
   @override
-  ({TaskListStyle style, TaskRowSpacing spacing, TaskBranchStyle branchStyle})
+  ({
+    TaskDetailLayout detailLayout,
+    TaskListStyle style,
+    TaskRowSpacing spacing,
+    TaskBranchStyle branchStyle,
+  })
   build() {
     _repository = ref.watch(taskPreferencesRepositoryProvider);
     final preferences = ref.watch(taskPreferencesStateProvider);
     return (
+      detailLayout: preferences.detailLayout,
       style: preferences.listStyle,
       spacing: preferences.rowSpacing,
       branchStyle: preferences.branchStyle,
     );
   }
 
+  Future<void> setDetailLayout(TaskDetailLayout layout) async =>
+      (await _repository.setDetailLayout(layout)).getOrThrow();
   Future<void> setStyle(TaskListStyle style) async =>
       (await _repository.setListStyle(style)).getOrThrow();
   Future<void> setBranchStyle(TaskBranchStyle style) async =>

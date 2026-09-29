@@ -3839,6 +3839,117 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get learningTourOpenProjects => 'Abrir Projetos';
+
+  @override
+  String get filesTitle => 'Ficheiros';
+
+  @override
+  String get filesAdd => 'Adicionar ficheiro';
+
+  @override
+  String get filesEmpty => 'Ainda não há ficheiros';
+
+  @override
+  String get filesSearch => 'Pesquisar ficheiros';
+
+  @override
+  String get filesList => 'Lista';
+
+  @override
+  String get filesGallery => 'Galeria';
+
+  @override
+  String get filesAllTogether => 'Todos juntos';
+
+  @override
+  String get filesByTask => 'Por tarefas';
+
+  @override
+  String get filesProjectGroup => 'Ficheiros do projeto';
+
+  @override
+  String get filesAllTypes => 'Todos os tipos';
+
+  @override
+  String get filesImages => 'Imagens';
+
+  @override
+  String get filesDocuments => 'Documentos';
+
+  @override
+  String get filesOther => 'Outros ficheiros';
+
+  @override
+  String get filesDownload => 'Transferir';
+
+  @override
+  String get filesDelete => 'Eliminar ficheiro';
+
+  @override
+  String get filesDeleteConfirm => 'Eliminar este ficheiro permanentemente?';
+
+  @override
+  String get filesUploadFailed => 'Falha no carregamento. Tenta novamente.';
+
+  @override
+  String get filesRetry => 'Tentar novamente';
+
+  @override
+  String get filesProRequired => 'É necessário o Pro para carregar ficheiros.';
+
+  @override
+  String get filesReadOnly => 'Tens acesso apenas de leitura.';
+
+  @override
+  String get filesUnavailable =>
+      'O armazenamento de ficheiros está indisponível. Verifica a ligação e tenta novamente.';
+
+  @override
+  String get filesSignIn => 'Inicia sessão para aceder aos ficheiros.';
+
+  @override
+  String get filesTooLarge => 'Os ficheiros não podem exceder 20 MB.';
+
+  @override
+  String get filesQuotaExceeded =>
+      'Atingiste o limite de carregamento de ficheiros.';
+
+  @override
+  String get filesDeleteProjectWarning =>
+      'Os ficheiros anexados diretamente a este projeto serão eliminados permanentemente.';
+
+  @override
+  String get filesUpload => 'A carregar';
+
+  @override
+  String get filesFinish => 'A concluir o carregamento';
+
+  @override
+  String get filesLoadError => 'Não foi possível carregar os ficheiros.';
+
+  @override
+  String get filesPreview => 'Pré-visualização';
+
+  @override
+  String get settingsTaskCard => 'Cartão de tarefa';
+
+  @override
+  String get settingsTaskCardTabs => 'Separadores';
+
+  @override
+  String get settingsTaskCardDescriptionFirst => 'Descrição primeiro';
+
+  @override
+  String get taskDetailsTab => 'Detalhes';
+
+  @override
+  String get taskDiscussionTab => 'Discussão';
+
+  @override
+  String get taskProperties => 'Propriedades';
+
+  @override
+  String get filesGrouping => 'Agrupamento';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
@@ -4105,4 +4216,115 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get settingsTaskBranchGrouped => 'Bloco agrupado';
+
+  @override
+  String get filesTitle => 'Arquivos';
+
+  @override
+  String get filesAdd => 'Adicionar arquivo';
+
+  @override
+  String get filesEmpty => 'Ainda não há arquivos';
+
+  @override
+  String get filesSearch => 'Pesquisar arquivos';
+
+  @override
+  String get filesList => 'Lista';
+
+  @override
+  String get filesGallery => 'Galeria';
+
+  @override
+  String get filesAllTogether => 'Todos juntos';
+
+  @override
+  String get filesByTask => 'Por tarefas';
+
+  @override
+  String get filesProjectGroup => 'Arquivos do projeto';
+
+  @override
+  String get filesAllTypes => 'Todos os tipos';
+
+  @override
+  String get filesImages => 'Imagens';
+
+  @override
+  String get filesDocuments => 'Documentos';
+
+  @override
+  String get filesOther => 'Outros arquivos';
+
+  @override
+  String get filesDownload => 'Baixar';
+
+  @override
+  String get filesDelete => 'Excluir arquivo';
+
+  @override
+  String get filesDeleteConfirm => 'Excluir este arquivo permanentemente?';
+
+  @override
+  String get filesUploadFailed => 'Falha no envio. Tente novamente.';
+
+  @override
+  String get filesRetry => 'Tentar novamente';
+
+  @override
+  String get filesProRequired => 'É necessário o Pro para enviar arquivos.';
+
+  @override
+  String get filesReadOnly => 'Você tem acesso somente de leitura.';
+
+  @override
+  String get filesUnavailable =>
+      'O armazenamento de arquivos está indisponível. Verifique sua conexão e tente novamente.';
+
+  @override
+  String get filesSignIn => 'Entre para acessar os arquivos.';
+
+  @override
+  String get filesTooLarge => 'Os arquivos não podem ultrapassar 20 MB.';
+
+  @override
+  String get filesQuotaExceeded =>
+      'Você atingiu o limite de envio de arquivos.';
+
+  @override
+  String get filesDeleteProjectWarning =>
+      'Os arquivos anexados diretamente a este projeto serão excluídos permanentemente.';
+
+  @override
+  String get filesUpload => 'Enviando';
+
+  @override
+  String get filesFinish => 'Finalizando envio';
+
+  @override
+  String get filesLoadError => 'Não foi possível carregar os arquivos.';
+
+  @override
+  String get filesPreview => 'Prévia';
+
+  @override
+  String get settingsTaskCard => 'Cartão da tarefa';
+
+  @override
+  String get settingsTaskCardTabs => 'Abas';
+
+  @override
+  String get settingsTaskCardDescriptionFirst => 'Descrição primeiro';
+
+  @override
+  String get taskDetailsTab => 'Detalhes';
+
+  @override
+  String get taskDiscussionTab => 'Discussão';
+
+  @override
+  String get taskProperties => 'Propriedades';
+
+  @override
+  String get filesGrouping => 'Agrupamento';
 }

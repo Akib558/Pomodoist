@@ -3812,4 +3812,115 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get learningTourOpenProjects => 'Открыть Проекты';
+
+  @override
+  String get filesTitle => 'Файлы';
+
+  @override
+  String get filesAdd => 'Добавить файл';
+
+  @override
+  String get filesEmpty => 'Файлов пока нет';
+
+  @override
+  String get filesSearch => 'Поиск файлов';
+
+  @override
+  String get filesList => 'Список';
+
+  @override
+  String get filesGallery => 'Галерея';
+
+  @override
+  String get filesAllTogether => 'Все вместе';
+
+  @override
+  String get filesByTask => 'По задачам';
+
+  @override
+  String get filesProjectGroup => 'Файлы проекта';
+
+  @override
+  String get filesAllTypes => 'Все типы';
+
+  @override
+  String get filesImages => 'Изображения';
+
+  @override
+  String get filesDocuments => 'Документы';
+
+  @override
+  String get filesOther => 'Другие файлы';
+
+  @override
+  String get filesDownload => 'Скачать';
+
+  @override
+  String get filesDelete => 'Удалить файл';
+
+  @override
+  String get filesDeleteConfirm => 'Удалить этот файл безвозвратно?';
+
+  @override
+  String get filesUploadFailed =>
+      'Не удалось загрузить файл. Повторите попытку.';
+
+  @override
+  String get filesRetry => 'Повторить';
+
+  @override
+  String get filesProRequired => 'Для загрузки файлов нужен Pro.';
+
+  @override
+  String get filesReadOnly => 'У вас доступ только для чтения.';
+
+  @override
+  String get filesUnavailable =>
+      'Хранилище файлов недоступно. Проверьте подключение и повторите попытку.';
+
+  @override
+  String get filesSignIn => 'Войдите, чтобы получить доступ к файлам.';
+
+  @override
+  String get filesTooLarge => 'Размер файла не должен превышать 20 МБ.';
+
+  @override
+  String get filesQuotaExceeded => 'Достигнут лимит загрузки файлов.';
+
+  @override
+  String get filesDeleteProjectWarning =>
+      'Файлы, прикреплённые непосредственно к этому проекту, будут удалены безвозвратно.';
+
+  @override
+  String get filesUpload => 'Загрузка';
+
+  @override
+  String get filesFinish => 'Завершение загрузки';
+
+  @override
+  String get filesLoadError => 'Не удалось загрузить список файлов.';
+
+  @override
+  String get filesPreview => 'Предпросмотр';
+
+  @override
+  String get settingsTaskCard => 'Карточка задачи';
+
+  @override
+  String get settingsTaskCardTabs => 'Вкладки';
+
+  @override
+  String get settingsTaskCardDescriptionFirst => 'Сначала описание';
+
+  @override
+  String get taskDetailsTab => 'Детали';
+
+  @override
+  String get taskDiscussionTab => 'Обсуждение';
+
+  @override
+  String get taskProperties => 'Свойства';
+
+  @override
+  String get filesGrouping => 'Группировка';
 }
