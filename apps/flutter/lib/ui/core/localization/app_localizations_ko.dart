@@ -206,7 +206,8 @@ class AppLocalizationsKo extends AppLocalizations {
   String get billingStoreUnavailable => '현재 App Store를 이용할 수 없습니다.';
 
   @override
-  String get billingStoreConnectionFailed => 'VPN을 끄고 다시 시도하세요.';
+  String get billingStoreConnectionFailed =>
+      'App Store에 연결할 수 없습니다. 다시 시도해 주세요.';
 
   @override
   String billingPurchaseError(String error) {

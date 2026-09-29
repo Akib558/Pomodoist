@@ -1603,6 +1603,21 @@ void main() {
     },
   );
 
+  test(
+    'App Store connection errors never assert VPN use in any locale',
+    () async {
+      for (final locale in AppLocalizations.supportedLocales) {
+        final l10n = await AppLocalizations.delegate.load(locale);
+        final message = storeKitBillingErrorMessage(
+          l10n,
+          'storekit_no_response',
+        );
+        expect(message, contains('App Store'));
+        expect(message.toLowerCase(), isNot(contains('vpn')));
+      }
+    },
+  );
+
   test('StoreKit network failures show a localized recovery action', () async {
     final l10n = await AppLocalizations.delegate.load(const Locale('ru'));
     for (final error in [
@@ -1616,6 +1631,7 @@ void main() {
       expect(message, l10n.billingStoreConnectionFailed);
       expect(message, isNot(contains('NSURLErrorDomain')));
       expect(message, isNot(contains('TimeoutException')));
+      expect(message.toLowerCase(), isNot(contains('vpn')));
     }
     expect(
       storeKitBillingErrorMessage(l10n, 'This product is not available yet.'),
@@ -1624,7 +1640,7 @@ void main() {
   });
 
   test(
-    'StoreKit catalog can recover after a VPN error without restarting',
+    'StoreKit catalog can recover after a connection error without restarting',
     () async {
       final store = _FakeBillingStore()
         ..catalogError = IAPError(

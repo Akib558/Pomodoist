@@ -213,7 +213,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'The App Store is not available right now.';
 
   @override
-  String get billingStoreConnectionFailed => 'Turn off your VPN and try again.';
+  String get billingStoreConnectionFailed =>
+      'Unable to connect to the App Store. Try again.';
 
   @override
   String billingPurchaseError(String error) {

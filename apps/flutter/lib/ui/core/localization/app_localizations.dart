@@ -490,7 +490,7 @@ abstract class AppLocalizations {
   /// No description provided for @billingStoreConnectionFailed.
   ///
   /// In en, this message translates to:
-  /// **'Turn off your VPN and try again.'**
+  /// **'Unable to connect to the App Store. Try again.'**
   String get billingStoreConnectionFailed;
 
   /// No description provided for @billingPurchaseError.
