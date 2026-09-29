@@ -600,12 +600,37 @@ begin
     delete from private.pomodoist_scopes where id=scope;
     return jsonb_build_object('ok',true);
   elsif action='unshare' then
+    select coalesce(jsonb_agg(jsonb_build_object('entityType',c.entity_type,'entityId',c.entity_id,'sharedEntityId',c.shared_entity_id,'data',
+      (c.personal||(c.shared-array['scopeId','assigneeIds','completedBy','totalFocusSeconds','completedFocusIntervals']))
+        ||jsonb_build_object('id',c.entity_id,'userId',actor::text,'assigneeIds',coalesce(c.personal->'assigneeIds','[]'::jsonb))
+        ||case c.entity_type when 'task' then jsonb_build_object('completedBy',case when c.shared->>'status'='completed' then actor::text end)
+          when 'task_label' then jsonb_build_object('labelId',c.personal->>'labelId')
+          when 'task_kanban_status' then jsonb_build_object('labelId',c.personal->>'labelId')
+          when 'project' then case when c.entity_id=s.root_project_id then jsonb_build_object('parentId',c.personal->'parentId') else '{}'::jsonb end
+          else '{}'::jsonb end)),'[]') into rows
+      from (select e.entity_type,e.entity_id,x.entity_id shared_entity_id,e.data personal,x.data shared from public.sync_entities e
+        join private.pomodoist_transferred_entities t on t.user_id=e.user_id and t.entity_type=e.entity_type
+          and t.entity_id=e.entity_id and t.scope_id=scope
+        join private.pomodoist_shared_entities x on x.scope_id=scope and x.entity_type=e.entity_type and x.deleted_at is null
+          and x.entity_id=case when e.entity_type='task_label'
+            then e.data->>'taskId'||':'||scope::text||':'||(e.data->>'labelId') else e.entity_id end
+        where e.user_id=actor and e.app_id='pomodoist' and e.deleted_at is not null) c;
     delete from private.pomodoist_transferred_entities where scope_id=scope;
-    -- Restore current content, including entities created after sharing. Keep
-    -- scoped label identities so their relations remain valid without merging.
-    for rec in select * from private.pomodoist_shared_entities where scope_id=scope
-      and entity_type in ('project','task','section','label','task_label','task_kanban_status','task_completion') loop
+    insert into public.sync_entities(user_id,app_id,entity_type,entity_id,server_revision,client_updated_at,deleted_at,data,created_at,updated_at)
+      select actor,'pomodoist',v->>'entityType',v->>'entityId',nextval('public.sync_revision_seq'),now(),null,v->'data',now(),now()
+      from jsonb_array_elements(rows) v
+      on conflict (user_id,app_id,entity_type,entity_id) do update set deleted_at=null,server_revision=excluded.server_revision,
+        updated_at=now(),data=excluded.data;
+    amount:=jsonb_array_length(rows);
+    -- Restore new content too, without duplicating the original personal IDs.
+    -- Keep scoped labels for relations created while the project was shared.
+    for rec in select e.* from private.pomodoist_shared_entities e where scope_id=scope
+      and entity_type in ('project','task','section','label','task_label','task_kanban_status','task_completion')
+      and not exists(select 1 from jsonb_array_elements(rows) v
+        where v->>'entityType'=e.entity_type and v->>'sharedEntityId'=e.entity_id) loop
       d:=(rec.data-array['scopeId','assigneeIds'])||jsonb_build_object('userId',actor);
+      -- Labels remain personal during share; their scoped copies do not count as restored content.
+      if rec.deleted_at is null and rec.entity_type<>'label' then amount:=amount+1; end if;
       select coalesce(data,'{}'::jsonb) into result from private.pomodoist_shared_preferences
         where scope_id=scope and user_id=actor and entity_type=rec.entity_type and entity_id=rec.entity_id;
       d:=d||coalesce(result,'{}'::jsonb);
@@ -628,7 +653,7 @@ begin
       where scope_id=scope and user_id<>actor;
     perform private.pomodoist_collaboration_hint(scope);
     delete from private.pomodoist_scopes where id=scope;
-    return jsonb_build_object('ok',true,'rootProjectId',s.root_project_id);
+    return jsonb_build_object('ok',true,'restored',amount,'rootProjectId',s.root_project_id);
   elsif action='publicLink' then
     if jsonb_typeof(p_request->'enabled') is distinct from 'boolean' then raise exception using errcode='22023',message='Expected enabled boolean'; end if;
     token:=case when (p_request->>'enabled')::boolean then encode(extensions.gen_random_bytes(32),'hex') else null end;

@@ -3,9 +3,21 @@ from pathlib import Path
 import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
-SQL = (ROOT / 'supabase/migrations/20260929115235_pomodoist_project_files.sql').read_text()
+MIGRATION = next((ROOT / 'supabase/migrations').glob('20260929115235_*.sql'))
+SQL = MIGRATION.read_text()
 
 class ProjectFilesContract(unittest.TestCase):
+    def test_file_migration_can_be_consumed_by_private_core_assembler(self):
+        self.assertIn('_pomodoist_core_', MIGRATION.name)
+
+    def test_unshare_retains_existing_response_and_relation_identities(self):
+        unshare = SQL.split("elsif action='unshare' then", 1)[1].split("elsif action='publicLink'", 1)[0]
+        self.assertIn("'restored',", unshare)
+        self.assertIn("'sharedEntityId',c.shared_entity_id", unshare)
+        self.assertIn("'labelId',c.personal->>'labelId'", unshare)
+        self.assertIn("v->>'sharedEntityId'=e.entity_id", unshare)
+        self.assertIn('jsonb_array_length(rows)', unshare)
+
     def test_personal_and_shared_files_use_one_authority(self):
         self.assertIn('CREATE OR REPLACE FUNCTION private.pomodoist_files(', SQL)
         self.assertIn('return private.pomodoist_files(p_request)', SQL)

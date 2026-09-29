@@ -8,9 +8,15 @@ where n.nspname='public' and p.proname in
   and not p.prosecdef and not has_function_privilege('anon',p.oid,'EXECUTE')
   and has_function_privilege('authenticated',p.oid,'EXECUTE')
   and has_function_privilege('service_role',p.oid,'EXECUTE');
-select is(count(*), 8::bigint, 'only eight private RPCs are executable by authenticated')
+select is(count(*), 9::bigint, 'only nine private RPCs are executable by authenticated')
 from pg_proc p join pg_namespace n on n.oid=p.pronamespace
 where n.nspname='private' and has_function_privilege('authenticated',p.oid,'EXECUTE');
+select ok(not p.prosecdef and not has_function_privilege('anon',p.oid,'EXECUTE')
+  and has_function_privilege('authenticated',p.oid,'EXECUTE')
+  and has_function_privilege('service_role',p.oid,'EXECUTE'),
+  'file API uses an invoker wrapper without anonymous access')
+from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+where n.nspname='public' and p.proname='pomodoist_files';
 select ok(not exists (
   select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace
   where n.nspname='private' and c.relkind='r'
