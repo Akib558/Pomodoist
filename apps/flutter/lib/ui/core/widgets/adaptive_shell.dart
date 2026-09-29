@@ -224,50 +224,49 @@ class _AdaptiveShellState extends ConsumerState<AdaptiveShell> {
     final glass =
         backgrounds.type == ThemeBackgroundType.macosGlass &&
         macosGlassReady(context, ref);
-    final content = Column(
-      children: [
-        const AchievementAnnouncementBridge(),
-        if (!compactTaskDetailsOpen)
-          _ShellTopBar(
-            location: widget.location,
-            onMenuPressed: _toggleSidebar,
-          ),
-        Expanded(
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              MediaQuery.removePadding(
-                context: context,
-                // Fullscreen details own their SafeArea when the header is hidden.
-                removeTop: !compactTaskDetailsOpen,
-                removeBottom: !wide,
-                child: TaskDetailsHost(
-                  taskId: widget.taskId,
+    final content = TaskDetailsHost(
+      taskId: widget.taskId,
+      child: Column(
+        children: [
+          const AchievementAnnouncementBridge(),
+          if (!compactTaskDetailsOpen)
+            _ShellTopBar(
+              location: widget.location,
+              onMenuPressed: _toggleSidebar,
+            ),
+          Expanded(
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                MediaQuery.removePadding(
+                  context: context,
+                  removeTop: !compactTaskDetailsOpen,
+                  removeBottom: !wide,
                   child: widget.child,
                 ),
-              ),
-              const Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: AchievementAnnouncementSlot(
-                  presentation: AchievementPresentation.globalBanner,
+                const Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: AchievementAnnouncementSlot(
+                    presentation: AchievementPresentation.globalBanner,
+                  ),
                 ),
-              ),
-              const Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: AchievementAnnouncementSlot(
-                  presentation: AchievementPresentation.bottomPlaque,
+                const Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: AchievementAnnouncementSlot(
+                    presentation: AchievementPresentation.bottomPlaque,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
-        if (wide && showMiniFocusPlayer)
-          const VoicePanelBottomClearance(child: MiniFocusPlayer()),
-      ],
+          if (wide && showMiniFocusPlayer)
+            const VoicePanelBottomClearance(child: MiniFocusPlayer()),
+        ],
+      ),
     );
 
     late final Widget scaffold;

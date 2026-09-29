@@ -192,7 +192,8 @@ Desktop task details retain the underlying list, selection and scroll position.
 The selected task uses the background route's `task` query parameter; changing it
 replaces the selection instead of stacking detail routes. Existing `/task/:id`
 links remain valid. With at least 960 px of content width, details occupy a
-440 px side panel; narrower layouts keep the background mounted behind details.
+440 px side panel spanning the main area's full height, including the shell
+top bar; narrower layouts keep the background mounted behind details.
 Below the 820 px shell breakpoint, details fill the viewport and temporarily
 replace the shell top bar, bottom navigation and mini Focus player. Restore that
 chrome on close, while keeping the detail controls inside the system safe area.
