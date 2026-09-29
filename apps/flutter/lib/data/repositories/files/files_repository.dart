@@ -5,9 +5,10 @@ import 'package:file_selector/file_selector.dart';
 import 'package:uuid/uuid.dart';
 import 'package:pomodoist/data/services/files/files_service.dart';
 import 'package:pomodoist/data/services/local/database/app_database.dart';
+import 'package:pomodoist/data/repositories/files/files_repository_contract.dart';
 import 'package:pomodoist/domain/models/files/file_attachment.dart';
 
-class FilesRepository {
+class FilesRepository implements FilesRepositoryContract {
   FilesRepository({
     required this.db,
     required this.service,
@@ -25,6 +26,7 @@ class FilesRepository {
     }
   }
 
+  @override
   void dispose() {
     _disposed = true;
     _uploads.clear();
@@ -56,12 +58,14 @@ class FilesRepository {
     return {...target.toJson(), 'scopeId': ?scope};
   }
 
+  @override
   Future<FileCapabilities> capabilities(FileTarget target) async {
     final result = await service.call('capabilities', await _target(target));
     _checkSession();
     return FileCapabilities.fromJson(result);
   }
 
+  @override
   Stream<List<FileAttachment>> watch(FileTarget target) => db
       .customSelect(
         '''
@@ -94,6 +98,7 @@ class FilesRepository {
             )
             .toList();
       });
+  @override
   Stream<FileUploadState?> watchUpload(FileTarget target) async* {
     yield _uploads[target]?.state;
     await for (final _ in _changes.stream) {
@@ -101,6 +106,7 @@ class FilesRepository {
     }
   }
 
+  @override
   Future<void> pickAndUpload(FileTarget target) async {
     _checkSession();
     final file = await service.pick();
@@ -120,6 +126,7 @@ class FilesRepository {
     await _run(target, upload);
   }
 
+  @override
   Future<void> retry(FileTarget target) async {
     final upload = _uploads[target];
     if (upload != null && !upload.busy) await _run(target, upload);
@@ -233,6 +240,7 @@ class FilesRepository {
     }
   }
 
+  @override
   Future<String> downloadUrl(
     FileAttachment file, {
     bool preview = false,
@@ -246,12 +254,14 @@ class FilesRepository {
     return response['url'] as String;
   }
 
+  @override
   Future<void> download(FileAttachment file) async {
     final url = await downloadUrl(file);
     _checkSession();
     await service.open(url);
   }
 
+  @override
   Future<void> delete(FileAttachment file) async {
     _checkSession();
     await service.call('deleteAttachment', {'attachmentId': file.id});

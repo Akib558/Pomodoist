@@ -31,7 +31,13 @@ jobs:
       - name: Generate an independent instance
         run: make -C server setup
       - name: Start fresh database and API
-        run: make -C server core-up
+        run: |
+          if make -C server core-up; then
+            exit 0
+          fi
+          docker compose --project-directory server --env-file server/.env \
+            -f server/compose.yaml logs --no-color migrate
+          exit 1
       - name: Test schema, ownership, and synchronization
         run: make -C server test-db test-smoke
       - name: Verify OpenClaw OAuth, task, Focus, and revocation acceptance

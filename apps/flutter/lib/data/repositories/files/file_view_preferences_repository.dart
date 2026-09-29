@@ -1,9 +1,12 @@
 import 'package:pomodoist/data/services/local/preferences_service.dart';
+import 'package:pomodoist/data/repositories/files/file_view_preferences_repository_contract.dart';
 
-class FileViewPreferencesRepository {
+class FileViewPreferencesRepository
+    implements FileViewPreferencesRepositoryContract {
   const FileViewPreferencesRepository(this.preferences);
   final PreferencesService preferences;
   String _key(String projectId) => 'files.view.$projectId';
+  @override
   Future<({bool gallery, bool byTask})> load(String projectId) async {
     final value = (await preferences.read([
       _key(projectId),
@@ -14,6 +17,7 @@ class FileViewPreferencesRepository {
     );
   }
 
+  @override
   Future<void> save(
     String projectId, {
     required bool gallery,

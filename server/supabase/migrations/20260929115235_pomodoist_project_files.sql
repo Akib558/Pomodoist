@@ -170,7 +170,7 @@ begin
       raise exception using errcode='22023',message='Invalid attachment'; end if;
     select * into u from private.pomodoist_uploads where id=(p_request->>'uploadId')::uuid for update;
     if found then
-      if u.user_id<>actor or u.scope_id is distinct from scope or u.personal_user_id is distinct from case when scope is null then actor else null end
+      if u.user_id<>actor or u.scope_id is distinct from scope or u.personal_user_id is distinct from (case when scope is null then actor else null end)
         or u.task_id is distinct from task or u.project_id is distinct from project or u.bytes<>amount
         or u.name<>p_request->>'name' or u.content_type<>p_request->>'contentType' or u.deleted_at is not null
         or (u.finished_at is null and u.expires_at<=now()) then
