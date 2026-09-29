@@ -7,6 +7,7 @@ import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shadcn_ui/shadcn_ui.dart' show ShadContextMenuItem;
 import 'package:pomodoist/config/providers.dart';
 import 'package:pomodoist/ui/core/themes/app_theme.dart';
 import 'package:pomodoist/data/services/local/database/app_database.dart';
@@ -1071,6 +1072,11 @@ void main() {
 
       await tester.tap(find.byKey(const Key('task-comment-delete-comment-1')));
       await tester.pumpAndSettle();
+      expect(find.text('Existing comment'), findsOne);
+      await tester.tap(
+        find.widgetWithText(ShadContextMenuItem, 'Delete comment'),
+      );
+      await tester.pumpAndSettle();
 
       final comment = await (harness.db.select(
         harness.db.sharedEntities,
@@ -1197,7 +1203,12 @@ void main() {
       await _seedComment(harness.db);
       await tester.pumpAndSettle();
 
-      expect(find.byKey(const Key('task-assignees-edit')), findsNothing);
+      expect(
+        tester
+            .widget<TextButton>(find.byKey(const Key('task-assignees-edit')))
+            .onPressed,
+        isNull,
+      );
       expect(find.byKey(const Key('task-comment-input')), findsNothing);
       expect(
         find.byKey(const Key('task-comment-delete-comment-1')),

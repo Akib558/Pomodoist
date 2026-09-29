@@ -238,6 +238,7 @@ class _QuickAddComposerState extends ConsumerState<QuickAddComposer> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Flexible(
+                      flex: 2,
                       child: SingleChildScrollView(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 24,

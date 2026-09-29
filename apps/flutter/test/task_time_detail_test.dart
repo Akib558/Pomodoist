@@ -17,7 +17,7 @@ import 'package:pomodoist/ui/core/localization/app_localizations.dart';
 
 void main() {
   setUpAll(loadTestAppResources);
-  testWidgets('detail schedule chip colors its timed label and icon', (
+  testWidgets('detail schedule colors its timed label and exposes status', (
     tester,
   ) async {
     final semantics = tester.ensureSemantics();
@@ -44,6 +44,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          projectsProvider.overrideWith((ref) => Stream.value([])),
           taskProvider(task.id).overrideWith((ref) => Stream.value(task)),
           googleCalendarLinkProvider(
             task.id,
@@ -76,17 +77,24 @@ void main() {
     );
     await tester.pump();
 
-    final label = find.byKey(const Key('task-detail-time-label'));
+    final schedule = find.byKey(const Key('task-detail-schedule-chip'));
+    final label = find.descendant(of: schedule, matching: find.byType(Text));
     expect(
       tester.widget<Text>(label).style?.color,
       AppTheme.light().extension<AppThemePalette>()!.warning,
     );
     expect(
-      tester.widget<Icon>(find.byKey(const Key('task-detail-time-icon'))).color,
-      AppTheme.light().extension<AppThemePalette>()!.warning,
-    );
-    expect(
-      tester.getSemantics(find.byKey(const Key('task-detail-time-meta'))).label,
+      tester
+          .getSemantics(
+            find.descendant(
+              of: schedule,
+              matching: find.byWidgetPredicate(
+                (widget) =>
+                    widget is Semantics && widget.properties.label != null,
+              ),
+            ),
+          )
+          .label,
       contains('In progress'),
     );
     semantics.dispose();

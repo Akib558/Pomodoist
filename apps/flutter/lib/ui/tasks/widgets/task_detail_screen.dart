@@ -742,10 +742,13 @@ class _TaskProperties extends ConsumerWidget {
             focusNode: focusNode,
             buttonPadding: const EdgeInsets.symmetric(horizontal: 4),
             items: items,
-            child: DefaultTextStyle.merge(
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              child: child,
+            child: SizedBox(
+              width: (constraints.maxWidth - 8).clamp(0, double.infinity),
+              child: DefaultTextStyle.merge(
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                child: child,
+              ),
             ),
           ),
         ],

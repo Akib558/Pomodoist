@@ -520,11 +520,11 @@ void main() {
       router.go('/task/task-1');
       await _pumpFrames(tester);
 
-      await tester.tap(find.widgetWithText(ShadButton, 'Start focus'));
+      await tester.tap(find.widgetWithText(TextButton, 'Start focus'));
       await _pumpFrames(tester);
       expect(harness.focusRepository.startInputs.single.taskId, 'task-1');
 
-      await tester.tap(find.widgetWithText(ShadButton, 'Mark complete'));
+      await tester.tap(find.byTooltip('Mark complete'));
       await _pumpFrames(tester);
       expect(harness.taskRepository.completedTaskIds, contains('task-1'));
       expect(find.text('Task completed'), findsOneWidget);
@@ -545,7 +545,7 @@ void main() {
 
       router.go('/task/done-1');
       await _pumpFrames(tester);
-      await tester.tap(find.widgetWithText(ShadButton, 'Mark open'));
+      await tester.tap(find.byTooltip('Mark open'));
       await _pumpFrames(tester);
       expect(harness.taskRepository.uncompletedTaskIds, contains('done-1'));
       expect(find.text('Task reopened'), findsOneWidget);
@@ -1421,6 +1421,10 @@ void main() {
     router.go('/task/parent-1');
     await _pumpFrames(tester);
 
+    final addSubtask = find.widgetWithText(TextButton, 'Add sub-task');
+    await tester.ensureVisible(addSubtask);
+    await tester.tap(addSubtask);
+    await _pumpFrames(tester);
     await tester.enterText(
       find.byKey(const Key('add-subtask-field')),
       'Draft outline tomorrow p1 @writing 2p',

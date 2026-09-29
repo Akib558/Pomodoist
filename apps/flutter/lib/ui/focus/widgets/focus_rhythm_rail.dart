@@ -313,6 +313,7 @@ class _RhythmStepSlot extends StatelessWidget {
               child: SizedBox.square(key: activeStepKey, dimension: nodeSize),
             ),
           Padding(
+            key: ValueKey('focus-rhythm-node-slot-${step.sequence}'),
             padding: EdgeInsets.only(top: nodeInset),
             child: SizedBox.square(
               dimension: nodeSize,
