@@ -7,6 +7,16 @@ MIGRATION = next((ROOT / 'supabase/migrations').glob('20260929115235_*.sql'))
 SQL = MIGRATION.read_text()
 
 class ProjectFilesContract(unittest.TestCase):
+    def test_cleanup_loop_variable_does_not_shadow_upload_table_alias(self):
+        migrations = sorted((ROOT / 'supabase/migrations').glob('*.sql'))
+        definitions = [p.read_text().split('CREATE OR REPLACE FUNCTION private.pomodoist_collaboration_storage_cleanup(', 1)[1].split('end $$;', 1)[0]
+                       for p in migrations if 'CREATE OR REPLACE FUNCTION private.pomodoist_collaboration_storage_cleanup(' in p.read_text()]
+        cleanup = definitions[-1]
+        self.assertNotIn('declare u record;', cleanup)
+        self.assertIn('declare expired_upload_id uuid;', cleanup)
+        self.assertIn('private.pomodoist_file_delete(expired_upload_id)', cleanup)
+        self.assertIn('where u.object_path=d.object_path', cleanup)
+
     def test_file_migration_can_be_consumed_by_private_core_assembler(self):
         self.assertIn('_pomodoist_core_', MIGRATION.name)
 
