@@ -858,9 +858,9 @@ localized feedback, accessible timer summaries and Reduce Motion behavior.
 
 ### Focus completion actions
 
-Starting or stopping Focus and starting or completing an interval do not show
-bottom success snackbars on any surface. Preserve action errors, timer sounds,
-system notifications, and the Focus completion screen.
+Focus controls never show bottom success snackbars, including start, pause,
+resume, stop, and interval completion, on any surface. Preserve action errors,
+timer sounds, system notifications, and the Focus completion screen.
 
 When the current task is open and a next scheduled task is available, completing
 it and starting the next task is the primary action. Completing only the current

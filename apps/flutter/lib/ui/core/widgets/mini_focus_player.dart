@@ -92,7 +92,7 @@ class MiniFocusPlayer extends ConsumerWidget {
                 ? () => unawaited(_startReadyInterval(context, viewModel.start))
                 : (preset?.allowPause ?? false)
                 ? () => unawaited(
-                    _toggleFocusPause(context, viewModel.togglePause, paused),
+                    _toggleFocusPause(context, viewModel.togglePause),
                   )
                 : null,
             icon: Icon(ready || paused ? LucideIcons.play : LucideIcons.pause),
@@ -195,11 +195,7 @@ class MiniFocusPlayer extends ConsumerWidget {
                       )
                     : (preset?.allowPause ?? true)
                     ? () => unawaited(
-                        _toggleFocusPause(
-                          context,
-                          viewModel.togglePause,
-                          paused,
-                        ),
+                        _toggleFocusPause(context, viewModel.togglePause),
                       )
                     : null,
                 style: IconButton.styleFrom(
@@ -315,9 +311,7 @@ class _MinimalMiniFocusPlayer extends StatelessWidget {
                 onPressed: ready
                     ? () => unawaited(_startReadyInterval(context, onStart))
                     : (preset?.allowPause ?? true)
-                    ? () => unawaited(
-                        _toggleFocusPause(context, onTogglePause, paused),
-                      )
+                    ? () => unawaited(_toggleFocusPause(context, onTogglePause))
                     : null,
                 style: IconButton.styleFrom(
                   backgroundColor: colors.accentTint,
@@ -381,7 +375,6 @@ Future<void> _startReadyInterval(
 Future<void> _toggleFocusPause(
   BuildContext context,
   Future<void> Function() toggle,
-  bool paused,
 ) async {
   try {
     await toggle();
@@ -389,15 +382,6 @@ Future<void> _toggleFocusPause(
     if (context.mounted) _showFocusActionError(context);
     return;
   }
-  if (!context.mounted) {
-    return;
-  }
-  showActionFeedback(
-    context,
-    message: paused ? context.l10n.resume : context.l10n.pause,
-    icon: paused ? LucideIcons.circlePlay : LucideIcons.circlePause,
-    haptic: AppHapticCue.none,
-  );
 }
 
 Future<void> _stopFocus(

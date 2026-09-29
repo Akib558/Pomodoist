@@ -323,18 +323,18 @@ help:
 	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'Windows' "$${reset}" "$${bold}" 'make windows-release' "$${reset}" 'Release app'; \
 	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'Windows' "$${reset}" "$${bold}" 'make windows-installer' "$${reset}" 'EXE installer'; \
 	printf '\n'; \
-	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'macOS' "$${reset}" "$${bold}" 'make macos' "$${reset}" 'Debug app (alias of macos-debug)'; \
-	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'macOS' "$${reset}" "$${bold}" 'make macos-debug' "$${reset}" 'Debug app (development)'; \
-	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'macOS' "$${reset}" "$${bold}" 'make macos-debug-staging' "$${reset}" 'Debug app (staging)'; \
-	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'macOS' "$${reset}" "$${bold}" 'make macos-debug-production' "$${reset}" 'Debug app (production)'; \
-	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'macOS' "$${reset}" "$${bold}" 'make macos-run' "$${reset}" 'Debug app with hot reload'; \
-	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'macOS' "$${reset}" "$${bold}" 'make macos-provision-staging' "$${reset}" 'Get staging signing profiles'; \
-	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'macOS' "$${reset}" "$${bold}" 'make macos-profile-staging' "$${reset}" 'Profile app (staging)'; \
-	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'macOS' "$${reset}" "$${bold}" 'make macos-profile-production' "$${reset}" 'Profile app (production)'; \
-	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'macOS' "$${reset}" "$${bold}" 'make macos-release-staging' "$${reset}" 'Release app (local, staging)'; \
-	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'macOS' "$${reset}" "$${bold}" 'make macos-release-production' "$${reset}" 'Release app (local, production)'; \
-	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'macOS' "$${reset}" "$${bold}" 'make macos-profile' "$${reset}" 'Profile app'; \
-	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'macOS' "$${reset}" "$${bold}" 'make macos-release' "$${reset}" 'Release app'; \
+	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'macOS' "$${reset}" "$${bold}" 'make macos' "$${reset}" '   Debug app (alias of macos-debug)'; \
+	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'macOS' "$${reset}" "$${bold}" 'make macos-debug' "$${reset}" '   Debug app (development)'; \
+	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'macOS' "$${reset}" "$${bold}" 'make macos-debug-staging' "$${reset}" '   Debug app (staging)'; \
+	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'macOS' "$${reset}" "$${bold}" 'make macos-debug-production' "$${reset}" '   Debug app (production)'; \
+	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'macOS' "$${reset}" "$${bold}" 'make macos-run' "$${reset}" '   Debug app with hot reload'; \
+	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'macOS' "$${reset}" "$${bold}" 'make macos-provision-staging' "$${reset}"  '  Get staging signing profiles'; \
+	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'macOS' "$${reset}" "$${bold}" 'make macos-profile-staging' "$${reset}" '   Profile app (staging)'; \
+	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'macOS' "$${reset}" "$${bold}" 'make macos-profile-production' "$${reset}" ' Profile app (production)'; \
+	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'macOS' "$${reset}" "$${bold}" 'make macos-release-staging' "$${reset}" '   Release app (local, staging)'; \
+	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'macOS' "$${reset}" "$${bold}" 'make macos-release-production' "$${reset}" ' Release app (local, production)'; \
+	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'macOS' "$${reset}" "$${bold}" 'make macos-profile' "$${reset}" '   Profile app'; \
+	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'macOS' "$${reset}" "$${bold}" 'make macos-release' "$${reset}" '   Release app'; \
 	printf '\n'; \
 	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'iPhone' "$${reset}" "$${bold}" 'make ios-debug' "$${reset}" 'Run Simulator (debug)'; \
 	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'iPhone' "$${reset}" "$${bold}" 'make ios-profile' "$${reset}" 'Run Simulator (debug)'; \
@@ -347,11 +347,11 @@ help:
 	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'macOS' "$${reset}" "$${bold}" 'make testflight-macos' "$${reset}" 'Upload macOS to TestFlight'; \
 	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'All' "$${reset}" "$${bold}" 'make testflight' "$${reset}" 'Upload iOS + macOS to TestFlight'; \
 	printf '\n'; \
-	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'Deploy' "$${reset}" "$${bold}" 'make deploy-staging' "$${reset}" 'Deploy backend + web staging'; \
-	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'Deploy' "$${reset}" "$${bold}" 'make deploy-production' "$${reset}" 'Deploy backend + web production'; \
-	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'Deploy' "$${reset}" "$${bold}" 'make deploy-telegram-staging' "$${reset}" 'Deploy staging and configure @pomodoist_test_bot'; \
+	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'Deploy' "$${reset}" "$${bold}" 'make deploy-staging' "$${reset}" '    Deploy backend + web staging'; \
+	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'Deploy' "$${reset}" "$${bold}" 'make deploy-production' "$${reset}" '    Deploy backend + web production'; \
+	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'Deploy' "$${reset}" "$${bold}" 'make deploy-telegram-staging' "$${reset}" '   Deploy staging and configure @pomodoist_test_bot'; \
 	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'Deploy' "$${reset}" "$${bold}" 'make deploy-telegram-production' "$${reset}" 'Deploy production and configure @pomodoist_bot'; \
-	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'Deploy' "$${reset}" "$${bold}" 'make deploy-all' "$${reset}" 'Deploy everything, including both Telegram bots'; \
+	printf '  %s%-9s%s %s%-27s%s %s\n' "$${dim}" 'Deploy' "$${reset}" "$${bold}" 'make deploy-all' "$${reset}" '    Deploy everything, including both Telegram bots'; \
 	printf '\n%s%sUtilities%s\n' "$${red}" "$${bold}" "$${reset}"; \
 	printf '  %s%-27s%s %s\n' "$${bold}" 'make help' "$${reset}" 'Show this command reference'; \
 	printf '  %s%-27s%s %s\n' "$${bold}" 'make devices' "$${reset}" 'List available Flutter devices'; \

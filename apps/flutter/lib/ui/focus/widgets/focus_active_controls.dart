@@ -198,8 +198,6 @@ Widget _buildFocusPrimaryAction(
           _performFocusAction(
             context,
             paused ? actions.resumeActiveInterval : actions.pauseActiveInterval,
-            message: paused ? l10n.resume : l10n.pause,
-            icon: paused ? LucideIcons.circlePlay : LucideIcons.circlePause,
           ),
         )
       : null;
@@ -379,7 +377,6 @@ Widget _buildFocusMoreActionsMenu(
                       _FocusMoreAction(
                         _FocusMoreActionKind.togglePause,
                         label: paused ? l10n.resume : l10n.pause,
-                        icon: paused ? LucideIcons.play : LucideIcons.pause,
                       ),
                       selectedPreset: selectedPreset,
                       actions: actions,
@@ -473,8 +470,6 @@ void _handleFocusMoreAction(
             action.label == l10n.resume
                 ? actions.resumeActiveInterval
                 : actions.pauseActiveInterval,
-            message: action.label,
-            icon: action.icon ?? LucideIcons.circlePause,
           ),
         );
       }
@@ -483,10 +478,8 @@ void _handleFocusMoreAction(
 
 Future<void> _performFocusAction(
   BuildContext context,
-  Future<void> Function() action, {
-  String? message,
-  IconData icon = LucideIcons.circleCheck,
-}) async {
+  Future<void> Function() action,
+) async {
   try {
     await action();
   } catch (_) {
@@ -500,14 +493,6 @@ Future<void> _performFocusAction(
       );
     }
     return;
-  }
-  if (context.mounted && message != null) {
-    showActionFeedback(
-      context,
-      message: message,
-      icon: icon,
-      haptic: AppHapticCue.none,
-    );
   }
 }
 
@@ -523,12 +508,11 @@ enum _FocusMoreActionKind {
 }
 
 class _FocusMoreAction {
-  const _FocusMoreAction(this.kind, {this.presetId, this.label, this.icon});
+  const _FocusMoreAction(this.kind, {this.presetId, this.label});
 
   final _FocusMoreActionKind kind;
   final String? presetId;
   final String? label;
-  final IconData? icon;
 }
 
 Widget _withPauseAvailabilitySemantics(

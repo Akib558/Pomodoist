@@ -1433,31 +1433,10 @@ class _MobileTaskContent extends StatelessWidget {
           },
         ),
     ];
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: EdgeInsets.only(top: geometry.controlInset),
-              child: completion,
-            ),
-            const SizedBox(width: TaskRowGeometry.gap),
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(top: geometry.titleInset),
-                child: Text(task.content, softWrap: true, style: titleStyle),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.only(top: geometry.controlInset),
-              child: disclosure,
-            ),
-          ],
-        ),
-        if (blocks.isNotEmpty)
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: TaskRowGeometry.controlSize),
+      child: Stack(
+        children: [
           Padding(
             padding: const EdgeInsetsDirectional.only(
               start: TaskRowGeometry.textStart,
@@ -1466,6 +1445,13 @@ class _MobileTaskContent extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               mainAxisSize: MainAxisSize.min,
               children: [
+                Padding(
+                  padding: EdgeInsetsDirectional.only(
+                    top: geometry.titleInset,
+                    end: TaskRowGeometry.controlSize,
+                  ),
+                  child: Text(task.content, softWrap: true, style: titleStyle),
+                ),
                 for (final block in blocks) ...[
                   SizedBox(
                     height: TaskRowGeometry.blockGap(
@@ -1478,7 +1464,18 @@ class _MobileTaskContent extends StatelessWidget {
               ],
             ),
           ),
-      ],
+          PositionedDirectional(
+            start: 0,
+            top: geometry.controlInset,
+            child: completion,
+          ),
+          PositionedDirectional(
+            end: 0,
+            top: geometry.controlInset,
+            child: disclosure,
+          ),
+        ],
+      ),
     );
   }
 }

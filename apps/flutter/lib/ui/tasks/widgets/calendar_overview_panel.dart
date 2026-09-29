@@ -42,23 +42,11 @@ class CalendarOverviewPanel extends ConsumerStatefulWidget {
 class _CalendarOverviewPanelState extends ConsumerState<CalendarOverviewPanel> {
   bool _actionPending = false;
 
-  Future<void> _runFocusAction(
-    Future<void> Function() action, {
-    String? successMessage,
-    IconData successIcon = LucideIcons.circlePlay,
-  }) async {
+  Future<void> _runFocusAction(Future<void> Function() action) async {
     if (_actionPending) return;
     setState(() => _actionPending = true);
     try {
       await action();
-      if (mounted && successMessage != null) {
-        showActionFeedback(
-          context,
-          message: successMessage,
-          icon: successIcon,
-          haptic: AppHapticCue.none,
-        );
-      }
     } catch (_) {
       if (!mounted) return;
       showActionFeedback(
@@ -266,15 +254,7 @@ class _CalendarOverviewPanelState extends ConsumerState<CalendarOverviewPanel> {
             FilledButton.icon(
               onPressed: _actionPending || (!ready && !paused && !canPause)
                   ? null
-                  : () => unawaited(
-                      _runFocusAction(
-                        action,
-                        successMessage: ready ? null : actionLabel,
-                        successIcon: ready || paused
-                            ? LucideIcons.circlePlay
-                            : LucideIcons.circlePause,
-                      ),
-                    ),
+                  : () => unawaited(_runFocusAction(action)),
               icon: Icon(actionIcon, size: 18),
               label: Text(actionLabel),
             ),
