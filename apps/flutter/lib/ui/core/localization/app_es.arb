@@ -1233,5 +1233,6 @@
   "taskDetailsTab": "Detalles",
   "taskDiscussionTab": "Discusión",
   "taskProperties": "Propiedades",
-  "filesGrouping": "Agrupación"
+  "filesGrouping": "Agrupación",
+  "taskDescriptionHint": "Añadir una descripción"
 }

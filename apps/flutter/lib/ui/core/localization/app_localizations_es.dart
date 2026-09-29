@@ -3938,4 +3938,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get filesGrouping => 'Agrupación';
+
+  @override
+  String get taskDescriptionHint => 'Añadir una descripción';
 }

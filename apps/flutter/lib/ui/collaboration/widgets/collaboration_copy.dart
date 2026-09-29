@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:pomodoist/ui/core/localization/app_localizations.dart';
 import 'package:pomodoist/domain/models/collaboration/collaboration_models.dart';
 
@@ -50,3 +51,8 @@ String collaborationInitials(String name) {
   if (parts.isEmpty) return '?';
   return parts.map((part) => part[0]).join().toUpperCase();
 }
+
+/// Localized full date and time also disambiguate older comments.
+String collaborationCommentTime(DateTime? date, String locale) => date == null
+    ? ''
+    : DateFormat.yMMMd(locale).add_jm().format(date.toLocal());

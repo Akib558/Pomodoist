@@ -3923,4 +3923,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get filesGrouping => 'Группировка';
+
+  @override
+  String get taskDescriptionHint => 'Добавить описание';
 }

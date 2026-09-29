@@ -1,7 +1,9 @@
+import 'package:pomodoist/ui/core/themes/app_theme.dart';
+import 'package:pomodoist/ui/core/widgets/app_action_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_ui/shadcn_ui.dart'
-    show LucideIcons, ShadButton, ShadDialog, ShadInput;
+    show LucideIcons, ShadButton, ShadDialog, ShadInput, ShadContextMenuItem;
 
 import 'package:pomodoist/ui/core/localization/app_l10n.dart';
 import 'package:pomodoist/domain/models/collaboration/collaboration_models.dart';
@@ -30,6 +32,7 @@ class TaskCollaborationSection extends ConsumerStatefulWidget {
 class _TaskCollaborationSectionState
     extends ConsumerState<TaskCollaborationSection> {
   final _comment = TextEditingController();
+  bool _sending = false;
   late TaskCollaborationState _state;
   TaskCollaborationQuery get _query =>
       (taskId: widget.task.id, scopeId: widget.task.scopeId);
@@ -64,39 +67,43 @@ class _TaskCollaborationSectionState
       for (final id in widget.task.assigneeIds)
         collaborationMemberLabel(l10n, scope, id),
     ];
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    return Row(
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                l10n.collaborationAssignees,
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-            ),
-            if (scope.canEdit)
-              IconButton(
-                key: const Key('task-assignees-edit'),
-                tooltip: l10n.collaborationEditAssignees,
-                onPressed: () => _editAssignees(scope),
-                icon: const Icon(LucideIcons.userPlus, size: 18),
-              ),
-          ],
+        Icon(
+          LucideIcons.users,
+          size: 15,
+          color: context.appColors.secondaryText,
         ),
-        if (names.isEmpty)
-          Text(
-            l10n.collaborationNoAssignees,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+        const SizedBox(width: 8),
+        Flexible(
+          flex: 2,
+          child: SizedBox(
+            width: 108,
+            child: Text(
+              l10n.collaborationAssignees,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: context.appColors.secondaryText,
+              ),
             ),
-          )
-        else
-          Wrap(
-            spacing: 8,
-            runSpacing: 4,
-            children: [for (final name in names) Chip(label: Text(name))],
           ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          flex: 3,
+          child: TextButton(
+            key: const Key('task-assignees-edit'),
+            style: TextButton.styleFrom(
+              foregroundColor: context.appColors.primaryText,
+              alignment: Alignment.centerLeft,
+              minimumSize: const Size(44, 44),
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+            ),
+            onPressed: scope.canEdit ? () => _editAssignees(scope) : null,
+            child: Text(
+              names.isEmpty ? l10n.collaborationNoAssignees : names.join(', '),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -107,33 +114,43 @@ class _TaskCollaborationSectionState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          l10n.collaborationComments,
-          style: Theme.of(context).textTheme.titleMedium,
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                l10n.taskDiscussionTab,
+                style: Theme.of(context).textTheme.titleSmall,
+              ),
+            ),
+            Text(
+              '${comments.length}',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: context.appColors.secondaryText,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(height: 8),
         for (final comment in comments) _commentTile(context, scope, comment),
         if (scope.canEdit) ...[
-          const SizedBox(height: 8),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Expanded(
-                child: ShadInput(
-                  key: const Key('task-comment-input'),
-                  controller: _comment,
-                  minLines: 1,
-                  maxLines: 4,
-                  placeholder: Text(l10n.collaborationCommentHint),
-                ),
-              ),
-              const SizedBox(width: 8),
-              ShadButton(
-                key: const Key('task-comment-send'),
-                onPressed: _sendComment,
-                child: Text(l10n.collaborationCommentSend),
-              ),
-            ],
+          const SizedBox(height: 16),
+          ShadInput(
+            key: const Key('task-comment-input'),
+            controller: _comment,
+            minLines: 1,
+            maxLines: 4,
+            placeholder: Text(l10n.collaborationCommentHint),
+            trailing: IconButton(
+              key: const Key('task-comment-send'),
+              tooltip: l10n.collaborationCommentSend,
+              constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+              onPressed: _sending ? null : _sendComment,
+              icon: _sending
+                  ? const SizedBox.square(
+                      dimension: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(LucideIcons.arrowUp, size: 18),
+            ),
           ),
         ],
       ],
@@ -146,31 +163,94 @@ class _TaskCollaborationSectionState
     CollaborationComment comment,
   ) {
     final l10n = context.l10n;
-    final body = comment.body;
-    final author = comment.createdBy ?? '';
-    final canDelete = _state.canDeleteComment(comment);
-    return ListTile(
-      dense: true,
-      contentPadding: EdgeInsets.zero,
-      title: Text(body),
-      subtitle: Text(collaborationMemberLabel(l10n, scope, author)),
-      trailing: canDelete
-          ? IconButton(
+    final author = collaborationMemberLabel(
+      l10n,
+      scope,
+      comment.createdBy ?? '',
+    );
+    final time = collaborationCommentTime(
+      comment.createdAt,
+      Localizations.localeOf(context).toLanguageTag(),
+    );
+    return Padding(
+      padding: const EdgeInsets.only(top: 20),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ExcludeSemantics(
+            child: CircleAvatar(
+              radius: 13,
+              backgroundColor: context.appColors.surfaceTint,
+              foregroundColor: context.appColors.secondaryText,
+              child: Text(
+                collaborationInitials(author),
+                style: Theme.of(context).textTheme.labelSmall,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(
+                      author,
+                      style: Theme.of(context).textTheme.labelMedium,
+                    ),
+                    if (time.isNotEmpty)
+                      Text(
+                        time,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: context.appColors.secondaryText,
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  comment.body,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(height: 1.6),
+                ),
+              ],
+            ),
+          ),
+          if (_state.canDeleteComment(comment))
+            AppActionMenu(
+              width: 44,
               key: Key('task-comment-delete-${comment.id}'),
-              tooltip: l10n.collaborationCommentDelete,
-              onPressed: () => _deleteComment(scope.id, comment.id),
-              icon: const Icon(LucideIcons.trash2, size: 18),
-            )
-          : null,
+              tooltip: l10n.taskMore,
+              items: [
+                ShadContextMenuItem(
+                  leading: const Icon(LucideIcons.trash2, size: 16),
+                  onPressed: () => _deleteComment(scope.id, comment.id),
+                  child: Text(l10n.collaborationCommentDelete),
+                ),
+              ],
+              child: const Icon(LucideIcons.ellipsis, size: 16),
+            ),
+        ],
+      ),
     );
   }
 
   Future<void> _sendComment() async {
+    if (_sending || _comment.text.trim().isEmpty) return;
+    final draft = _comment.text;
+    setState(() => _sending = true);
     try {
-      final sent = (await _viewModel.sendComment(_comment.text)).getOrThrow();
-      if (mounted && sent) _comment.clear();
+      final sent = (await _viewModel.sendComment(draft)).getOrThrow();
+      if (mounted && sent && _comment.text == draft) _comment.clear();
     } catch (error) {
       if (mounted) _snack(collaborationErrorMessage(context.l10n, error));
+    } finally {
+      if (mounted) setState(() => _sending = false);
     }
   }
 

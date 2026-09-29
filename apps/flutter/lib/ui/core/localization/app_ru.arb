@@ -1233,5 +1233,6 @@
   "taskDetailsTab": "Детали",
   "taskDiscussionTab": "Обсуждение",
   "taskProperties": "Свойства",
-  "filesGrouping": "Группировка"
+  "filesGrouping": "Группировка",
+  "taskDescriptionHint": "Добавить описание"
 }

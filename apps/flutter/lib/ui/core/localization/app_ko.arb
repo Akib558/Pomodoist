@@ -1844,5 +1844,6 @@
   "taskDetailsTab": "세부 정보",
   "taskDiscussionTab": "토론",
   "taskProperties": "속성",
-  "filesGrouping": "그룹화"
+  "filesGrouping": "그룹화",
+  "taskDescriptionHint": "설명 추가"
 }

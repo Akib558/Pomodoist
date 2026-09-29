@@ -3804,4 +3804,7 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get filesGrouping => '그룹화';
+
+  @override
+  String get taskDescriptionHint => '설명 추가';
 }

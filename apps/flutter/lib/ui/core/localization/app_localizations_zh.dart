@@ -3710,4 +3710,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get filesGrouping => '分组';
+
+  @override
+  String get taskDescriptionHint => '添加描述';
 }

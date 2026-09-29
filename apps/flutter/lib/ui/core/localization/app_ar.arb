@@ -1233,5 +1233,6 @@
   "taskDetailsTab": "التفاصيل",
   "taskDiscussionTab": "النقاش",
   "taskProperties": "الخصائص",
-  "filesGrouping": "التجميع"
+  "filesGrouping": "التجميع",
+  "taskDescriptionHint": "إضافة وصف"
 }

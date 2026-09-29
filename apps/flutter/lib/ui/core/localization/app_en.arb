@@ -1963,5 +1963,6 @@
   "taskDetailsTab": "Details",
   "taskDiscussionTab": "Discussion",
   "taskProperties": "Properties",
-  "filesGrouping": "Grouping"
+  "filesGrouping": "Grouping",
+  "taskDescriptionHint": "Add a description"
 }

@@ -3795,4 +3795,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get filesGrouping => 'グループ化';
+
+  @override
+  String get taskDescriptionHint => '説明を追加';
 }

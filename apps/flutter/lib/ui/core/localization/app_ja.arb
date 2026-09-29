@@ -1844,5 +1844,6 @@
   "taskDetailsTab": "詳細",
   "taskDiscussionTab": "ディスカッション",
   "taskProperties": "プロパティ",
-  "filesGrouping": "グループ化"
+  "filesGrouping": "グループ化",
+  "taskDescriptionHint": "説明を追加"
 }

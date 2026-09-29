@@ -1,3 +1,4 @@
+import 'package:pomodoist/ui/core/widgets/app_action_menu.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -229,7 +230,9 @@ class _FilesPanelState extends ConsumerState<FilesPanel> {
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
               ),
-            if (view.gallery && !widget.compact)
+            if (widget.compact)
+              _taskFiles(group.files, capabilities.value?.canDelete == true)
+            else if (view.gallery)
               LayoutBuilder(
                 builder: (context, constraints) => Wrap(
                   spacing: 12,
@@ -275,7 +278,25 @@ class _FilesPanelState extends ConsumerState<FilesPanel> {
       leading: const Icon(LucideIcons.plus, size: 16),
       child: Text(l10n.filesAdd),
     );
-    if (widget.compact) return add;
+    if (widget.compact) {
+      return Wrap(
+        spacing: 12,
+        alignment: WrapAlignment.spaceBetween,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Text(l10n.filesTitle, style: Theme.of(context).textTheme.titleSmall),
+          TextButton.icon(
+            onPressed: canAdd ? () => unawaited(_run(_model.upload)) : null,
+            style: TextButton.styleFrom(
+              foregroundColor: context.appColors.primaryText,
+              minimumSize: const Size(44, 44),
+            ),
+            icon: const Icon(LucideIcons.plus, size: 16),
+            label: Text(l10n.filesAdd),
+          ),
+        ],
+      );
+    }
     return LayoutBuilder(
       builder: (context, constraints) {
         final scale = MediaQuery.textScalerOf(context).scale(14) / 14;
@@ -384,6 +405,123 @@ class _FilesPanelState extends ConsumerState<FilesPanel> {
       },
     );
   }
+
+  Widget _taskFiles(
+    List<FileAttachment> files,
+    bool canDelete,
+  ) => LayoutBuilder(
+    builder: (context, constraints) {
+      final images = files.where((file) => file.isImage);
+      final scale = MediaQuery.textScalerOf(context).scale(14) / 14;
+      final columns = constraints.maxWidth >= 300 * scale ? 2 : 1;
+      final width = (constraints.maxWidth - (columns - 1) * 12) / columns;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (images.isNotEmpty)
+            Wrap(
+              spacing: 12,
+              runSpacing: 16,
+              children: [
+                for (final file in images)
+                  SizedBox(
+                    width: width,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Semantics(
+                          button: true,
+                          label: '${context.l10n.filesPreview}: ${file.name}',
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(8),
+                            onTap: () => unawaited(_open(file)),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: SizedBox(
+                                height: 112,
+                                child: _FileImage(file: file),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                file.name,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.bodyMedium,
+                              ),
+                            ),
+                            _taskFileMenu(file, canDelete),
+                          ],
+                        ),
+                        _metadata(file),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          for (final file in files.where((file) => !file.isImage))
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Row(
+                children: [
+                  Icon(
+                    LucideIcons.file,
+                    size: 24,
+                    color: context.appColors.secondaryText,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: TextButton(
+                      style: TextButton.styleFrom(
+                        alignment: Alignment.centerLeft,
+                        foregroundColor: context.appColors.primaryText,
+                        minimumSize: const Size(44, 44),
+                      ),
+                      onPressed: () => unawaited(_open(file)),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            file.name,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          _metadata(file),
+                        ],
+                      ),
+                    ),
+                  ),
+                  _taskFileMenu(file, canDelete),
+                ],
+              ),
+            ),
+        ],
+      );
+    },
+  );
+
+  Widget _taskFileMenu(FileAttachment file, bool canDelete) => AppActionMenu(
+    width: 44,
+    tooltip: context.l10n.taskMore,
+    items: [
+      ShadContextMenuItem(
+        leading: const Icon(LucideIcons.download, size: 16),
+        onPressed: () => unawaited(_run(() => _model.download(file))),
+        child: Text(context.l10n.filesDownload),
+      ),
+      if (canDelete)
+        ShadContextMenuItem(
+          leading: const Icon(LucideIcons.trash2, size: 16),
+          onPressed: () => unawaited(_delete(file)),
+          child: Text(context.l10n.filesDelete),
+        ),
+    ],
+    child: const Icon(LucideIcons.ellipsis, size: 16),
+  );
 
   Widget _metadata(FileAttachment file) => Text(
     [

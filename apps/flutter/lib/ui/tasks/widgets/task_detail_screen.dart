@@ -10,7 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:shadcn_ui/shadcn_ui.dart'
     show
         LucideIcons,
-        ShadBadge,
         ShadBorder,
         ShadButton,
         ShadContextMenuItem,
@@ -63,7 +62,6 @@ class TaskDetailScreen extends ConsumerStatefulWidget {
 
 class TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
   _TaskDetailTab _selectedTab = _TaskDetailTab.details;
-  bool _propertiesExpanded = false;
   final _titleKey = GlobalKey<_EditableTaskTitleState>();
   final _descriptionKey = GlobalKey<_EditableTaskDescriptionState>();
   final _saveIdentity = Object();
@@ -163,20 +161,20 @@ class TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
     }
   }
 
-  Widget _header(BuildContext context, [TaskItem? item]) {
+  Widget _header(BuildContext context, [TaskItem? item, String? projectName]) {
     final l10n = context.l10n;
     return Row(
       children: [
-        Tooltip(
-          message: widget.isPanel ? l10n.commonClose : l10n.commonBack,
-          child: ShadIconButton.ghost(
-            onPressed: () => _goBack(context),
-            icon: Icon(widget.isPanel ? LucideIcons.x : LucideIcons.arrowLeft),
-            width: 40,
-            height: 40,
+        Expanded(
+          child: Text(
+            projectName ?? l10n.navInbox,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: context.appColors.secondaryText,
+            ),
           ),
         ),
-        const Spacer(),
         if (item != null)
           AppActionMenu(
             tooltip: l10n.taskMore,
@@ -201,6 +199,15 @@ class TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
               ),
             ],
           ),
+        Tooltip(
+          message: widget.isPanel ? l10n.commonClose : l10n.commonBack,
+          child: ShadIconButton.ghost(
+            onPressed: () => _goBack(context),
+            icon: Icon(widget.isPanel ? LucideIcons.x : LucideIcons.arrowLeft),
+            width: 44,
+            height: 44,
+          ),
+        ),
       ],
     );
   }
@@ -211,6 +218,54 @@ class TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
       Expanded(child: Center(child: child)),
     ],
   );
+
+  Widget _tab(
+    _TaskDetailTab tab,
+    String label,
+    _TaskDetailTab active, [
+    int? count,
+  ]) {
+    final selected = tab == active;
+    return Semantics(
+      selected: selected,
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: selected ? context.appColors.accent : Colors.transparent,
+              width: 2,
+            ),
+          ),
+        ),
+        child: TextButton(
+          style: TextButton.styleFrom(
+            minimumSize: const Size(44, 44),
+            foregroundColor: selected
+                ? context.appColors.primaryText
+                : context.appColors.secondaryText,
+            shape: const RoundedRectangleBorder(),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+          ),
+          onPressed: () => setState(() => _selectedTab = tab),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(label),
+              if (count != null && count > 0) ...[
+                const SizedBox(width: 6),
+                Text(
+                  '$count',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: context.appColors.secondaryText,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -255,26 +310,123 @@ class TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                   : _selectedTab;
               final showDetails =
                   descriptionFirst || activeTab == _TaskDetailTab.details;
+              final inset = widget.isPanel ? 24.0 : 20.0;
+              Widget retained(String key, bool visible, Widget child) =>
+                  Visibility(
+                    key: ValueKey(key),
+                    visible: visible,
+                    maintainState: true,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 24),
+                      child: child,
+                    ),
+                  );
+              final properties = retained(
+                'properties',
+                showDetails,
+                _DetailDisclosure(
+                  label: l10n.taskProperties,
+                  alwaysOpen: !descriptionFirst,
+                  child: _TaskProperties(
+                    task: item,
+                    projectName: viewState.projectName,
+                    calendarLinked: viewState.calendarLinked,
+                  ),
+                ),
+              );
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-                    child: _header(context, item),
+                    padding: EdgeInsets.fromLTRB(inset, 8, inset, 8),
+                    child: _header(context, item, viewState.projectName),
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: _EditableTaskTitle(
-                      key: _titleKey,
-                      identity: _titleEditorIdentity,
-                      task: item,
+                    padding: EdgeInsets.symmetric(horizontal: inset),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Tooltip(
+                          message: item.isCompleted
+                              ? l10n.markOpen
+                              : l10n.markComplete,
+                          child: SizedBox(
+                            width: 44,
+                            height: 44,
+                            child: Center(
+                              child: TaskCompletionControl(
+                                taskId: item.id,
+                                isCompleted: item.isCompleted,
+                                hitSize: 44,
+                                color: context.appColors.accent,
+                                fillColor: context.appColors.accentFill,
+                                onPressed: !item.canEdit
+                                    ? null
+                                    : () async {
+                                        if (item.isCompleted) {
+                                          try {
+                                            await viewModel.reopen();
+                                          } catch (_) {
+                                            if (context.mounted) {
+                                              showActionFeedback(
+                                                context,
+                                                message: l10n
+                                                    .taskActionFailedCount(1),
+                                                icon: LucideIcons.circleAlert,
+                                                sound: ActionFeedbackSound.none,
+                                                haptic: AppHapticCue.none,
+                                              );
+                                            }
+                                            return;
+                                          }
+                                          if (!context.mounted) {
+                                            return;
+                                          }
+                                          final reopened = await viewModel
+                                              .current();
+                                          if (!context.mounted) {
+                                            return;
+                                          }
+                                          if (reopened != null) {
+                                            motion.reopened([reopened]);
+                                          }
+                                          showActionFeedback(
+                                            context,
+                                            message: l10n.taskReopened,
+                                            icon: LucideIcons.undo2,
+                                          );
+                                          return;
+                                        }
+
+                                        await completeTaskWithUndoFeedback(
+                                          context,
+                                          complete: viewModel.complete,
+                                          undo: viewModel.reopen,
+                                        );
+                                      },
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: _EditableTaskTitle(
+                              key: _titleKey,
+                              identity: _titleEditorIdentity,
+                              task: item,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+                    padding: EdgeInsets.fromLTRB(inset, 8, inset, 8),
                     child: Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
+                      spacing: 12,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         Tooltip(
                           message:
@@ -282,7 +434,14 @@ class TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                                   TaskDetailFocusAction.pauseUnavailable
                               ? l10n.focusPauseUnavailable
                               : focusLabel,
-                          child: ShadButton(
+                          child: TextButton.icon(
+                            style: TextButton.styleFrom(
+                              foregroundColor: context.appColors.primaryText,
+                              minimumSize: const Size(44, 44),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                              ),
+                            ),
                             onPressed: focusDisabled
                                 ? null
                                 : () => _runFocusAction(
@@ -290,71 +449,35 @@ class TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                                     viewState.focusRunId,
                                     item.content,
                                   ),
-                            enabled: !focusDisabled,
-                            leading: Icon(
+                            icon: Icon(
                               focusAction == TaskDetailFocusAction.pause ||
                                       focusAction ==
                                           TaskDetailFocusAction.pauseUnavailable
                                   ? LucideIcons.pause
                                   : LucideIcons.play,
+                              size: 16,
                             ),
-                            child: Text(focusLabel),
+                            label: Text(focusLabel),
                           ),
                         ),
-                        ShadButton.outline(
-                          onPressed: () async {
-                            if (item.isCompleted) {
-                              try {
-                                await viewModel.reopen();
-                              } catch (_) {
-                                if (context.mounted) {
-                                  showActionFeedback(
-                                    context,
-                                    message: l10n.taskActionFailedCount(1),
-                                    icon: LucideIcons.circleAlert,
-                                    sound: ActionFeedbackSound.none,
-                                    haptic: AppHapticCue.none,
-                                  );
-                                }
-                                return;
-                              }
-                              if (!context.mounted) {
-                                return;
-                              }
-                              final reopened = await viewModel.current();
-                              if (!context.mounted) {
-                                return;
-                              }
-                              if (reopened != null) {
-                                motion.reopened([reopened]);
-                              }
-                              showActionFeedback(
-                                context,
-                                message: l10n.taskReopened,
-                                icon: LucideIcons.undo2,
-                              );
-                              return;
-                            }
-
-                            await completeTaskWithUndoFeedback(
-                              context,
-                              complete: viewModel.complete,
-                              undo: viewModel.reopen,
-                            );
-                          },
-                          leading: TaskCompletionControl(
-                            taskId: item.id,
-                            isCompleted: item.isCompleted,
-                            color: context.appColors.accent,
-                            fillColor: context.appColors.accentFill,
-                            onPressed: null,
+                        Text(
+                          l10n.focusProgress(
+                            item.completedFocusIntervals,
+                            focusEstimate ?? 0,
                           ),
-                          child: Text(
-                            item.isCompleted
-                                ? l10n.markOpen
-                                : l10n.markComplete,
-                          ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: context.appColors.secondaryText,
+                              ),
                         ),
+                        if (item.totalFocusSeconds > 0)
+                          Text(
+                            formatFocusTime(context, item.totalFocusSeconds),
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: context.appColors.secondaryText,
+                                ),
+                          ),
                       ],
                     ),
                   ),
@@ -362,151 +485,88 @@ class TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                     visible: !descriptionFirst,
                     maintainState: true,
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-                      child: ShadTabs<_TaskDetailTab>(
-                        scrollable: true,
-                        value: activeTab,
-                        gap: 0,
-                        onChanged: (value) =>
-                            setState(() => _selectedTab = value),
-                        tabs: [
-                          ShadTab(
-                            value: _TaskDetailTab.details,
-                            child: Text(l10n.taskDetailsTab),
+                      padding: EdgeInsets.symmetric(horizontal: inset),
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(color: context.appColors.border),
                           ),
-                          ShadTab(
-                            value: _TaskDetailTab.files,
-                            child: Text(l10n.filesTitle),
+                        ),
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              _tab(
+                                _TaskDetailTab.details,
+                                l10n.taskDetailsTab,
+                                activeTab,
+                              ),
+                              _tab(
+                                _TaskDetailTab.files,
+                                l10n.filesTitle,
+                                activeTab,
+                                viewState.fileCount,
+                              ),
+                              if (shared)
+                                _tab(
+                                  _TaskDetailTab.discussion,
+                                  l10n.taskDiscussionTab,
+                                  activeTab,
+                                  viewState.commentCount,
+                                ),
+                            ],
                           ),
-                          if (shared)
-                            ShadTab(
-                              value: _TaskDetailTab.discussion,
-                              child: Text(l10n.taskDiscussionTab),
-                            ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
                   Expanded(
                     child: SingleChildScrollView(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                      padding: EdgeInsets.fromLTRB(inset, 20, inset, 24),
                       child: TaskMotionItem(
                         taskId: item.id,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            // Keep one mounted subtree per section across tabs and layouts.
-                            Visibility(
-                              visible: showDetails,
-                              maintainState: true,
-                              child: Padding(
-                                padding: const EdgeInsets.only(bottom: 16),
-                                child: _EditableTaskDescription(
-                                  key: _descriptionKey,
-                                  identity: _descriptionEditorIdentity,
-                                  task: item,
-                                ),
+                            if (!descriptionFirst) properties,
+                            retained(
+                              'description',
+                              showDetails,
+                              _EditableTaskDescription(
+                                key: _descriptionKey,
+                                identity: _descriptionEditorIdentity,
+                                task: item,
                               ),
                             ),
-                            Visibility(
-                              visible:
-                                  descriptionFirst ||
+                            retained(
+                              'files',
+                              descriptionFirst ||
                                   activeTab == _TaskDetailTab.files,
-                              maintainState: true,
-                              child: Padding(
-                                padding: const EdgeInsets.only(bottom: 16),
-                                child: FilesPanel(
-                                  taskId: item.id,
-                                  compact: true,
-                                ),
+                              FilesPanel(taskId: item.id, compact: true),
+                            ),
+                            retained(
+                              'subtasks',
+                              showDetails,
+                              _SubtasksSection(
+                                identity: _subtaskEditorIdentity,
+                                task: item,
                               ),
                             ),
-                            Visibility(
-                              visible: showDetails,
-                              maintainState: true,
-                              child: Padding(
-                                padding: const EdgeInsets.only(bottom: 16),
-                                child: _SubtasksSection(
-                                  identity: _subtaskEditorIdentity,
-                                  task: item,
-                                ),
+                            if (descriptionFirst) properties,
+                            retained(
+                              'history',
+                              showDetails,
+                              _DetailDisclosure(
+                                label: l10n.focusHistory,
+                                child: _FocusHistory(task: item),
                               ),
                             ),
-                            Visibility(
-                              visible: showDetails && shared,
-                              maintainState: true,
-                              child: Padding(
-                                padding: const EdgeInsets.only(bottom: 16),
-                                child: TaskCollaborationSection(
-                                  task: item,
-                                  showComments: false,
-                                ),
-                              ),
-                            ),
-                            Visibility(
-                              visible: showDetails,
-                              maintainState: true,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.stretch,
-                                children: [
-                                  Visibility(
-                                    visible: descriptionFirst,
-                                    child: TextButton.icon(
-                                      onPressed: () => setState(
-                                        () => _propertiesExpanded =
-                                            !_propertiesExpanded,
-                                      ),
-                                      icon: Icon(
-                                        _propertiesExpanded
-                                            ? LucideIcons.chevronUp
-                                            : LucideIcons.chevronDown,
-                                      ),
-                                      label: Text(l10n.taskProperties),
-                                    ),
-                                  ),
-                                  Visibility(
-                                    visible:
-                                        !descriptionFirst ||
-                                        _propertiesExpanded,
-                                    maintainState: true,
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.stretch,
-                                      children: [
-                                        _TaskMetadataChips(
-                                          task: item,
-                                          calendarLinked:
-                                              viewState.calendarLinked,
-                                          focusEstimate: focusEstimate,
-                                        ),
-                                        const SizedBox(height: 20),
-                                        _ScheduleActions(task: item),
-                                        const SizedBox(height: 20),
-                                        ExpansionTile(
-                                          tilePadding: EdgeInsets.zero,
-                                          title: Text(l10n.recurrenceTitle),
-                                          children: [
-                                            _RecurrenceActions(task: item),
-                                          ],
-                                        ),
-                                        ExpansionTile(
-                                          tilePadding: EdgeInsets.zero,
-                                          title: Text(l10n.focusHistory),
-                                          children: [_FocusHistory(task: item)],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Visibility(
-                              visible:
-                                  shared &&
+                            retained(
+                              'discussion',
+                              shared &&
                                   (descriptionFirst ||
                                       activeTab == _TaskDetailTab.discussion),
-                              maintainState: true,
-                              child: TaskCollaborationSection(
+                              TaskCollaborationSection(
                                 task: item,
                                 showAssignees: false,
                               ),
@@ -529,239 +589,320 @@ class TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
   }
 }
 
-class _TaskMetadataChips extends ConsumerWidget {
-  const _TaskMetadataChips({
-    required this.task,
-    required this.calendarLinked,
-    required this.focusEstimate,
+class _PropertyRow extends StatelessWidget {
+  const _PropertyRow({
+    required this.icon,
+    required this.label,
+    required this.child,
   });
+  final IconData icon;
+  final String label;
+  final Widget child;
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 2),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Icon(icon, size: 15, color: context.appColors.secondaryText),
+        const SizedBox(width: 8),
+        Flexible(
+          flex: 2,
+          child: SizedBox(
+            width: 108,
+            child: Text(
+              label,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: context.appColors.secondaryText,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Expanded(flex: 3, child: child),
+      ],
+    ),
+  );
+}
 
+class _DetailDisclosure extends StatefulWidget {
+  const _DetailDisclosure({
+    required this.label,
+    required this.child,
+    this.alwaysOpen = false,
+    this.icon,
+    this.value,
+  });
+  final String label;
+  final Widget child;
+  final bool alwaysOpen;
+  final IconData? icon;
+  final String? value;
+  @override
+  State<_DetailDisclosure> createState() => _DetailDisclosureState();
+}
+
+class _DetailDisclosureState extends State<_DetailDisclosure> {
+  bool _expanded = false;
+  @override
+  Widget build(BuildContext context) => Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      if (!widget.alwaysOpen)
+        TextButton(
+          style: TextButton.styleFrom(
+            alignment: Alignment.centerLeft,
+            foregroundColor: context.appColors.secondaryText,
+            minimumSize: const Size(44, 44),
+            padding: EdgeInsets.zero,
+          ),
+          onPressed: () => setState(() => _expanded = !_expanded),
+          child: widget.icon == null
+              ? Row(
+                  children: [
+                    Expanded(child: Text(widget.label)),
+                    Icon(
+                      _expanded
+                          ? LucideIcons.chevronUp
+                          : LucideIcons.chevronDown,
+                      size: 16,
+                    ),
+                  ],
+                )
+              : _PropertyRow(
+                  icon: widget.icon!,
+                  label: widget.label,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          widget.value ?? '',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ),
+                      Icon(
+                        _expanded
+                            ? LucideIcons.chevronUp
+                            : LucideIcons.chevronDown,
+                        size: 14,
+                      ),
+                    ],
+                  ),
+                ),
+        ),
+      Visibility(
+        visible: widget.alwaysOpen || _expanded,
+        maintainState: true,
+        child: widget.child,
+      ),
+    ],
+  );
+}
+
+class _TaskProperties extends ConsumerWidget {
+  const _TaskProperties({
+    required this.task,
+    required this.projectName,
+    required this.calendarLinked,
+  });
   final TaskItem task;
+  final String? projectName;
   final bool calendarLinked;
-  final int? focusEstimate;
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
     final colors = context.appColors;
     final scheduleState = ref.watch(taskScheduleViewModelProvider(task));
-    final taskTimeState = scheduleState.timeState;
-    final taskTimeColor = taskTimeState == null
-        ? null
-        : colors.taskTimeColor(taskTimeState);
-    final timeDisplayMode = scheduleState.displayMode;
-    final defaultTimedBlockMinutes = scheduleState.timedMinutes;
+    final timeState = scheduleState.timeState;
+    final color = timeState == null
+        ? colors.primaryText
+        : colors.taskTimeColor(timeState);
     final scheduleLabel = formatTaskSchedule(
       context,
       task.schedule,
-      displayMode: timeDisplayMode,
-      defaultTimedBlockMinutes: defaultTimedBlockMinutes,
+      displayMode: scheduleState.displayMode,
+      defaultTimedBlockMinutes: scheduleState.timedMinutes,
     );
-    final scheduleSemanticLabel = taskTimeState == null
-        ? scheduleLabel
-        : '$scheduleLabel, ${taskTimeStatusLabel(l10n, taskTimeState)}';
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: [
-        Tooltip(
-          message: l10n.priority(task.priority),
-          child: ShadMenubar(
-            key: const Key('task-detail-priority-chip'),
-            padding: EdgeInsets.zero,
-            border: ShadBorder.none,
-            backgroundColor: Colors.transparent,
-            items: [
-              ShadMenubarItem(
-                items: [
-                  for (final priority in [1, 2, 3, 4])
-                    ShadContextMenuItem(
-                      trailing: Icon(
-                        task.priority == priority ? LucideIcons.check : null,
-                        size: 16,
-                      ),
-                      onPressed: () => unawaited(
-                        ref
-                            .read(taskScheduleViewModelProvider(task).notifier)
-                            .setPriority(priority),
-                      ),
-                      child: Text(l10n.priority(priority)),
-                    ),
-                ],
-                height: 36,
-                buttonPadding: const EdgeInsets.symmetric(horizontal: 10),
-                child: ShadBadge.secondary(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 5,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        LucideIcons.flag,
-                        size: 16,
-                        color: _priorityColor(task.priority, colors),
-                      ),
-                      const SizedBox(width: 6),
-                      Text('p${task.priority}'),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+    Widget menu(
+      Widget child,
+      List<Widget> items, {
+      Key? key,
+      FocusNode? focusNode,
+    }) => LayoutBuilder(
+      builder: (context, constraints) => ShadMenubar(
+        key: key,
+        padding: EdgeInsets.zero,
+        border: ShadBorder.none,
+        backgroundColor: Colors.transparent,
+        items: [
+          ShadMenubarItem(
+            enabled: task.canEdit,
+            height: 44,
+            width: constraints.maxWidth,
+            focusNode: focusNode,
+            buttonPadding: const EdgeInsets.symmetric(horizontal: 4),
+            items: items,
+            child: DefaultTextStyle.merge(
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              child: child,
+            ),
           ),
-        ),
-        Tooltip(
-          message: l10n.scheduleTitle,
+        ],
+      ),
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _PropertyRow(
+          icon: LucideIcons.calendar,
+          label: l10n.scheduleTitle,
           child: AppDateTimePicker(
-            builder: (context, picker) => ShadMenubar(
-              key: const Key('task-detail-schedule-chip'),
-              padding: EdgeInsets.zero,
-              border: ShadBorder.none,
-              backgroundColor: Colors.transparent,
-              items: [
-                ShadMenubarItem(
-                  focusNode: picker.focusNode,
-                  items: [
-                    ShadContextMenuItem(
-                      onPressed: () => unawaited(
-                        _runScheduleQuickAction(
-                          context,
-                          ref,
-                          task,
-                          picker,
-                          _ScheduleQuickAction.today,
-                        ),
-                      ),
-                      child: Text(l10n.today),
-                    ),
-                    ShadContextMenuItem(
-                      onPressed: () => unawaited(
-                        _runScheduleQuickAction(
-                          context,
-                          ref,
-                          task,
-                          picker,
-                          _ScheduleQuickAction.tomorrow,
-                        ),
-                      ),
-                      child: Text(l10n.tomorrow),
-                    ),
-                    const Divider(height: 8),
-                    ShadContextMenuItem(
-                      onPressed: () => unawaited(
-                        _runScheduleQuickAction(
-                          context,
-                          ref,
-                          task,
-                          picker,
-                          _ScheduleQuickAction.allDay,
-                        ),
-                      ),
-                      child: Text(l10n.allDay),
-                    ),
-                    ShadContextMenuItem(
-                      onPressed: () => unawaited(
-                        _runScheduleQuickAction(
-                          context,
-                          ref,
-                          task,
-                          picker,
-                          _ScheduleQuickAction.timed,
-                        ),
-                      ),
-                      child: Text(l10n.timedBlock),
-                    ),
-                    if (task.schedule != null) ...[
-                      const Divider(height: 8),
-                      ShadContextMenuItem(
-                        onPressed: () => unawaited(
-                          _runScheduleQuickAction(
-                            context,
-                            ref,
-                            task,
-                            picker,
-                            _ScheduleQuickAction.clear,
-                          ),
-                        ),
-                        child: Text(l10n.clearDate),
-                      ),
-                    ],
-                  ],
-                  height: 36,
-                  buttonPadding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Semantics(
-                    key: const Key('task-detail-time-meta'),
-                    label: scheduleSemanticLabel,
-                    child: ShadBadge.secondary(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 5,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            LucideIcons.calendar,
-                            size: 16,
-                            key: const Key('task-detail-time-icon'),
-                            color: taskTimeColor,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            scheduleLabel,
-                            key: const Key('task-detail-time-label'),
-                            style: TextStyle(color: taskTimeColor),
-                          ),
-                        ],
-                      ),
+            builder: (context, picker) => menu(
+              Semantics(
+                label: timeState == null
+                    ? scheduleLabel
+                    : '$scheduleLabel, ${taskTimeStatusLabel(l10n, timeState)}',
+                child: Text(scheduleLabel, style: TextStyle(color: color)),
+              ),
+              [
+                ShadContextMenuItem(
+                  onPressed: () => unawaited(
+                    _runScheduleQuickAction(
+                      context,
+                      ref,
+                      task,
+                      picker,
+                      _ScheduleQuickAction.today,
                     ),
                   ),
+                  child: Text(l10n.today),
                 ),
+                ShadContextMenuItem(
+                  onPressed: () => unawaited(
+                    _runScheduleQuickAction(
+                      context,
+                      ref,
+                      task,
+                      picker,
+                      _ScheduleQuickAction.tomorrow,
+                    ),
+                  ),
+                  child: Text(l10n.tomorrow),
+                ),
+                const Divider(height: 8),
+                ShadContextMenuItem(
+                  onPressed: () => unawaited(
+                    _runScheduleQuickAction(
+                      context,
+                      ref,
+                      task,
+                      picker,
+                      _ScheduleQuickAction.allDay,
+                    ),
+                  ),
+                  child: Text(l10n.allDay),
+                ),
+                ShadContextMenuItem(
+                  onPressed: () => unawaited(
+                    _runScheduleQuickAction(
+                      context,
+                      ref,
+                      task,
+                      picker,
+                      _ScheduleQuickAction.timed,
+                    ),
+                  ),
+                  child: Text(l10n.timedBlock),
+                ),
+                if (task.schedule != null) ...[
+                  const Divider(height: 8),
+                  ShadContextMenuItem(
+                    onPressed: () => unawaited(
+                      _runScheduleQuickAction(
+                        context,
+                        ref,
+                        task,
+                        picker,
+                        _ScheduleQuickAction.clear,
+                      ),
+                    ),
+                    child: Text(l10n.clearDate),
+                  ),
+                ],
               ],
+              key: const Key('task-detail-schedule-chip'),
+              focusNode: picker.focusNode,
             ),
           ),
         ),
-        ShadBadge.secondary(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(LucideIcons.refreshCw, size: 16),
-              const SizedBox(width: 6),
-              Text(
-                calendarLinked ? l10n.calendarLinked : l10n.calendarNotLinked,
-              ),
-            ],
+        if (calendarLinked)
+          Padding(
+            padding: const EdgeInsets.only(left: 24, bottom: 4),
+            child: Text(
+              l10n.calendarLinked,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: colors.secondaryText),
+            ),
           ),
-        ),
-        ShadBadge.secondary(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(LucideIcons.timer, size: 16),
-              const SizedBox(width: 6),
-              Text(
-                l10n.focusProgress(
-                  task.completedFocusIntervals,
-                  focusEstimate ?? 0,
+        _PropertyRow(
+          icon: LucideIcons.flag,
+          label: l10n.taskPriority,
+          child: menu(
+            Text(
+              l10n.priority(task.priority),
+              style: TextStyle(color: _priorityColor(task.priority, colors)),
+            ),
+            [
+              for (final priority in [1, 2, 3, 4])
+                ShadContextMenuItem(
+                  trailing: Icon(
+                    task.priority == priority ? LucideIcons.check : null,
+                    size: 16,
+                  ),
+                  onPressed: () => unawaited(
+                    ref
+                        .read(taskScheduleViewModelProvider(task).notifier)
+                        .setPriority(priority),
+                  ),
+                  child: Text(l10n.priority(priority)),
                 ),
-              ),
             ],
+            key: const Key('task-detail-priority-chip'),
           ),
         ),
-        ShadBadge.secondary(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(LucideIcons.history, size: 16),
-              const SizedBox(width: 6),
-              Text(formatFocusTime(context, task.totalFocusSeconds)),
-            ],
+        _PropertyRow(
+          icon: LucideIcons.folder,
+          label: l10n.taskProject,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+            child: Text(
+              projectName ?? l10n.navInbox,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
           ),
+        ),
+        if (task.scopeId != null)
+          TaskCollaborationSection(task: task, showComments: false),
+        _DetailDisclosure(
+          label: l10n.recurrenceTitle,
+          icon: LucideIcons.repeat,
+          value: switch (task.schedule?.recurrence) {
+            final recurrence? => switch (recurrence.unit) {
+              TaskRecurrenceUnit.day => l10n.recurrenceEveryDays(
+                recurrence.interval,
+              ),
+              TaskRecurrenceUnit.week => l10n.recurrenceEveryWeeks(
+                recurrence.interval,
+              ),
+              TaskRecurrenceUnit.month => l10n.recurrenceEveryMonths(
+                recurrence.interval,
+              ),
+            },
+            null => l10n.never,
+          },
+          child: _RecurrenceActions(task: task),
         ),
       ],
     );
@@ -852,7 +993,10 @@ class _EditableTaskTitleState extends ConsumerState<_EditableTaskTitle> {
         widget.identity,
       ).select((state) => state.saving),
     );
-    final style = Theme.of(context).textTheme.headlineMedium;
+    final style = Theme.of(context).textTheme.headlineSmall?.copyWith(
+      fontWeight: FontWeight.w600,
+      height: 1.35,
+    );
     if (_editing) {
       return QuickAddInput(
         controller: _controller,
@@ -874,7 +1018,7 @@ class _EditableTaskTitleState extends ConsumerState<_EditableTaskTitle> {
       cursor: SystemMouseCursors.text,
       child: InkWell(
         borderRadius: BorderRadius.circular(8),
-        onTap: _startEditing,
+        onTap: widget.task.canEdit ? _startEditing : null,
         child: SizedBox(
           width: double.infinity,
           child: Text(
@@ -1001,20 +1145,29 @@ class _EditableTaskDescriptionState
         widget.identity,
       ).select((state) => state.saving),
     );
-    return ShadInput(
+    return TextField(
       key: const Key('task-comment-editor'),
       controller: _controller,
       enabled: !_saving,
+      readOnly: !widget.task.canEdit,
       focusNode: _focusNode,
-      minLines: 1,
-      maxLines: 5,
+      minLines: 2,
+      maxLines: null,
+      style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.7),
       textInputAction: TextInputAction.newline,
+      decoration: InputDecoration(
+        hintText: context.l10n.taskDescriptionHint,
+        border: InputBorder.none,
+        enabledBorder: InputBorder.none,
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: context.appColors.accent),
+        ),
+        filled: false,
+        contentPadding: const EdgeInsets.symmetric(vertical: 8),
+      ),
       onChanged: (value) => ref
           .read(taskEditorViewModelProvider(widget.identity).notifier)
           .updateDraft(value),
-      placeholder: Text(context.l10n.taskCommentHint),
-      top: Text(context.l10n.taskComment),
-      leading: const Icon(LucideIcons.notebookPen),
     );
   }
 
@@ -1052,6 +1205,7 @@ class _SubtasksSection extends ConsumerStatefulWidget {
 }
 
 class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
+  bool _adding = false;
   final _controller = TextEditingController();
   bool get _saving =>
       ref.read(taskEditorViewModelProvider(widget.identity)).saving;
@@ -1060,6 +1214,7 @@ class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
   void initState() {
     super.initState();
     final state = ref.read(taskEditorViewModelProvider(widget.identity));
+    _adding = state.dirty || state.failed;
     if (state.dirty || state.failed) {
       _controller.text = state.draft;
     }
@@ -1093,7 +1248,7 @@ class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
             Expanded(
               child: Text(
                 l10n.subtasks,
-                style: Theme.of(context).textTheme.titleLarge,
+                style: Theme.of(context).textTheme.titleSmall,
               ),
             ),
             if (rootProgress != null)
@@ -1114,30 +1269,45 @@ class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
           ],
         ),
         const SizedBox(height: 8),
-        ShadInput(
-          key: const Key('add-subtask-field'),
-          controller: _controller,
-          enabled: !_saving,
-          textInputAction: TextInputAction.done,
-          onChanged: (value) => ref
-              .read(taskEditorViewModelProvider(widget.identity).notifier)
-              .updateDraft(value),
-          onSubmitted: (_) => _submit(),
-          placeholder: Text(l10n.addSubtaskHint),
-          leading: const Icon(LucideIcons.cornerDownRight),
-          trailing: Tooltip(
-            message: l10n.addSubtask,
-            child: ShadIconButton.ghost(
-              onPressed: _saving ? null : _submit,
-              icon: _saving
-                  ? const SizedBox.square(
-                      dimension: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(LucideIcons.plus),
-              enabled: !(_saving),
-              width: 40,
-              height: 40,
+        TextButton.icon(
+          onPressed: widget.task.canEdit
+              ? () => setState(() => _adding = !_adding)
+              : null,
+          style: TextButton.styleFrom(
+            foregroundColor: context.appColors.secondaryText,
+            minimumSize: const Size(44, 44),
+          ),
+          icon: const Icon(LucideIcons.plus, size: 16),
+          label: Text(l10n.addSubtask),
+        ),
+        Visibility(
+          visible: _adding,
+          maintainState: true,
+          child: ShadInput(
+            key: const Key('add-subtask-field'),
+            controller: _controller,
+            enabled: !_saving && widget.task.canEdit,
+            textInputAction: TextInputAction.done,
+            onChanged: (value) => ref
+                .read(taskEditorViewModelProvider(widget.identity).notifier)
+                .updateDraft(value),
+            onSubmitted: (_) => _submit(),
+            placeholder: Text(l10n.addSubtaskHint),
+            leading: const Icon(LucideIcons.cornerDownRight),
+            trailing: Tooltip(
+              message: l10n.addSubtask,
+              child: ShadIconButton.ghost(
+                onPressed: _saving ? null : _submit,
+                icon: _saving
+                    ? const SizedBox.square(
+                        dimension: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(LucideIcons.plus),
+                enabled: !(_saving),
+                width: 44,
+                height: 44,
+              ),
             ),
           ),
         ),
@@ -1172,6 +1342,7 @@ class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
                   TaskListItem(
                     key: ValueKey(children[index].task.id),
                     task: children[index].task,
+                    compactDetails: true,
                     depth: children[index].displayDepth,
                     hierarchy: children[index],
                     branchScope: scope,
@@ -1215,55 +1386,6 @@ class _SubtasksSectionState extends ConsumerState<_SubtasksSection> {
         ).showSnackBar(SnackBar(content: Text(context.l10n.taskCreateFailed)));
       }
     } finally {}
-  }
-}
-
-class _ScheduleActions extends ConsumerWidget {
-  const _ScheduleActions({required this.task});
-
-  final TaskItem task;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          context.l10n.scheduleTitle,
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            AppDateTimePicker(
-              builder: (context, picker) => ShadButton.outline(
-                focusNode: picker.focusNode,
-                onPressed: () =>
-                    _pickAllDaySchedule(context, ref, task, picker),
-                leading: const Icon(LucideIcons.calendarCheck),
-                child: Text(context.l10n.allDay),
-              ),
-            ),
-            AppDateTimePicker(
-              builder: (context, picker) => ShadButton.outline(
-                focusNode: picker.focusNode,
-                onPressed: () => _pickTimedSchedule(context, ref, task, picker),
-                leading: const Icon(LucideIcons.clock),
-                child: Text(context.l10n.timedBlock),
-              ),
-            ),
-            if (task.schedule != null)
-              ShadButton.ghost(
-                onPressed: () => _clearTaskSchedule(ref, task),
-                leading: const Icon(LucideIcons.calendarX),
-                child: Text(context.l10n.commonClear),
-              ),
-          ],
-        ),
-      ],
-    );
   }
 }
 
@@ -1316,7 +1438,7 @@ class _RecurrenceActionsState extends ConsumerState<_RecurrenceActions> {
           key: const Key('task-recurrence-interval-input'),
           controller: _controller,
           focusNode: _focusNode,
-          enabled: schedule != null,
+          enabled: schedule != null && widget.task.canEdit,
           keyboardType: TextInputType.number,
           textInputAction: TextInputAction.done,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -1331,25 +1453,30 @@ class _RecurrenceActionsState extends ConsumerState<_RecurrenceActions> {
                 ),
         ),
         const SizedBox(height: 10),
-        IntrinsicWidth(
+        SizedBox(
+          width: double.infinity,
           child: ShadTabs<TaskRecurrenceUnit>(
+            scrollable: true,
             key: const Key('task-recurrence-unit-select'),
             value: unit,
             gap: 0,
             tabs: [
               ShadTab(
+                height: 44,
                 value: TaskRecurrenceUnit.day,
-                enabled: schedule != null,
+                enabled: schedule != null && widget.task.canEdit,
                 child: Text(l10n.recurrenceUnitDay),
               ),
               ShadTab(
+                height: 44,
                 value: TaskRecurrenceUnit.week,
-                enabled: schedule != null,
+                enabled: schedule != null && widget.task.canEdit,
                 child: Text(l10n.recurrenceUnitWeek),
               ),
               ShadTab(
+                height: 44,
                 value: TaskRecurrenceUnit.month,
-                enabled: schedule != null,
+                enabled: schedule != null && widget.task.canEdit,
                 child: Text(l10n.recurrenceUnitMonth),
               ),
             ],
@@ -1362,16 +1489,20 @@ class _RecurrenceActionsState extends ConsumerState<_RecurrenceActions> {
           runSpacing: 8,
           children: [
             ShadButton(
+              height: 44,
               key: const Key('task-recurrence-save-button'),
-              onPressed: schedule == null ? null : () => _save(unit),
+              onPressed: schedule == null || !widget.task.canEdit
+                  ? null
+                  : () => _save(unit),
               enabled: !(schedule == null),
               leading: const Icon(LucideIcons.repeat),
               child: Text(l10n.commonSave),
             ),
             if (recurrence != null)
               ShadButton.ghost(
+                height: 44,
                 key: const Key('task-recurrence-clear-button'),
-                onPressed: _clear,
+                onPressed: widget.task.canEdit ? _clear : null,
                 leading: const Icon(LucideIcons.repeat1),
                 child: Text(l10n.commonClear),
               ),
@@ -1549,21 +1680,48 @@ class _FocusHistory extends ConsumerWidget {
     return Column(
       children: [
         for (final entry in entries.take(20))
-          ListTile(
+          Padding(
             key: Key(entry.key),
-            leading: Icon(
-              entry.type == 'work' ? LucideIcons.timer : LucideIcons.coffee,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  entry.type == 'work' ? LucideIcons.timer : LucideIcons.coffee,
+                  size: 16,
+                  color: context.appColors.secondaryText,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${focusIntervalTypeLabel(l10n, entry.type)} · ${focusIntervalStatusLabel(l10n, entry.status)}',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        entry.authorId != null && scope != null
+                            ? '${collaborationMemberLabel(l10n, scope, entry.authorId!)} · ${formatLocalDate(context, entry.startedAt.toLocal())}'
+                            : formatLocalDate(
+                                context,
+                                entry.startedAt.toLocal(),
+                              ),
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    formatFocusTime(context, entry.seconds),
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+              ],
             ),
-            title: Text(
-              '${focusIntervalTypeLabel(l10n, entry.type)} · '
-              '${focusIntervalStatusLabel(l10n, entry.status)}',
-            ),
-            subtitle: Text(
-              entry.authorId != null && scope != null
-                  ? '${collaborationMemberLabel(l10n, scope, entry.authorId!)} · ${formatLocalDate(context, entry.startedAt.toLocal())}'
-                  : formatLocalDate(context, entry.startedAt.toLocal()),
-            ),
-            trailing: Text(formatFocusTime(context, entry.seconds)),
           ),
       ],
     );

@@ -1,3 +1,6 @@
+import 'package:pomodoist/domain/models/files/file_attachment.dart';
+import 'package:pomodoist/config/files_dependencies.dart';
+import 'package:pomodoist/config/collaboration_dependencies.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'task_branch_rows.dart';
 import 'package:pomodoist/domain/models/settings/task_preferences.dart';
@@ -15,6 +18,9 @@ import 'package:pomodoist/domain/models/tasks/task_time.dart';
 
 typedef TaskDetailState = ({
   TaskDetailLayout layout,
+  String? projectName,
+  int? fileCount,
+  int commentCount,
   AsyncValue<TaskItem?> task,
   bool calendarLinked,
   FocusPresetItem? preset,
@@ -75,6 +81,16 @@ Future<bool> performTaskDetailFocusAction(
   return true;
 }
 
+final taskDetailFileCountProvider = StreamProvider.autoDispose
+    .family<int, String>(
+      (ref, taskId) =>
+          ref
+              .watch(filesRepositoryProvider)
+              ?.watch(FileTarget(taskId: taskId))
+              .map((files) => files.length) ??
+          Stream.value(0),
+    );
+
 final taskDetailViewModelProvider = NotifierProvider.autoDispose
     .family<TaskDetailViewModel, TaskDetailState, String>(
       TaskDetailViewModel.new,
@@ -98,7 +114,26 @@ class TaskDetailViewModel extends Notifier<TaskDetailState> {
     final run = ref.watch(activeFocusRunProvider).value;
     final interval = ref.watch(activeFocusIntervalProvider).value;
     final activePreset = selectedFocusPresetOrDefault(presets, run?.presetId);
+    String? projectName;
+    for (final project
+        in ref.watch(projectsProvider).value ?? <ProjectItem>[]) {
+      if (project.id == task.value?.projectId) projectName = project.name;
+    }
+    final scopeId = task.value?.scopeId;
+    final comments = scopeId == null
+        ? null
+        : ref
+              .watch(
+                collaborationCommentsProvider((
+                  scopeId: scopeId,
+                  taskId: taskId,
+                )),
+              )
+              .value;
     return (
+      projectName: projectName,
+      fileCount: ref.watch(taskDetailFileCountProvider(taskId)).value,
+      commentCount: comments?.length ?? 0,
       task: task,
       layout: ref.watch(taskPreferencesStateProvider).detailLayout,
       calendarLinked:

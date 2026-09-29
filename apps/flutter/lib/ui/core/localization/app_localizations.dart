@@ -6742,6 +6742,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Grouping'**
   String get filesGrouping;
+
+  /// No description provided for @taskDescriptionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a description'**
+  String get taskDescriptionHint;
 }
 
 class _AppLocalizationsDelegate

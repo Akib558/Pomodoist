@@ -210,13 +210,28 @@ breakpoint.
 
 ### Task card and files
 
-Task cards default to Details / Files / Discussion tabs. Keep the title,
-completion action and overflow menu pinned above the content. Hide Discussion
-for personal tasks; assignees remain in Details for shared tasks. The local
-Display setting offers Tabs and Description first. Description first places the
-description, attachments and subtasks in the reading flow and starts secondary
-properties collapsed. Both layouts retain scheduling, recurrence, Focus actions,
-Focus history, metadata and subtasks.
+Task cards follow the internal-tabs concept: a quiet project header, completion
+control beside the title, and a neutral Focus action/progress row that remains
+above the tabs. Tabs use a thin accent underline and muted counts, without a
+filled segmented background. Keep 24 px content insets in the desktop panel and
+20 px in compact fullscreen details; interactive targets remain at least 44 px.
+Use existing text roles with a medium-weight headline and smaller section titles.
+
+Details place label/value property rows before the description and subtasks.
+Date actions live in the date row; avoid a second schedule toolbar and repeated
+metadata badges. Calendar linkage appears only when linked. Assignees and
+recurrence use the same quiet property rhythm. Subtasks reuse task-row actions,
+hierarchy and drag behavior with a compact title/completion presentation; their
+creation field expands on demand. Focus history expands from a quiet text row.
+Description first keeps description, attachments and subtasks in the reading
+flow, with properties initially collapsed. Both layouts share these components.
+
+Task attachments use small image previews (two columns when space and text scale
+allow), compact document rows and overflow actions. These task-only treatments do
+not change the project's file toolbar, list or gallery. Comments use initials,
+author/date/time, body text and a permission-aware overflow menu; their composer
+contains the send action within one input outline. Preserve a new draft typed
+while a previous comment is sending. Hide Discussion for personal tasks.
 
 Use the same mounted editor and section instances across tab and layout changes.
 Hide inactive sections with retained state rather than replacing their widget

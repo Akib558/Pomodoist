@@ -3852,4 +3852,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get filesGrouping => 'التجميع';
+
+  @override
+  String get taskDescriptionHint => 'إضافة وصف';
 }

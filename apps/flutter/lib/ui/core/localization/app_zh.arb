@@ -1233,5 +1233,6 @@
   "taskDetailsTab": "详情",
   "taskDiscussionTab": "讨论",
   "taskProperties": "属性",
-  "filesGrouping": "分组"
+  "filesGrouping": "分组",
+  "taskDescriptionHint": "添加描述"
 }

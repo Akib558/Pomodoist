@@ -161,6 +161,7 @@ class TaskListItem extends ConsumerWidget {
     this.branchScope,
     this.subtaskProgress,
     this.enableSubtaskDrop = true,
+    this.compactDetails = false,
     this.presentation = TaskListItemPresentation.standard,
     this.project,
     this.diagram = false,
@@ -175,6 +176,7 @@ class TaskListItem extends ConsumerWidget {
   final String? branchScope;
   final TaskSubtaskProgress? subtaskProgress;
   final bool enableSubtaskDrop;
+  final bool compactDetails;
   final TaskListItemPresentation presentation;
   final ProjectItem? project;
   final bool diagram;
@@ -215,9 +217,9 @@ class TaskListItem extends ConsumerWidget {
     final hasMeta = _hasListMeta(task, focusEstimate);
     final isAgenda = presentation == TaskListItemPresentation.agenda;
     final isModern = viewState.listStyle == TaskListStyle.modern;
-    final verticalPadding = TaskRowGeometry.verticalPadding(
-      viewState.rowSpacing,
-    );
+    final verticalPadding = compactDetails
+        ? 0.0
+        : TaskRowGeometry.verticalPadding(viewState.rowSpacing);
     final rowProject =
         project ??
         (isModern || usesTouchTaskInteraction ? viewState.project : null);
@@ -564,7 +566,40 @@ class TaskListItem extends ConsumerWidget {
                   4,
                   verticalPadding,
                 ),
-                child: usesTouchTaskInteraction
+                child: compactDetails
+                    ? Row(
+                        children: [
+                          completionControl(true),
+                          Expanded(
+                            child: _TaskTextDragSource(
+                              task: task,
+                              enabled: !(selection?.active ?? false),
+                              child: Text(
+                                task.content,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(
+                                      color: task.isCompleted
+                                          ? colors.secondaryText
+                                          : colors.primaryText,
+                                      decoration: task.isCompleted
+                                          ? TextDecoration.lineThrough
+                                          : null,
+                                    ),
+                              ),
+                            ),
+                          ),
+                          if (usesTouchTaskInteraction)
+                            SizedBox(
+                              width: 44,
+                              height: 44,
+                              child: branchDisclosure(),
+                            ),
+                          overflowAction(),
+                        ],
+                      )
+                    : usesTouchTaskInteraction
                     ? _MobileTaskContent(
                         rowSpacing: viewState.rowSpacing,
                         task: task,

@@ -3944,4 +3944,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get filesGrouping => 'Regroupement';
+
+  @override
+  String get taskDescriptionHint => 'Ajouter une description';
 }

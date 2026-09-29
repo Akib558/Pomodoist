@@ -3950,6 +3950,9 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get filesGrouping => 'Agrupamento';
+
+  @override
+  String get taskDescriptionHint => 'Adicionar descrição';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
@@ -4327,4 +4330,7 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get filesGrouping => 'Agrupamento';
+
+  @override
+  String get taskDescriptionHint => 'Adicionar descrição';
 }
