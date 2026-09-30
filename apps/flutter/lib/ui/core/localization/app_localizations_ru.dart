@@ -3676,6 +3676,9 @@ class AppLocalizationsRu extends AppLocalizations {
   }
 
   @override
+  String get taskOpenParent => 'Открыть родительскую задачу';
+
+  @override
   String get taskOpenFullBranch => 'Открыть все подзадачи';
 
   @override
@@ -3930,4 +3933,151 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get taskDescriptionHint => 'Добавить описание';
+
+  @override
+  String get projectMapExpand => 'Развернуть карту на весь экран';
+
+  @override
+  String get projectMapCollapse => 'Выйти из полноэкранной карты';
+
+  @override
+  String get navHabits => 'Привычки';
+
+  @override
+  String get habitsSubtitle => 'Маленькие шаги каждый день';
+
+  @override
+  String get habitNew => 'Новая привычка';
+
+  @override
+  String get habitEdit => 'Изменить привычку';
+
+  @override
+  String get habitsActive => 'Активные';
+
+  @override
+  String get habitsFinished => 'Завершённые';
+
+  @override
+  String get habitsEmpty => 'Добавьте свою первую привычку.';
+
+  @override
+  String get habitsFinishedEmpty => 'Завершённых привычек пока нет.';
+
+  @override
+  String get habitsFuture => 'Будущие дни доступны только для просмотра.';
+
+  @override
+  String get habitName => 'Название привычки';
+
+  @override
+  String get habitDaily => 'Каждый день';
+
+  @override
+  String get habitWeekdays => 'Выбранные дни недели';
+
+  @override
+  String get habitFrequency => 'Расписание';
+
+  @override
+  String get habitTarget => 'Раз в день';
+
+  @override
+  String get habitStart => 'Дата начала';
+
+  @override
+  String get habitEnd => 'Дата окончания';
+
+  @override
+  String get habitForever => 'Без окончания';
+
+  @override
+  String get habitCustom => 'Выбрать дату';
+
+  @override
+  String get habitProject => 'Проект';
+
+  @override
+  String get habitNoProject => 'Без проекта';
+
+  @override
+  String get habitReminder => 'Напоминание';
+
+  @override
+  String get habitReminderTime => 'Время напоминания';
+
+  @override
+  String get habitReminderDenied =>
+      'Уведомления отключены. Разрешите их в настройках системы.';
+
+  @override
+  String get habitReminderUnavailable =>
+      'Фоновые напоминания недоступны на этой платформе.';
+
+  @override
+  String get habitReminderFailed =>
+      'Не удалось обновить напоминания. Попробуйте снова.';
+
+  @override
+  String get habitDeleteConfirm => 'Удалить привычку и её историю?';
+
+  @override
+  String get habitLoadError => 'Не удалось загрузить привычки.';
+
+  @override
+  String get habitSaveError =>
+      'Не удалось сохранить. Проверьте поля и попробуйте снова.';
+
+  @override
+  String get habitAddCheckIn => 'Добавить одно выполнение';
+
+  @override
+  String get habitUndoCheckIn => 'Отменить последнее выполнение';
+
+  @override
+  String get habitPreviousWeek => 'Предыдущая неделя';
+
+  @override
+  String get habitNextWeek => 'Следующая неделя';
+
+  @override
+  String get notificationHabitChannel => 'Привычки';
+
+  @override
+  String get notificationHabitDescription =>
+      'Напоминания о невыполненных привычках';
+
+  @override
+  String get notificationHabitTitle => 'Время для вашей привычки';
+
+  @override
+  String habitsSummary(int completed, int planned) {
+    return 'Выполнено привычек: $completed из $planned';
+  }
+
+  @override
+  String habitDurationDays(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days дней',
+      many: '$days дней',
+      few: '$days дня',
+      one: '$days день',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settingsAppearancePreview => 'Пример';
+
+  @override
+  String get settingsPreviewProject => 'Личное';
+
+  @override
+  String get settingsPreviewLongTask =>
+      'Подготовить материалы и спланировать следующие шаги';
+
+  @override
+  String get settingsPreviewCompletedTask => 'Проверить заметки';
 }

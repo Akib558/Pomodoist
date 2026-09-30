@@ -1156,6 +1156,7 @@
   "taskExpandSubtasks": "Expandir subtareas",
   "taskCollapseSubtasks": "Contraer subtareas",
   "taskAllSubtasksProgress": "Todas las subtareas: {completed} de {total} completadas",
+  "taskOpenParent": "Abrir tarea principal",
   "taskOpenFullBranch": "Abrir todas las subtareas",
   "taskParentPath": "Parte de: {path}",
   "projectViewList": "Lista",
@@ -1235,5 +1236,65 @@
   "taskDiscussionTab": "Discusión",
   "taskProperties": "Propiedades",
   "filesGrouping": "Agrupación",
-  "taskDescriptionHint": "Añadir una descripción"
+  "taskDescriptionHint": "Añadir una descripción",
+  "projectMapExpand": "Expandir mapa a pantalla completa",
+  "projectMapCollapse": "Salir del mapa a pantalla completa",
+  "navHabits": "Hábitos",
+  "habitsSubtitle": "Pequeños pasos, cada día",
+  "habitNew": "Nuevo hábito",
+  "habitEdit": "Editar hábito",
+  "habitsActive": "Activos",
+  "habitsFinished": "Finalizados",
+  "habitsEmpty": "Añade tu primer hábito.",
+  "habitsFinishedEmpty": "Aún no hay hábitos finalizados.",
+  "habitsFuture": "Los días futuros son de solo lectura.",
+  "habitName": "Nombre del hábito",
+  "habitDaily": "Cada día",
+  "habitWeekdays": "Días de la semana elegidos",
+  "habitFrequency": "Horario",
+  "habitTarget": "Veces al día",
+  "habitStart": "Fecha de inicio",
+  "habitEnd": "Fecha de fin",
+  "habitForever": "Sin fin",
+  "habitCustom": "Elegir fecha",
+  "habitProject": "Proyecto",
+  "habitNoProject": "Sin proyecto",
+  "habitReminder": "Recordatorio",
+  "habitReminderTime": "Hora del recordatorio",
+  "habitReminderDenied": "Las notificaciones están desactivadas. Permítelas en los ajustes del sistema.",
+  "habitReminderUnavailable": "Los recordatorios en segundo plano no están disponibles en esta plataforma.",
+  "habitReminderFailed": "No se pudieron actualizar los recordatorios. Inténtalo de nuevo.",
+  "habitDeleteConfirm": "¿Eliminar este hábito y su historial?",
+  "habitLoadError": "No se pudieron cargar los hábitos.",
+  "habitSaveError": "No se pudo guardar. Revisa los campos e inténtalo de nuevo.",
+  "habitAddCheckIn": "Añadir una realización",
+  "habitUndoCheckIn": "Deshacer la última realización",
+  "habitPreviousWeek": "Semana anterior",
+  "habitNextWeek": "Semana siguiente",
+  "notificationHabitChannel": "Hábitos",
+  "notificationHabitDescription": "Recordatorios de hábitos pendientes",
+  "notificationHabitTitle": "Es hora de tu hábito",
+  "habitsSummary": "{completed} de {planned} hábitos completados",
+  "habitDurationDays": "{days} días",
+  "@habitsSummary": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "planned": {
+        "type": "int"
+      }
+    }
+  },
+  "@habitDurationDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsAppearancePreview": "Vista previa",
+  "settingsPreviewProject": "Personal",
+  "settingsPreviewLongTask": "Preparar materiales y planificar los próximos pasos",
+  "settingsPreviewCompletedTask": "Revisar notas"
 }

@@ -3,6 +3,9 @@ import 'package:pomodoist/ui/core/localization/app_localizations.dart';
 
 extension NotificationCopyLocalizations on AppLocalizations {
   NotificationCopy get notificationCopy => NotificationCopy(
+    habitChannel: notificationHabitChannel,
+    habitDescription: notificationHabitDescription,
+    habitReminderTitle: notificationHabitTitle,
     focusCompleted: notificationFocusCompleted,
     longBreakCompleted: notificationLongBreakCompleted,
     breakCompleted: notificationBreakCompleted,

@@ -124,6 +124,10 @@ extension AccountSyncPull on AccountSyncEngine {
   Future<void> _applyUpsert(AccountSyncEntity entity) async {
     final data = syncDataWithoutSyncMetadata(entity.data);
     switch (entity.entityType) {
+      case 'habit':
+      case 'habit_check_in':
+        await _applyHabitEntity(entity);
+        return;
       case 'attachment':
         final cached =
             await (_db.select(_db.sharedEntities)..where(
@@ -225,6 +229,10 @@ extension AccountSyncPull on AccountSyncEngine {
   Future<void> _applyDelete(AccountSyncEntity entity) async {
     final now = entity.deletedAt ?? DateTime.now().toUtc();
     switch (entity.entityType) {
+      case 'habit':
+      case 'habit_check_in':
+        await _applyHabitEntity(entity);
+        return;
       case 'attachment':
         await _db
             .into(_db.sharedEntities)

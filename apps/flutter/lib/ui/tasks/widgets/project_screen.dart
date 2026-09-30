@@ -2,6 +2,8 @@ import 'package:pomodoist/ui/files/widgets/files_panel.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:pomodoist/routing/project_map_navigation.dart';
 import 'package:shadcn_ui/shadcn_ui.dart' show ShadTabs, ShadTab, LucideIcons;
 import 'package:pomodoist/domain/models/settings/task_preferences.dart';
 import 'package:pomodoist/domain/models/tasks/task_models.dart';
@@ -53,87 +55,100 @@ class _ProjectContentState extends ConsumerState<_ProjectContent> {
   @override
   Widget build(BuildContext context) {
     final project = ref.watch(projectViewModelProvider(widget.projectId));
-    final mode = ref.watch(projectViewModeProvider);
+    final fullscreen = isProjectMapFullscreen(GoRouterState.of(context).uri);
+    final files = _files && !fullscreen;
+    final savedMode = ref.watch(projectViewModeProvider);
+    final mode = fullscreen ? ProjectViewMode.map : savedMode;
     _visited.add(mode);
     final l10n = context.l10n;
     final title = project?.displayName(l10n) ?? l10n.projectFallbackTitle;
-    final diagram = _files || mode == ProjectViewMode.list
+    final diagram = files || mode == ProjectViewMode.list
         ? null
         : ref.watch(projectDiagramViewModelProvider(widget.projectId));
     return SafeArea(
-      bottom: false,
+      bottom: fullscreen,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: Theme.of(context).textTheme.headlineMedium),
-                const SizedBox(height: 12),
-                ShadTabs<String>(
-                  value: _files ? 'files' : mode.name,
-                  onChanged: (value) {
-                    setState(() {
-                      _files = value == 'files';
-                      _visitedFiles = _visitedFiles || _files;
-                    });
-                    if (!_files) {
-                      unawaited(_setMode(ProjectViewMode.values.byName(value)));
-                    }
-                  },
-                  // ShadTabs owns scrolling and removes Expanded from its tabs.
-                  scrollable: true,
-                  gap: 0,
-                  tabs: [
-                    ShadTab(value: 'list', child: Text(l10n.projectViewList)),
-                    ShadTab(value: 'map', child: Text(l10n.projectViewMap)),
-                    ShadTab(value: 'files', child: Text(l10n.filesTitle)),
-                  ],
-                ),
-                if (diagram != null)
-                  Wrap(
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    spacing: 12,
-                    children: [
-                      TextButton.icon(
-                        onPressed: () => ref
-                            .read(
-                              projectDiagramViewModelProvider(
-                                widget.projectId,
-                              ).notifier,
-                            )
-                            .showCompleted(!diagram.showCompleted),
-                        icon: Icon(
-                          diagram.showCompleted
-                              ? LucideIcons.circleCheck
-                              : LucideIcons.circle,
-                          size: 16,
-                        ),
-                        label: Text(l10n.projectShowCompleted),
-                      ),
-                      if (diagram.tree.nodes[diagram.tree.rootKey]
-                          case final root?)
-                        if (!diagram.loading && !diagram.hasError)
-                          Text(
-                            '${root.progress.completed}/${root.progress.total}',
-                            style: Theme.of(context).textTheme.labelSmall,
-                          ),
+          Visibility(
+            visible: !fullscreen,
+            maintainState: true,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                  const SizedBox(height: 12),
+                  ShadTabs<String>(
+                    value: files ? 'files' : mode.name,
+                    onChanged: (value) {
+                      setState(() {
+                        _files = value == 'files';
+                        _visitedFiles = _visitedFiles || _files;
+                      });
+                      if (!_files) {
+                        unawaited(
+                          _setMode(ProjectViewMode.values.byName(value)),
+                        );
+                      }
+                    },
+                    // ShadTabs owns scrolling and removes Expanded from its tabs.
+                    scrollable: true,
+                    gap: 0,
+                    tabs: [
+                      ShadTab(value: 'list', child: Text(l10n.projectViewList)),
+                      ShadTab(value: 'map', child: Text(l10n.projectViewMap)),
+                      ShadTab(value: 'files', child: Text(l10n.filesTitle)),
                     ],
                   ),
-                if (!_files &&
-                    project?.canEdit == true &&
-                    project?.isArchived == false) ...[
-                  const SizedBox(height: 12),
-                  // This composer stays mounted across view changes.
-                  QuickAddBar(projectId: widget.projectId),
+                  if (diagram != null)
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 12,
+                      children: [
+                        TextButton.icon(
+                          onPressed: () => ref
+                              .read(
+                                projectDiagramViewModelProvider(
+                                  widget.projectId,
+                                ).notifier,
+                              )
+                              .showCompleted(!diagram.showCompleted),
+                          icon: Icon(
+                            diagram.showCompleted
+                                ? LucideIcons.circleCheck
+                                : LucideIcons.circle,
+                            size: 16,
+                          ),
+                          label: Text(l10n.projectShowCompleted),
+                        ),
+                        if (diagram.tree.nodes[diagram.tree.rootKey]
+                            case final root?)
+                          if (!diagram.loading && !diagram.hasError)
+                            Text(
+                              '${root.progress.completed}/${root.progress.total}',
+                              style: Theme.of(context).textTheme.labelSmall,
+                            ),
+                      ],
+                    ),
+                  if (!files &&
+                      project?.canEdit == true &&
+                      project?.isArchived == false) ...[
+                    const SizedBox(height: 12),
+                    // This composer stays mounted across view changes.
+                    QuickAddBar(projectId: widget.projectId),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
           Expanded(
             child: IndexedStack(
-              index: _files ? ProjectViewMode.values.length : mode.index,
+              index: files ? ProjectViewMode.values.length : mode.index,
               children: [
                 for (final view in ProjectViewMode.values)
                   if (!_visited.contains(view))
@@ -147,7 +162,7 @@ class _ProjectContentState extends ConsumerState<_ProjectContent> {
                         projectId: widget.projectId,
                       ),
                       showHeader: false,
-                      isActive: !_files && mode == ProjectViewMode.list,
+                      isActive: !files && mode == ProjectViewMode.list,
                       showQuickAdd: false,
                       quickAddProjectId: widget.projectId,
                     )
@@ -155,7 +170,7 @@ class _ProjectContentState extends ConsumerState<_ProjectContent> {
                     ProjectDiagram(
                       key: ValueKey('${widget.projectId}:${view.name}'),
                       projectId: widget.projectId,
-                      isActive: !_files && mode == view,
+                      isActive: !files && mode == view,
                     ),
                 if (_visitedFiles)
                   FilesPanel(projectId: widget.projectId)

@@ -224,3 +224,57 @@ String focusIntervalStatusLabel(AppLocalizations l10n, String status) {
     _ => status,
   };
 }
+
+List<List<String>> taskListScheduleRows(
+  TaskSchedule? schedule, {
+  required String Function(DateTime) formatDate,
+  required String Function(DateTime) formatTime,
+  String? recurrenceLabel,
+  bool withinDate = false,
+  TaskTimeDisplayMode displayMode = TaskTimeDisplayMode.smart,
+  int defaultTimedBlockMinutes = 30,
+}) {
+  if (schedule == null) return [];
+  final rows = <List<String>>[];
+  if (schedule.isAllDay) {
+    if (!withinDate) rows.add([formatDate(schedule.date!)]);
+  } else {
+    final start = schedule.start!.toLocal();
+    final end = schedule.end!.toLocal();
+    final showRange = shouldShowTaskTimeRange(
+      schedule,
+      displayMode,
+      defaultTimedBlockMinutes: defaultTimedBlockMinutes,
+    );
+    final sameDay = _isSameDay(start, end);
+    rows.add([
+      if (!withinDate) formatDate(start),
+      showRange && sameDay
+          ? '${formatTime(start)}-${formatTime(end)}'
+          : formatTime(start),
+    ]);
+    if (showRange && !sameDay) rows.add([formatDate(end), formatTime(end)]);
+  }
+  if (recurrenceLabel != null) rows.add([recurrenceLabel]);
+  return rows;
+}
+
+/// Mobile rows keep date/time blocks whole and recurrence on a separate line.
+List<List<String>> formatTaskListScheduleRows(
+  BuildContext context,
+  TaskSchedule? schedule, {
+  DateTime? now,
+  bool withinDate = false,
+  TaskTimeDisplayMode displayMode = TaskTimeDisplayMode.smart,
+  int defaultTimedBlockMinutes = 30,
+}) => taskListScheduleRows(
+  schedule,
+  formatDate: (date) => withinDate
+      ? _formatDate(context, date)
+      : _formatTaskListDate(context, date, now: now),
+  formatTime: (date) => _formatTime(context, date),
+  recurrenceLabel: _formatRecurrence(context, schedule?.recurrence),
+  withinDate: withinDate,
+  displayMode: displayMode,
+  defaultTimedBlockMinutes: defaultTimedBlockMinutes,
+);

@@ -31,12 +31,14 @@ import 'package:pomodoist/ui/tasks/widgets/search_screen.dart';
 import 'package:pomodoist/ui/tasks/widgets/task_detail_screen.dart';
 import 'package:pomodoist/ui/tasks/widgets/timeline_screen.dart';
 import 'package:pomodoist/ui/tasks/widgets/upcoming_screen.dart';
+import 'package:pomodoist/ui/habits/widgets/habits_screen.dart';
 import 'package:pomodoist/domain/models/account/account_auth_failure.dart';
 import 'package:pomodoist/config/account_providers.dart';
 import 'package:pomodoist/config/auth/password_recovery.dart';
 import 'package:pomodoist/ui/core/widgets/app_startup_gate.dart';
 import 'package:pomodoist/config/runtime_public_config.dart';
 import 'package:pomodoist/routing/task_detail_navigation.dart';
+import 'package:pomodoist/routing/project_map_navigation.dart';
 import 'package:pomodoist/ui/core/widgets/adaptive_shell.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -164,6 +166,7 @@ final routerProvider = Provider<GoRouter>((ref) {
               child: AdaptiveShell(
                 location: state.uri.path,
                 taskId: state.uri.queryParameters['task'],
+                mapFullscreen: isProjectMapFullscreen(state.uri),
                 child: child,
               ),
             ),
@@ -182,6 +185,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: '/today',
             pageBuilder: (context, state) =>
                 const NoTransitionPage(child: TodayScreen()),
+          ),
+          GoRoute(
+            path: '/habits',
+            pageBuilder: (context, state) =>
+                const NoTransitionPage(child: HabitsScreen()),
           ),
           GoRoute(
             path: '/upcoming',

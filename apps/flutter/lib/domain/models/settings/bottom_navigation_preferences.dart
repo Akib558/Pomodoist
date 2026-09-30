@@ -18,6 +18,7 @@ enum BottomNavigationDestination {
   kanban('/kanban'),
   priorityMatrix('/priority-matrix'),
   reports('/reports'),
+  habits('/habits'),
   settings('/settings');
 
   const BottomNavigationDestination(this.path);

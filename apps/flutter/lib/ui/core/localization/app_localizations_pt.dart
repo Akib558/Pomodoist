@@ -3703,6 +3703,9 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
+  String get taskOpenParent => 'Abrir tarefa pai';
+
+  @override
   String get taskOpenFullBranch => 'Abrir todas as subtarefas';
 
   @override
@@ -3957,6 +3960,145 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get taskDescriptionHint => 'Adicionar descrição';
+
+  @override
+  String get projectMapExpand => 'Expandir mapa para ecrã inteiro';
+
+  @override
+  String get projectMapCollapse => 'Sair do mapa em ecrã inteiro';
+
+  @override
+  String get navHabits => 'Hábitos';
+
+  @override
+  String get habitsSubtitle => 'Pequenos passos, todos os dias';
+
+  @override
+  String get habitNew => 'Novo hábito';
+
+  @override
+  String get habitEdit => 'Editar hábito';
+
+  @override
+  String get habitsActive => 'Ativos';
+
+  @override
+  String get habitsFinished => 'Concluídos';
+
+  @override
+  String get habitsEmpty => 'Adicione o seu primeiro hábito.';
+
+  @override
+  String get habitsFinishedEmpty => 'Ainda não há hábitos concluídos.';
+
+  @override
+  String get habitsFuture => 'Os dias futuros são apenas para consulta.';
+
+  @override
+  String get habitName => 'Nome do hábito';
+
+  @override
+  String get habitDaily => 'Todos os dias';
+
+  @override
+  String get habitWeekdays => 'Dias da semana escolhidos';
+
+  @override
+  String get habitFrequency => 'Horário';
+
+  @override
+  String get habitTarget => 'Vezes por dia';
+
+  @override
+  String get habitStart => 'Data de início';
+
+  @override
+  String get habitEnd => 'Data de fim';
+
+  @override
+  String get habitForever => 'Sem fim';
+
+  @override
+  String get habitCustom => 'Escolher data';
+
+  @override
+  String get habitProject => 'Projeto';
+
+  @override
+  String get habitNoProject => 'Sem projeto';
+
+  @override
+  String get habitReminder => 'Lembrete';
+
+  @override
+  String get habitReminderTime => 'Hora do lembrete';
+
+  @override
+  String get habitReminderDenied =>
+      'As notificações estão desativadas. Permita-as nas definições do sistema.';
+
+  @override
+  String get habitReminderUnavailable =>
+      'Os lembretes em segundo plano não estão disponíveis nesta plataforma.';
+
+  @override
+  String get habitReminderFailed =>
+      'Não foi possível atualizar os lembretes. Tente novamente.';
+
+  @override
+  String get habitDeleteConfirm => 'Eliminar este hábito e o seu histórico?';
+
+  @override
+  String get habitLoadError => 'Não foi possível carregar os hábitos.';
+
+  @override
+  String get habitSaveError =>
+      'Não foi possível guardar. Verifique os campos e tente novamente.';
+
+  @override
+  String get habitAddCheckIn => 'Adicionar uma realização';
+
+  @override
+  String get habitUndoCheckIn => 'Desfazer a última realização';
+
+  @override
+  String get habitPreviousWeek => 'Semana anterior';
+
+  @override
+  String get habitNextWeek => 'Semana seguinte';
+
+  @override
+  String get notificationHabitChannel => 'Hábitos';
+
+  @override
+  String get notificationHabitDescription =>
+      'Lembretes de hábitos por concluir';
+
+  @override
+  String get notificationHabitTitle => 'Está na hora do seu hábito';
+
+  @override
+  String habitsSummary(int completed, int planned) {
+    return '$completed de $planned hábitos concluídos';
+  }
+
+  @override
+  String habitDurationDays(int days) {
+    return '$days dias';
+  }
+
+  @override
+  String get settingsAppearancePreview => 'Prévia';
+
+  @override
+  String get settingsPreviewProject => 'Pessoal';
+
+  @override
+  String get settingsPreviewLongTask =>
+      'Preparar materiais e planejar os próximos passos';
+
+  @override
+  String get settingsPreviewCompletedTask => 'Revisar anotações';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
@@ -4181,6 +4323,9 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
   }
 
   @override
+  String get taskOpenParent => 'Abrir tarefa pai';
+
+  @override
   String get taskOpenFullBranch => 'Abrir todas as subtarefas';
 
   @override
@@ -4337,4 +4482,143 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get taskDescriptionHint => 'Adicionar descrição';
+
+  @override
+  String get projectMapExpand => 'Expandir mapa para tela cheia';
+
+  @override
+  String get projectMapCollapse => 'Sair do mapa em tela cheia';
+
+  @override
+  String get navHabits => 'Hábitos';
+
+  @override
+  String get habitsSubtitle => 'Pequenos passos, todos os dias';
+
+  @override
+  String get habitNew => 'Novo hábito';
+
+  @override
+  String get habitEdit => 'Editar hábito';
+
+  @override
+  String get habitsActive => 'Ativos';
+
+  @override
+  String get habitsFinished => 'Concluídos';
+
+  @override
+  String get habitsEmpty => 'Adicione o seu primeiro hábito.';
+
+  @override
+  String get habitsFinishedEmpty => 'Ainda não há hábitos concluídos.';
+
+  @override
+  String get habitsFuture => 'Os dias futuros são apenas para consulta.';
+
+  @override
+  String get habitName => 'Nome do hábito';
+
+  @override
+  String get habitDaily => 'Todos os dias';
+
+  @override
+  String get habitWeekdays => 'Dias da semana escolhidos';
+
+  @override
+  String get habitFrequency => 'Horário';
+
+  @override
+  String get habitTarget => 'Vezes por dia';
+
+  @override
+  String get habitStart => 'Data de início';
+
+  @override
+  String get habitEnd => 'Data de fim';
+
+  @override
+  String get habitForever => 'Sem fim';
+
+  @override
+  String get habitCustom => 'Escolher data';
+
+  @override
+  String get habitProject => 'Projeto';
+
+  @override
+  String get habitNoProject => 'Sem projeto';
+
+  @override
+  String get habitReminder => 'Lembrete';
+
+  @override
+  String get habitReminderTime => 'Hora do lembrete';
+
+  @override
+  String get habitReminderDenied =>
+      'As notificações estão desativadas. Permita-as nas definições do sistema.';
+
+  @override
+  String get habitReminderUnavailable =>
+      'Os lembretes em segundo plano não estão disponíveis nesta plataforma.';
+
+  @override
+  String get habitReminderFailed =>
+      'Não foi possível atualizar os lembretes. Tente novamente.';
+
+  @override
+  String get habitDeleteConfirm => 'Eliminar este hábito e o seu histórico?';
+
+  @override
+  String get habitLoadError => 'Não foi possível carregar os hábitos.';
+
+  @override
+  String get habitSaveError =>
+      'Não foi possível guardar. Verifique os campos e tente novamente.';
+
+  @override
+  String get habitAddCheckIn => 'Adicionar uma realização';
+
+  @override
+  String get habitUndoCheckIn => 'Desfazer a última realização';
+
+  @override
+  String get habitPreviousWeek => 'Semana anterior';
+
+  @override
+  String get habitNextWeek => 'Semana seguinte';
+
+  @override
+  String get notificationHabitChannel => 'Hábitos';
+
+  @override
+  String get notificationHabitDescription =>
+      'Lembretes de hábitos por concluir';
+
+  @override
+  String get notificationHabitTitle => 'Está na hora do seu hábito';
+
+  @override
+  String habitsSummary(int completed, int planned) {
+    return '$completed de $planned hábitos concluídos';
+  }
+
+  @override
+  String habitDurationDays(int days) {
+    return '$days dias';
+  }
+
+  @override
+  String get settingsAppearancePreview => 'Prévia';
+
+  @override
+  String get settingsPreviewProject => 'Pessoal';
+
+  @override
+  String get settingsPreviewLongTask =>
+      'Preparar materiais e planejar os próximos passos';
+
+  @override
+  String get settingsPreviewCompletedTask => 'Revisar anotações';
 }

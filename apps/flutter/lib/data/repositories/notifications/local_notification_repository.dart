@@ -1,7 +1,11 @@
+import 'package:pomodoist/domain/models/habits/habit_models.dart';
+import 'package:pomodoist/domain/models/notifications/habit_reminder_status.dart';
+import 'package:pomodoist/data/repositories/notifications/habit_reminder_plan.dart';
 import 'package:pomodoist/data/repositories/notifications/notification_repository.dart';
 import 'package:pomodoist/data/services/notifications/notification_scheduler.dart';
 import 'package:pomodoist/domain/models/notifications/notification_copy.dart';
 import 'package:pomodoist/domain/models/tasks/task_models.dart';
+import 'package:pomodoist/utils/clock.dart';
 
 const _reengagementReminderHour = 20;
 const _reengagementReminderMinute = 30;
@@ -10,10 +14,30 @@ const _reengagementReminderMinute = 30;
 /// live in composition: which task-start notifications are desired, when the
 /// reengagement reminder fires, and which localized copy is used.
 class LocalNotificationRepository implements NotificationRepository {
-  LocalNotificationRepository(this._scheduler, this._copy);
+  LocalNotificationRepository(
+    this._scheduler,
+    this._copy, {
+    Clock clock = const SystemClock(),
+  }) : _clock = clock;
+
+  final Clock _clock;
 
   final NotificationScheduler _scheduler;
   final NotificationCopy Function() _copy;
+  Future<void> _habitUpdate = Future<void>.value();
+  int _habitRevision = 0;
+  ({List<Habit> habits, List<HabitCheckIn> checkIns})? _habitRequest;
+
+  Future<void> _refreshHabitCapacity() async {
+    final request = _habitRequest;
+    if (request == null) return;
+    await syncHabitNotifications(
+      habits: request.habits,
+      checkIns: request.checkIns,
+      now: _clock.now(),
+    );
+  }
+
   Future<void> _reengagementUpdate = Future<void>.value();
   int _reengagementRevision = 0;
 
@@ -31,7 +55,67 @@ class LocalNotificationRepository implements NotificationRepository {
       }
     }();
     _reengagementUpdate = current;
-    return current;
+    return current.whenComplete(_refreshHabitCapacity);
+  }
+
+  @override
+  Future<HabitReminderStatus> syncHabitNotifications({
+    required List<Habit> habits,
+    required List<HabitCheckIn> checkIns,
+    required DateTime now,
+  }) {
+    _habitRequest = (
+      habits: List.unmodifiable(habits),
+      checkIns: List.unmodifiable(checkIns),
+    );
+    final previous = _habitUpdate;
+    final revision = ++_habitRevision;
+    final update = () async {
+      try {
+        await previous;
+      } catch (_) {}
+      if (!_scheduler.supportsHabitReminders) {
+        return HabitReminderStatus.unsupported;
+      }
+      if (revision != _habitRevision) return HabitReminderStatus.available;
+      try {
+        await _scheduler.cancelHabitNotifications();
+        if (!habits.any(
+          (h) =>
+              !h.isDeleted &&
+              h.reminderMinutes != null &&
+              !h.isFinishedOn(now.toLocal()),
+        )) {
+          return HabitReminderStatus.available;
+        }
+        if (!await _scheduler.requestHabitPermission()) {
+          return HabitReminderStatus.denied;
+        }
+        final queue = planHabitReminders(
+          habits: habits,
+          checkIns: checkIns,
+          now: now,
+          budget: await _scheduler.habitNotificationBudget(),
+        );
+        final copy = _copy();
+        for (var i = 0; i < queue.length; i++) {
+          if (revision != _habitRevision) break;
+          final reminder = queue[i];
+          await _scheduler.scheduleHabitReminder(
+            id: NotificationScheduler.habitNotificationBaseId + i,
+            habitId: reminder.habitId,
+            scheduledAt: reminder.scheduledAt,
+            title: copy.habitReminderTitle,
+            body: reminder.title,
+          );
+        }
+        return HabitReminderStatus.available;
+      } catch (_) {
+        return HabitReminderStatus.failed;
+      }
+    }();
+    _habitUpdate = update.then((_) {});
+    return update;
   }
 
   @override
@@ -49,51 +133,58 @@ class LocalNotificationRepository implements NotificationRepository {
     required DateTime expectedEndAt,
     required String intervalType,
   }) {
-    return _scheduler.scheduleFocusIntervalEnd(
-      expectedEndAt: expectedEndAt,
-      title: 'pomodoist',
-      body: _scheduler.focusCompletedBody(intervalType),
-    );
+    return _scheduler
+        .scheduleFocusIntervalEnd(
+          expectedEndAt: expectedEndAt,
+          title: 'pomodoist',
+          body: _scheduler.focusCompletedBody(intervalType),
+        )
+        .whenComplete(_refreshHabitCapacity);
   }
 
   @override
-  Future<void> cancelFocusIntervalEnd() => _scheduler.cancelFocusNotification();
+  Future<void> cancelFocusIntervalEnd() =>
+      _scheduler.cancelFocusNotification().whenComplete(_refreshHabitCapacity);
 
   @override
   Future<void> syncTaskStartNotifications({
     required List<TaskItem> tasks,
     required DateTime now,
   }) async {
-    final desired = <String, TaskItem>{};
-    for (final task in tasks) {
-      final schedule = task.schedule;
-      if (task.isCompleted ||
-          task.isDeleted ||
-          schedule == null ||
-          !schedule.isTimed ||
-          !schedule.start!.toLocal().isAfter(now.toLocal())) {
-        continue;
+    try {
+      final desired = <String, TaskItem>{};
+      for (final task in tasks) {
+        final schedule = task.schedule;
+        if (task.isCompleted ||
+            task.isDeleted ||
+            schedule == null ||
+            !schedule.isTimed ||
+            !schedule.start!.toLocal().isAfter(now.toLocal())) {
+          continue;
+        }
+        desired[task.id] = task;
       }
-      desired[task.id] = task;
-    }
 
-    final pending = await _scheduler.pendingTaskStartTaskIds();
-    for (final taskId in pending.difference(desired.keys.toSet())) {
-      await _scheduler.cancelTaskStart(taskId);
-    }
-    if (desired.isEmpty) {
-      return;
-    }
+      final pending = await _scheduler.pendingTaskStartTaskIds();
+      for (final taskId in pending.difference(desired.keys.toSet())) {
+        await _scheduler.cancelTaskStart(taskId);
+      }
+      if (desired.isEmpty) {
+        return;
+      }
 
-    await _scheduler.requestNotificationPermissions();
-    final title = _copy().taskStarting;
-    for (final task in desired.values) {
-      await _scheduler.scheduleTaskStart(
-        taskId: task.id,
-        startAt: task.schedule!.start!,
-        title: title,
-        body: task.content,
-      );
+      await _scheduler.requestNotificationPermissions();
+      final title = _copy().taskStarting;
+      for (final task in desired.values) {
+        await _scheduler.scheduleTaskStart(
+          taskId: task.id,
+          startAt: task.schedule!.start!,
+          title: title,
+          body: task.content,
+        );
+      }
+    } finally {
+      await _refreshHabitCapacity();
     }
   }
 

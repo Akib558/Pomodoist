@@ -3568,6 +3568,9 @@ class AppLocalizationsKo extends AppLocalizations {
   }
 
   @override
+  String get taskOpenParent => '상위 작업 열기';
+
+  @override
   String get taskOpenFullBranch => '모든 하위 작업 열기';
 
   @override
@@ -3810,4 +3813,137 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get taskDescriptionHint => '설명 추가';
+
+  @override
+  String get projectMapExpand => '지도를 전체 화면으로 펼치기';
+
+  @override
+  String get projectMapCollapse => '지도 전체 화면 종료';
+
+  @override
+  String get navHabits => '습관';
+
+  @override
+  String get habitsSubtitle => '매일 작은 한 걸음';
+
+  @override
+  String get habitNew => '새 습관';
+
+  @override
+  String get habitEdit => '습관 편집';
+
+  @override
+  String get habitsActive => '진행 중';
+
+  @override
+  String get habitsFinished => '종료됨';
+
+  @override
+  String get habitsEmpty => '첫 습관을 추가하세요.';
+
+  @override
+  String get habitsFinishedEmpty => '아직 종료된 습관이 없습니다.';
+
+  @override
+  String get habitsFuture => '미래 날짜는 보기만 가능합니다.';
+
+  @override
+  String get habitName => '습관 이름';
+
+  @override
+  String get habitDaily => '매일';
+
+  @override
+  String get habitWeekdays => '요일 선택';
+
+  @override
+  String get habitFrequency => '일정';
+
+  @override
+  String get habitTarget => '하루 횟수';
+
+  @override
+  String get habitStart => '시작일';
+
+  @override
+  String get habitEnd => '종료일';
+
+  @override
+  String get habitForever => '무기한';
+
+  @override
+  String get habitCustom => '날짜 선택';
+
+  @override
+  String get habitProject => '프로젝트';
+
+  @override
+  String get habitNoProject => '프로젝트 없음';
+
+  @override
+  String get habitReminder => '알림';
+
+  @override
+  String get habitReminderTime => '알림 시간';
+
+  @override
+  String get habitReminderDenied => '알림이 꺼져 있습니다. 시스템 설정에서 허용하세요.';
+
+  @override
+  String get habitReminderUnavailable => '이 플랫폼에서는 백그라운드 알림을 사용할 수 없습니다.';
+
+  @override
+  String get habitReminderFailed => '알림을 업데이트하지 못했습니다. 다시 시도하세요.';
+
+  @override
+  String get habitDeleteConfirm => '이 습관과 기록을 삭제할까요?';
+
+  @override
+  String get habitLoadError => '습관을 불러오지 못했습니다.';
+
+  @override
+  String get habitSaveError => '저장하지 못했습니다. 입력 내용을 확인하고 다시 시도하세요.';
+
+  @override
+  String get habitAddCheckIn => '완료 한 번 추가';
+
+  @override
+  String get habitUndoCheckIn => '마지막 완료 취소';
+
+  @override
+  String get habitPreviousWeek => '이전 주';
+
+  @override
+  String get habitNextWeek => '다음 주';
+
+  @override
+  String get notificationHabitChannel => '습관';
+
+  @override
+  String get notificationHabitDescription => '미완료 습관 알림';
+
+  @override
+  String get notificationHabitTitle => '습관을 실천할 시간입니다';
+
+  @override
+  String habitsSummary(int completed, int planned) {
+    return '습관 $planned개 중 $completed개 완료';
+  }
+
+  @override
+  String habitDurationDays(int days) {
+    return '$days일';
+  }
+
+  @override
+  String get settingsAppearancePreview => '미리보기';
+
+  @override
+  String get settingsPreviewProject => '개인';
+
+  @override
+  String get settingsPreviewLongTask => '자료를 준비하고 다음 단계를 계획하기';
+
+  @override
+  String get settingsPreviewCompletedTask => '메모 검토하기';
 }

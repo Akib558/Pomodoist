@@ -1767,6 +1767,7 @@
   "taskExpandSubtasks": "하위 작업 펼치기",
   "taskCollapseSubtasks": "하위 작업 접기",
   "taskAllSubtasksProgress": "모든 하위 작업: {total}개 중 {completed}개 완료",
+  "taskOpenParent": "상위 작업 열기",
   "taskOpenFullBranch": "모든 하위 작업 열기",
   "taskParentPath": "상위 작업: {path}",
   "projectViewList": "목록",
@@ -1846,5 +1847,65 @@
   "taskDiscussionTab": "토론",
   "taskProperties": "속성",
   "filesGrouping": "그룹화",
-  "taskDescriptionHint": "설명 추가"
+  "taskDescriptionHint": "설명 추가",
+  "projectMapExpand": "지도를 전체 화면으로 펼치기",
+  "projectMapCollapse": "지도 전체 화면 종료",
+  "navHabits": "습관",
+  "habitsSubtitle": "매일 작은 한 걸음",
+  "habitNew": "새 습관",
+  "habitEdit": "습관 편집",
+  "habitsActive": "진행 중",
+  "habitsFinished": "종료됨",
+  "habitsEmpty": "첫 습관을 추가하세요.",
+  "habitsFinishedEmpty": "아직 종료된 습관이 없습니다.",
+  "habitsFuture": "미래 날짜는 보기만 가능합니다.",
+  "habitName": "습관 이름",
+  "habitDaily": "매일",
+  "habitWeekdays": "요일 선택",
+  "habitFrequency": "일정",
+  "habitTarget": "하루 횟수",
+  "habitStart": "시작일",
+  "habitEnd": "종료일",
+  "habitForever": "무기한",
+  "habitCustom": "날짜 선택",
+  "habitProject": "프로젝트",
+  "habitNoProject": "프로젝트 없음",
+  "habitReminder": "알림",
+  "habitReminderTime": "알림 시간",
+  "habitReminderDenied": "알림이 꺼져 있습니다. 시스템 설정에서 허용하세요.",
+  "habitReminderUnavailable": "이 플랫폼에서는 백그라운드 알림을 사용할 수 없습니다.",
+  "habitReminderFailed": "알림을 업데이트하지 못했습니다. 다시 시도하세요.",
+  "habitDeleteConfirm": "이 습관과 기록을 삭제할까요?",
+  "habitLoadError": "습관을 불러오지 못했습니다.",
+  "habitSaveError": "저장하지 못했습니다. 입력 내용을 확인하고 다시 시도하세요.",
+  "habitAddCheckIn": "완료 한 번 추가",
+  "habitUndoCheckIn": "마지막 완료 취소",
+  "habitPreviousWeek": "이전 주",
+  "habitNextWeek": "다음 주",
+  "notificationHabitChannel": "습관",
+  "notificationHabitDescription": "미완료 습관 알림",
+  "notificationHabitTitle": "습관을 실천할 시간입니다",
+  "habitsSummary": "습관 {planned}개 중 {completed}개 완료",
+  "habitDurationDays": "{days}일",
+  "@habitsSummary": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "planned": {
+        "type": "int"
+      }
+    }
+  },
+  "@habitDurationDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsAppearancePreview": "미리보기",
+  "settingsPreviewProject": "개인",
+  "settingsPreviewLongTask": "자료를 준비하고 다음 단계를 계획하기",
+  "settingsPreviewCompletedTask": "메모 검토하기"
 }

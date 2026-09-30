@@ -16,6 +16,48 @@ import '../../../testing/fakes/fake_task_repository.dart';
 
 void main() {
   test(
+    'parent navigation resolves accessible completed or read-only parents',
+    () {
+      final parent = task('parent', status: 'completed', canEdit: false);
+      final child = task('child', parentId: parent.id);
+      expect(taskParentForNavigation(child, {parent.id: parent}), same(parent));
+      expect(
+        taskParentForNavigation(child, {
+          parent.id: parent,
+        }, selectionActive: true),
+        isNull,
+      );
+    },
+  );
+
+  test(
+    'parent navigation omits missing parents, roots, and self references',
+    () {
+      final root = task('root');
+      final orphan = task('orphan', parentId: 'missing');
+      final self = task('self', parentId: 'self');
+      expect(taskParentForNavigation(root, {root.id: root}), isNull);
+      expect(taskParentForNavigation(orphan, {}), isNull);
+      expect(taskParentForNavigation(self, {self.id: self}), isNull);
+      final parent = task('parent');
+      expect(
+        taskParentForNavigation(
+          task('deleted-child', parentId: parent.id, isDeleted: true),
+          {parent.id: parent},
+        ),
+        isNull,
+      );
+      final deleted = task('deleted', isDeleted: true);
+      expect(
+        taskParentForNavigation(task('child', parentId: deleted.id), {
+          deleted.id: deleted,
+        }),
+        isNull,
+      );
+    },
+  );
+
+  test(
     'collapsing a branch removes hidden descendants from bulk selection',
     () {
       final parent = task('parent');
@@ -198,6 +240,8 @@ TaskItem task(
   String? parentId,
   DateTime? date,
   String status = 'open',
+  bool canEdit = true,
+  bool isDeleted = false,
 }) => TaskItem(
   id: id,
   userId: 'u',
@@ -210,7 +254,8 @@ TaskItem task(
   completedFocusIntervals: 0,
   totalFocusSeconds: 0,
   orderKey: id,
-  isDeleted: false,
+  isDeleted: isDeleted,
+  canEdit: canEdit,
   createdAt: DateTime(2026),
   updatedAt: DateTime(2026),
 );

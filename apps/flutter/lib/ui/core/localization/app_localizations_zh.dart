@@ -3476,6 +3476,9 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get taskOpenParent => '打开父任务';
+
+  @override
   String get taskOpenFullBranch => '打开所有子任务';
 
   @override
@@ -3716,4 +3719,137 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get taskDescriptionHint => '添加描述';
+
+  @override
+  String get projectMapExpand => '全屏展开地图';
+
+  @override
+  String get projectMapCollapse => '退出地图全屏';
+
+  @override
+  String get navHabits => '习惯';
+
+  @override
+  String get habitsSubtitle => '每天一小步';
+
+  @override
+  String get habitNew => '新建习惯';
+
+  @override
+  String get habitEdit => '编辑习惯';
+
+  @override
+  String get habitsActive => '进行中';
+
+  @override
+  String get habitsFinished => '已结束';
+
+  @override
+  String get habitsEmpty => '添加你的第一个习惯。';
+
+  @override
+  String get habitsFinishedEmpty => '暂无已结束的习惯。';
+
+  @override
+  String get habitsFuture => '未来日期仅可查看。';
+
+  @override
+  String get habitName => '习惯名称';
+
+  @override
+  String get habitDaily => '每天';
+
+  @override
+  String get habitWeekdays => '选择星期';
+
+  @override
+  String get habitFrequency => '计划';
+
+  @override
+  String get habitTarget => '每天次数';
+
+  @override
+  String get habitStart => '开始日期';
+
+  @override
+  String get habitEnd => '结束日期';
+
+  @override
+  String get habitForever => '无限期';
+
+  @override
+  String get habitCustom => '选择日期';
+
+  @override
+  String get habitProject => '项目';
+
+  @override
+  String get habitNoProject => '无项目';
+
+  @override
+  String get habitReminder => '提醒';
+
+  @override
+  String get habitReminderTime => '提醒时间';
+
+  @override
+  String get habitReminderDenied => '通知已关闭。请在系统设置中允许通知。';
+
+  @override
+  String get habitReminderUnavailable => '此平台不支持后台提醒。';
+
+  @override
+  String get habitReminderFailed => '无法更新提醒，请重试。';
+
+  @override
+  String get habitDeleteConfirm => '删除此习惯及其历史记录？';
+
+  @override
+  String get habitLoadError => '无法加载习惯。';
+
+  @override
+  String get habitSaveError => '无法保存。请检查输入并重试。';
+
+  @override
+  String get habitAddCheckIn => '增加一次完成';
+
+  @override
+  String get habitUndoCheckIn => '撤销最后一次完成';
+
+  @override
+  String get habitPreviousWeek => '上一周';
+
+  @override
+  String get habitNextWeek => '下一周';
+
+  @override
+  String get notificationHabitChannel => '习惯';
+
+  @override
+  String get notificationHabitDescription => '未完成习惯的提醒';
+
+  @override
+  String get notificationHabitTitle => '该完成习惯了';
+
+  @override
+  String habitsSummary(int completed, int planned) {
+    return '已完成 $completed/$planned 个习惯';
+  }
+
+  @override
+  String habitDurationDays(int days) {
+    return '$days 天';
+  }
+
+  @override
+  String get settingsAppearancePreview => '预览';
+
+  @override
+  String get settingsPreviewProject => '个人';
+
+  @override
+  String get settingsPreviewLongTask => '准备资料并规划下一步';
+
+  @override
+  String get settingsPreviewCompletedTask => '检查笔记';
 }

@@ -1156,6 +1156,7 @@
   "taskExpandSubtasks": "Développer les sous-tâches",
   "taskCollapseSubtasks": "Réduire les sous-tâches",
   "taskAllSubtasksProgress": "Toutes les sous-tâches : {completed} sur {total} terminées",
+  "taskOpenParent": "Ouvrir la tâche parente",
   "taskOpenFullBranch": "Ouvrir toutes les sous-tâches",
   "taskParentPath": "Fait partie de : {path}",
   "projectViewList": "Liste",
@@ -1235,5 +1236,65 @@
   "taskDiscussionTab": "Discussion",
   "taskProperties": "Propriétés",
   "filesGrouping": "Regroupement",
-  "taskDescriptionHint": "Ajouter une description"
+  "taskDescriptionHint": "Ajouter une description",
+  "projectMapExpand": "Afficher la carte en plein écran",
+  "projectMapCollapse": "Quitter la carte en plein écran",
+  "navHabits": "Habitudes",
+  "habitsSubtitle": "De petits pas, chaque jour",
+  "habitNew": "Nouvelle habitude",
+  "habitEdit": "Modifier l’habitude",
+  "habitsActive": "Actives",
+  "habitsFinished": "Terminées",
+  "habitsEmpty": "Ajoutez votre première habitude.",
+  "habitsFinishedEmpty": "Aucune habitude terminée pour le moment.",
+  "habitsFuture": "Les jours à venir sont en lecture seule.",
+  "habitName": "Nom de l’habitude",
+  "habitDaily": "Tous les jours",
+  "habitWeekdays": "Jours de la semaine choisis",
+  "habitFrequency": "Planning",
+  "habitTarget": "Fois par jour",
+  "habitStart": "Date de début",
+  "habitEnd": "Date de fin",
+  "habitForever": "Sans fin",
+  "habitCustom": "Choisir une date",
+  "habitProject": "Projet",
+  "habitNoProject": "Aucun projet",
+  "habitReminder": "Rappel",
+  "habitReminderTime": "Heure du rappel",
+  "habitReminderDenied": "Les notifications sont désactivées. Autorisez-les dans les réglages système.",
+  "habitReminderUnavailable": "Les rappels en arrière-plan ne sont pas disponibles sur cette plateforme.",
+  "habitReminderFailed": "Impossible de mettre à jour les rappels. Réessayez.",
+  "habitDeleteConfirm": "Supprimer cette habitude et son historique ?",
+  "habitLoadError": "Impossible de charger les habitudes.",
+  "habitSaveError": "Impossible d’enregistrer. Vérifiez les champs et réessayez.",
+  "habitAddCheckIn": "Ajouter une réalisation",
+  "habitUndoCheckIn": "Annuler la dernière réalisation",
+  "habitPreviousWeek": "Semaine précédente",
+  "habitNextWeek": "Semaine suivante",
+  "notificationHabitChannel": "Habitudes",
+  "notificationHabitDescription": "Rappels pour les habitudes inachevées",
+  "notificationHabitTitle": "C’est l’heure de votre habitude",
+  "habitsSummary": "{completed} habitudes terminées sur {planned}",
+  "habitDurationDays": "{days} jours",
+  "@habitsSummary": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "planned": {
+        "type": "int"
+      }
+    }
+  },
+  "@habitDurationDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsAppearancePreview": "Aperçu",
+  "settingsPreviewProject": "Personnel",
+  "settingsPreviewLongTask": "Préparer les documents et planifier les prochaines étapes",
+  "settingsPreviewCompletedTask": "Relire les notes"
 }

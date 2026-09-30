@@ -128,6 +128,7 @@ docs/*
 !docs/email-addresses.md
 temp**/
 tmp/
+habit*/
 
 # FVM Version Cache
 .fvm/
@@ -202,3 +203,8 @@ node_modules/
 # Public API contract.
 !docs/api/
 !docs/api/*.md
+
+# Habit feature sources are not HTML concept output.
+!apps/flutter/lib/domain/models/habits/
+!apps/flutter/lib/data/repositories/habits/
+!apps/flutter/lib/ui/habits/

@@ -1868,6 +1868,10 @@
   "taskExpandSubtasks": "Expand subtasks",
   "taskCollapseSubtasks": "Collapse subtasks",
   "taskAllSubtasksProgress": "All descendants: {completed} of {total} complete",
+  "taskOpenParent": "Open parent task",
+  "@taskOpenParent": {
+    "description": "Mobile task menu action opening the accessible parent task."
+  },
   "taskOpenFullBranch": "Open all subtasks",
   "taskParentPath": "Part of: {path}",
   "@taskAllSubtasksProgress": {
@@ -1966,5 +1970,83 @@
   "taskDiscussionTab": "Discussion",
   "taskProperties": "Properties",
   "filesGrouping": "Grouping",
-  "taskDescriptionHint": "Add a description"
+  "taskDescriptionHint": "Add a description",
+  "projectMapExpand": "Expand map to full screen",
+  "projectMapCollapse": "Exit full-screen map",
+  "@projectMapExpand": {
+    "description": "Tooltip for expanding the project or catalog map to fill the app viewport."
+  },
+  "@projectMapCollapse": {
+    "description": "Tooltip for returning from the full-screen map to the ordinary layout."
+  },
+  "navHabits": "Habits",
+  "habitsSubtitle": "Small steps, every day",
+  "habitNew": "New habit",
+  "habitEdit": "Edit habit",
+  "habitsActive": "Active",
+  "habitsFinished": "Finished",
+  "habitsEmpty": "Your habits start here. Add your first habit.",
+  "habitsFinishedEmpty": "No finished habits yet.",
+  "habitsFuture": "Future days are view only.",
+  "habitName": "Habit name",
+  "habitDaily": "Every day",
+  "habitWeekdays": "Selected weekdays",
+  "habitFrequency": "Schedule",
+  "habitTarget": "Times per day",
+  "habitStart": "Start date",
+  "habitEnd": "End date",
+  "habitForever": "Forever",
+  "habitCustom": "Choose date",
+  "habitProject": "Project",
+  "habitNoProject": "No project",
+  "habitReminder": "Reminder",
+  "habitReminderTime": "Reminder time",
+  "habitReminderDenied": "Notifications are disabled. Allow them in system settings.",
+  "habitReminderUnavailable": "Background reminders are unavailable on this platform.",
+  "habitReminderFailed": "Could not update reminders. Try again.",
+  "habitDeleteConfirm": "Delete this habit and its history?",
+  "habitLoadError": "Could not load habits.",
+  "habitSaveError": "Could not save changes. Check the fields and try again.",
+  "habitAddCheckIn": "Add one completion",
+  "habitUndoCheckIn": "Undo last completion",
+  "habitPreviousWeek": "Previous week",
+  "habitNextWeek": "Next week",
+  "notificationHabitChannel": "Habits",
+  "notificationHabitDescription": "Reminders for unfinished habits",
+  "notificationHabitTitle": "Time for your habit",
+  "habitsSummary": "{completed} of {planned} habits completed",
+  "habitDurationDays": "{days} days",
+  "@habitsSummary": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "planned": {
+        "type": "int"
+      }
+    }
+  },
+  "@habitDurationDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsAppearancePreview": "Preview",
+  "settingsPreviewProject": "Personal",
+  "settingsPreviewLongTask": "Prepare materials and plan the next steps",
+  "settingsPreviewCompletedTask": "Review notes",
+  "@settingsAppearancePreview": {
+    "description": "Read-only example in Appearance settings."
+  },
+  "@settingsPreviewProject": {
+    "description": "Read-only example in Appearance settings."
+  },
+  "@settingsPreviewLongTask": {
+    "description": "Read-only example in Appearance settings."
+  },
+  "@settingsPreviewCompletedTask": {
+    "description": "Read-only example in Appearance settings."
+  }
 }

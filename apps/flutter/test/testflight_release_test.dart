@@ -229,6 +229,9 @@ SENTRY_DSN=
 
     final output = result.stdout.toString();
     expect(output, contains('flutter" build macos --release'));
+    expect(output, contains('--flavor "production"'));
+    expect(output, contains('-scheme "Production"'));
+    expect(output, contains('-configuration "Release-Production"'));
     expect(output, contains('write-asc-key'));
     expect(output, isNot(contains('--build-number=')));
     expect(

@@ -6275,6 +6275,12 @@ abstract class AppLocalizations {
   /// **'All descendants: {completed} of {total} complete'**
   String taskAllSubtasksProgress(int completed, int total);
 
+  /// Mobile task menu action opening the accessible parent task.
+  ///
+  /// In en, this message translates to:
+  /// **'Open parent task'**
+  String get taskOpenParent;
+
   /// No description provided for @taskOpenFullBranch.
   ///
   /// In en, this message translates to:
@@ -6754,6 +6760,264 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add a description'**
   String get taskDescriptionHint;
+
+  /// Tooltip for expanding the project or catalog map to fill the app viewport.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand map to full screen'**
+  String get projectMapExpand;
+
+  /// Tooltip for returning from the full-screen map to the ordinary layout.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit full-screen map'**
+  String get projectMapCollapse;
+
+  /// No description provided for @navHabits.
+  ///
+  /// In en, this message translates to:
+  /// **'Habits'**
+  String get navHabits;
+
+  /// No description provided for @habitsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Small steps, every day'**
+  String get habitsSubtitle;
+
+  /// No description provided for @habitNew.
+  ///
+  /// In en, this message translates to:
+  /// **'New habit'**
+  String get habitNew;
+
+  /// No description provided for @habitEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit habit'**
+  String get habitEdit;
+
+  /// No description provided for @habitsActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get habitsActive;
+
+  /// No description provided for @habitsFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'Finished'**
+  String get habitsFinished;
+
+  /// No description provided for @habitsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Your habits start here. Add your first habit.'**
+  String get habitsEmpty;
+
+  /// No description provided for @habitsFinishedEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No finished habits yet.'**
+  String get habitsFinishedEmpty;
+
+  /// No description provided for @habitsFuture.
+  ///
+  /// In en, this message translates to:
+  /// **'Future days are view only.'**
+  String get habitsFuture;
+
+  /// No description provided for @habitName.
+  ///
+  /// In en, this message translates to:
+  /// **'Habit name'**
+  String get habitName;
+
+  /// No description provided for @habitDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Every day'**
+  String get habitDaily;
+
+  /// No description provided for @habitWeekdays.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected weekdays'**
+  String get habitWeekdays;
+
+  /// No description provided for @habitFrequency.
+  ///
+  /// In en, this message translates to:
+  /// **'Schedule'**
+  String get habitFrequency;
+
+  /// No description provided for @habitTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Times per day'**
+  String get habitTarget;
+
+  /// No description provided for @habitStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start date'**
+  String get habitStart;
+
+  /// No description provided for @habitEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'End date'**
+  String get habitEnd;
+
+  /// No description provided for @habitForever.
+  ///
+  /// In en, this message translates to:
+  /// **'Forever'**
+  String get habitForever;
+
+  /// No description provided for @habitCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose date'**
+  String get habitCustom;
+
+  /// No description provided for @habitProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Project'**
+  String get habitProject;
+
+  /// No description provided for @habitNoProject.
+  ///
+  /// In en, this message translates to:
+  /// **'No project'**
+  String get habitNoProject;
+
+  /// No description provided for @habitReminder.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder'**
+  String get habitReminder;
+
+  /// No description provided for @habitReminderTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder time'**
+  String get habitReminderTime;
+
+  /// No description provided for @habitReminderDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications are disabled. Allow them in system settings.'**
+  String get habitReminderDenied;
+
+  /// No description provided for @habitReminderUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Background reminders are unavailable on this platform.'**
+  String get habitReminderUnavailable;
+
+  /// No description provided for @habitReminderFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not update reminders. Try again.'**
+  String get habitReminderFailed;
+
+  /// No description provided for @habitDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this habit and its history?'**
+  String get habitDeleteConfirm;
+
+  /// No description provided for @habitLoadError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load habits.'**
+  String get habitLoadError;
+
+  /// No description provided for @habitSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save changes. Check the fields and try again.'**
+  String get habitSaveError;
+
+  /// No description provided for @habitAddCheckIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Add one completion'**
+  String get habitAddCheckIn;
+
+  /// No description provided for @habitUndoCheckIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo last completion'**
+  String get habitUndoCheckIn;
+
+  /// No description provided for @habitPreviousWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous week'**
+  String get habitPreviousWeek;
+
+  /// No description provided for @habitNextWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Next week'**
+  String get habitNextWeek;
+
+  /// No description provided for @notificationHabitChannel.
+  ///
+  /// In en, this message translates to:
+  /// **'Habits'**
+  String get notificationHabitChannel;
+
+  /// No description provided for @notificationHabitDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminders for unfinished habits'**
+  String get notificationHabitDescription;
+
+  /// No description provided for @notificationHabitTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Time for your habit'**
+  String get notificationHabitTitle;
+
+  /// No description provided for @habitsSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'{completed} of {planned} habits completed'**
+  String habitsSummary(int completed, int planned);
+
+  /// No description provided for @habitDurationDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} days'**
+  String habitDurationDays(int days);
+
+  /// Read-only example in Appearance settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview'**
+  String get settingsAppearancePreview;
+
+  /// Read-only example in Appearance settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal'**
+  String get settingsPreviewProject;
+
+  /// Read-only example in Appearance settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Prepare materials and plan the next steps'**
+  String get settingsPreviewLongTask;
+
+  /// Read-only example in Appearance settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Review notes'**
+  String get settingsPreviewCompletedTask;
 }
 
 class _AppLocalizationsDelegate

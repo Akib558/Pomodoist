@@ -3559,6 +3559,9 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get taskOpenParent => '親タスクを開く';
+
+  @override
   String get taskOpenFullBranch => 'すべてのサブタスクを開く';
 
   @override
@@ -3802,4 +3805,137 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get taskDescriptionHint => '説明を追加';
+
+  @override
+  String get projectMapExpand => 'マップを全画面表示';
+
+  @override
+  String get projectMapCollapse => 'マップの全画面表示を終了';
+
+  @override
+  String get navHabits => '習慣';
+
+  @override
+  String get habitsSubtitle => '毎日の小さな一歩';
+
+  @override
+  String get habitNew => '新しい習慣';
+
+  @override
+  String get habitEdit => '習慣を編集';
+
+  @override
+  String get habitsActive => '継続中';
+
+  @override
+  String get habitsFinished => '終了済み';
+
+  @override
+  String get habitsEmpty => '最初の習慣を追加しましょう。';
+
+  @override
+  String get habitsFinishedEmpty => '終了した習慣はまだありません。';
+
+  @override
+  String get habitsFuture => '未来の日は閲覧のみです。';
+
+  @override
+  String get habitName => '習慣の名前';
+
+  @override
+  String get habitDaily => '毎日';
+
+  @override
+  String get habitWeekdays => '曜日を選択';
+
+  @override
+  String get habitFrequency => 'スケジュール';
+
+  @override
+  String get habitTarget => '1日の回数';
+
+  @override
+  String get habitStart => '開始日';
+
+  @override
+  String get habitEnd => '終了日';
+
+  @override
+  String get habitForever => '無期限';
+
+  @override
+  String get habitCustom => '日付を選択';
+
+  @override
+  String get habitProject => 'プロジェクト';
+
+  @override
+  String get habitNoProject => 'プロジェクトなし';
+
+  @override
+  String get habitReminder => 'リマインダー';
+
+  @override
+  String get habitReminderTime => 'リマインダーの時刻';
+
+  @override
+  String get habitReminderDenied => '通知が無効です。システム設定で許可してください。';
+
+  @override
+  String get habitReminderUnavailable => 'このプラットフォームではバックグラウンド通知を利用できません。';
+
+  @override
+  String get habitReminderFailed => 'リマインダーを更新できませんでした。再試行してください。';
+
+  @override
+  String get habitDeleteConfirm => 'この習慣と履歴を削除しますか？';
+
+  @override
+  String get habitLoadError => '習慣を読み込めませんでした。';
+
+  @override
+  String get habitSaveError => '保存できませんでした。入力内容を確認して再試行してください。';
+
+  @override
+  String get habitAddCheckIn => '完了を1回追加';
+
+  @override
+  String get habitUndoCheckIn => '最後の完了を取り消す';
+
+  @override
+  String get habitPreviousWeek => '前の週';
+
+  @override
+  String get habitNextWeek => '次の週';
+
+  @override
+  String get notificationHabitChannel => '習慣';
+
+  @override
+  String get notificationHabitDescription => '未完了の習慣のリマインダー';
+
+  @override
+  String get notificationHabitTitle => '習慣の時間です';
+
+  @override
+  String habitsSummary(int completed, int planned) {
+    return '$planned件中$completed件完了';
+  }
+
+  @override
+  String habitDurationDays(int days) {
+    return '$days日';
+  }
+
+  @override
+  String get settingsAppearancePreview => 'プレビュー';
+
+  @override
+  String get settingsPreviewProject => '個人';
+
+  @override
+  String get settingsPreviewLongTask => '資料を準備し、次のステップを計画する';
+
+  @override
+  String get settingsPreviewCompletedTask => 'メモを確認する';
 }

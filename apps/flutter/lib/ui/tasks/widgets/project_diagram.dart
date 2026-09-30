@@ -3,6 +3,7 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shadcn_ui/shadcn_ui.dart'
@@ -10,6 +11,7 @@ import 'package:shadcn_ui/shadcn_ui.dart'
 import 'package:pomodoist/domain/models/tasks/project_hierarchy.dart';
 import 'package:pomodoist/domain/models/tasks/task_models.dart';
 import 'package:pomodoist/routing/task_detail_navigation.dart';
+import 'package:pomodoist/routing/project_map_navigation.dart';
 import 'package:pomodoist/ui/core/localization/app_l10n.dart';
 import 'package:pomodoist/ui/core/themes/app_theme.dart';
 import 'package:pomodoist/ui/core/widgets/action_feedback.dart';
@@ -147,6 +149,72 @@ class _ProjectDiagramState extends ConsumerState<ProjectDiagram> {
 
   @override
   Widget build(BuildContext context) {
+    final location = GoRouterState.of(context).uri;
+    final fullscreen = isProjectMapFullscreen(location);
+    final taskDetailsOpen = selectedTaskDetailsId(location) != null;
+    void dismiss() {
+      final viewportContext = _viewport.currentContext;
+      final selection = viewportContext == null
+          ? null
+          : TaskSelectionScope.maybeOf(viewportContext);
+      if (selection?.active == true) {
+        selection!.close();
+      } else {
+        setProjectMapFullscreen(context, false);
+      }
+    }
+
+    return BackButtonListener(
+      onBackButtonPressed: () async {
+        if (!widget.isActive || !fullscreen || taskDetailsOpen) return false;
+        dismiss();
+        return true;
+      },
+      child: Focus(
+        canRequestFocus: false,
+        onKeyEvent: (node, event) {
+          if (widget.isActive &&
+              fullscreen &&
+              !taskDetailsOpen &&
+              event is KeyDownEvent &&
+              event.logicalKey == LogicalKeyboardKey.escape) {
+            dismiss();
+            return KeyEventResult.handled;
+          }
+          return KeyEventResult.ignored;
+        },
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            _buildMap(context),
+            PositionedDirectional(
+              top: 8,
+              end: 24,
+              child: IconButton(
+                key: const Key('project-map-fullscreen'),
+                tooltip: fullscreen
+                    ? context.l10n.projectMapCollapse
+                    : context.l10n.projectMapExpand,
+                style: IconButton.styleFrom(
+                  backgroundColor: context.appColors.surface,
+                  minimumSize: const Size(48, 48),
+                ),
+                onPressed: widget.isActive
+                    ? () => setProjectMapFullscreen(context, !fullscreen)
+                    : null,
+                icon: Icon(
+                  fullscreen ? LucideIcons.minimize : LucideIcons.maximize,
+                  size: 18,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMap(BuildContext context) {
     final state = ref.watch(projectDiagramViewModelProvider(widget.projectId));
     final tree = state.tree;
     final l10n = context.l10n;

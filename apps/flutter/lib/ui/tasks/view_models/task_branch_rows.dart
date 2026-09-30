@@ -174,3 +174,15 @@ class VisibleTaskRow {
   bool get needsAncestorContext =>
       ancestors.isNotEmpty && (visibleParentId == null || depth > 2);
 }
+
+TaskItem? taskParentForNavigation(
+  TaskItem task,
+  Map<String, TaskItem> byId, {
+  bool selectionActive = false,
+}) {
+  if (selectionActive || task.isDeleted || task.parentId == task.id) {
+    return null;
+  }
+  final parent = byId[task.parentId];
+  return parent == null || parent.isDeleted ? null : parent;
+}

@@ -3609,6 +3609,9 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
+  String get taskOpenParent => 'فتح المهمة الأصلية';
+
+  @override
   String get taskOpenFullBranch => 'فتح جميع المهام الفرعية';
 
   @override
@@ -3858,4 +3861,139 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get taskDescriptionHint => 'إضافة وصف';
+
+  @override
+  String get projectMapExpand => 'توسيع الخريطة إلى ملء الشاشة';
+
+  @override
+  String get projectMapCollapse => 'الخروج من خريطة ملء الشاشة';
+
+  @override
+  String get navHabits => 'العادات';
+
+  @override
+  String get habitsSubtitle => 'خطوات صغيرة كل يوم';
+
+  @override
+  String get habitNew => 'عادة جديدة';
+
+  @override
+  String get habitEdit => 'تعديل العادة';
+
+  @override
+  String get habitsActive => 'نشطة';
+
+  @override
+  String get habitsFinished => 'منتهية';
+
+  @override
+  String get habitsEmpty => 'أضف عادتك الأولى.';
+
+  @override
+  String get habitsFinishedEmpty => 'لا توجد عادات منتهية بعد.';
+
+  @override
+  String get habitsFuture => 'الأيام القادمة للعرض فقط.';
+
+  @override
+  String get habitName => 'اسم العادة';
+
+  @override
+  String get habitDaily => 'كل يوم';
+
+  @override
+  String get habitWeekdays => 'أيام الأسبوع المحددة';
+
+  @override
+  String get habitFrequency => 'الجدول';
+
+  @override
+  String get habitTarget => 'مرات في اليوم';
+
+  @override
+  String get habitStart => 'تاريخ البدء';
+
+  @override
+  String get habitEnd => 'تاريخ الانتهاء';
+
+  @override
+  String get habitForever => 'بلا نهاية';
+
+  @override
+  String get habitCustom => 'اختيار تاريخ';
+
+  @override
+  String get habitProject => 'المشروع';
+
+  @override
+  String get habitNoProject => 'بلا مشروع';
+
+  @override
+  String get habitReminder => 'تذكير';
+
+  @override
+  String get habitReminderTime => 'وقت التذكير';
+
+  @override
+  String get habitReminderDenied =>
+      'الإشعارات معطلة. اسمح بها في إعدادات النظام.';
+
+  @override
+  String get habitReminderUnavailable =>
+      'تذكيرات الخلفية غير متاحة على هذه المنصة.';
+
+  @override
+  String get habitReminderFailed => 'تعذر تحديث التذكيرات. حاول مجددًا.';
+
+  @override
+  String get habitDeleteConfirm => 'هل تريد حذف هذه العادة وسجلها؟';
+
+  @override
+  String get habitLoadError => 'تعذر تحميل العادات.';
+
+  @override
+  String get habitSaveError => 'تعذر الحفظ. تحقق من الحقول وحاول مجددًا.';
+
+  @override
+  String get habitAddCheckIn => 'إضافة إتمام واحد';
+
+  @override
+  String get habitUndoCheckIn => 'التراجع عن آخر إتمام';
+
+  @override
+  String get habitPreviousWeek => 'الأسبوع السابق';
+
+  @override
+  String get habitNextWeek => 'الأسبوع التالي';
+
+  @override
+  String get notificationHabitChannel => 'العادات';
+
+  @override
+  String get notificationHabitDescription => 'تذكيرات للعادات غير المكتملة';
+
+  @override
+  String get notificationHabitTitle => 'حان وقت عادتك';
+
+  @override
+  String habitsSummary(int completed, int planned) {
+    return 'تم إتمام $completed من $planned عادات';
+  }
+
+  @override
+  String habitDurationDays(int days) {
+    return '$days أيام';
+  }
+
+  @override
+  String get settingsAppearancePreview => 'معاينة';
+
+  @override
+  String get settingsPreviewProject => 'شخصي';
+
+  @override
+  String get settingsPreviewLongTask => 'إعداد المواد والتخطيط للخطوات التالية';
+
+  @override
+  String get settingsPreviewCompletedTask => 'مراجعة الملاحظات';
 }

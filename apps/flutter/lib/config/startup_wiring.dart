@@ -1,3 +1,4 @@
+import 'package:pomodoist/config/habit_notification_dependencies.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:pomodoist/config/account_providers.dart';
@@ -14,6 +15,7 @@ final startupBackgroundWiringProvider = Provider<void>((ref) {
   ref.watch(googleCalendarSyncLifecycleProvider);
   ref.watch(recurringTaskMaterializationProvider);
   ref.watch(taskStartNotificationCoordinatorProvider);
+  ref.watch(habitReminderStatusProvider);
   ref.watch(reengagementNotificationCoordinatorProvider);
   ref.watch(watchCompanionServiceProvider);
   ref.watch(quickAddHintRepositoryProvider);

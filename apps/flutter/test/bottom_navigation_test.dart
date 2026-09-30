@@ -11,6 +11,26 @@ import 'package:pomodoist/ui/core/widgets/bottom_navigation_layout.dart';
 import 'package:pomodoist/utils/result.dart';
 
 void main() {
+  test('habits can be selected without changing previous bottom tabs', () {
+    final existing = BottomNavigationPreferences.decode(
+      '{"destinations":["focus","calendar"]}',
+    );
+    expect(existing.destinations, [
+      BottomNavigationDestination.focus,
+      BottomNavigationDestination.calendar,
+    ]);
+    final selected = existing.add(BottomNavigationDestination.habits);
+    expect(
+      BottomNavigationPreferences.decode(
+        selected.encode(),
+      ).selectedFor('/habits'),
+      BottomNavigationDestination.habits,
+    );
+    expect(
+      BottomNavigationPreferences.defaultDestinations,
+      isNot(contains(BottomNavigationDestination.habits)),
+    );
+  });
   test(
     'motion keeps the panel equal to its buttons and reveals both labels',
     () {

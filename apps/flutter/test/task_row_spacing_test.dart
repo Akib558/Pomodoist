@@ -1,4 +1,5 @@
 import 'package:pomodoist/config/task_preferences_dependencies.dart';
+import 'package:pomodoist/ui/settings/view_models/task_settings_view_model.dart';
 import 'package:pomodoist/domain/models/settings/task_preferences.dart';
 import 'dart:async';
 
@@ -91,6 +92,34 @@ void main() {
           taskRowSpacingPreferenceKey,
         ),
         'comfortable',
+      );
+    },
+  );
+
+  test(
+    'settings previews observe spacing immediately before persistence completes',
+    () async {
+      final loading = Completer<SharedPreferences?>();
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWith((ref) => loading.future),
+        ],
+      );
+      addTearDown(container.dispose);
+      final controller = container.read(
+        taskListSettingsViewModelProvider.notifier,
+      );
+      final save = controller.setSpacing(TaskRowSpacing.spacious);
+      expect(container.read(taskRowSpacingProvider), TaskRowSpacing.spacious);
+      expect(
+        container.read(taskListSettingsViewModelProvider).spacing,
+        TaskRowSpacing.spacious,
+      );
+      loading.complete(await SharedPreferences.getInstance());
+      await save;
+      expect(
+        container.read(taskListSettingsViewModelProvider).spacing,
+        TaskRowSpacing.spacious,
       );
     },
   );

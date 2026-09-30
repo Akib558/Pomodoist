@@ -64,11 +64,13 @@ class AdaptiveShell extends ConsumerStatefulWidget {
     required this.location,
     required this.child,
     this.taskId,
+    this.mapFullscreen = false,
     super.key,
   });
 
   final String location;
   final String? taskId;
+  final bool mapFullscreen;
   final Widget child;
 
   @override
@@ -200,6 +202,7 @@ class _AdaptiveShellState extends ConsumerState<AdaptiveShell> {
       );
     }
     final wide = MediaQuery.sizeOf(context).width >= _wideLayoutBreakpoint;
+    final mapFullscreen = widget.mapFullscreen;
     // Details reached through the `/task/:id` route fill the viewport just like
     // the query-parameter selection, so both hide the shell chrome below 820 px.
     final compactTaskDetailsOpen =
@@ -213,7 +216,10 @@ class _AdaptiveShellState extends ConsumerState<AdaptiveShell> {
         widget.location == '/today' &&
         ref.watch(shellTodayFocusStripVisibleProvider);
     final showMiniFocusPlayer =
-        !focusLocation && widget.location != '/kanban' && !hasTodayFocusStrip;
+        !mapFullscreen &&
+        !focusLocation &&
+        widget.location != '/kanban' &&
+        !hasTodayFocusStrip;
     final colors = context.appColors;
     final backgrounds = ref.watch(
       appThemeSettingsProvider.select(
@@ -229,19 +235,21 @@ class _AdaptiveShellState extends ConsumerState<AdaptiveShell> {
       child: Column(
         children: [
           const AchievementAnnouncementBridge(),
-          if (!compactTaskDetailsOpen)
+          if (!compactTaskDetailsOpen && !mapFullscreen)
             _ShellTopBar(
               location: widget.location,
               onMenuPressed: _toggleSidebar,
             ),
           Expanded(
+            // Keep the route mounted when the surrounding shell bars disappear.
+            key: const ValueKey('shell-main-content'),
             child: Stack(
               fit: StackFit.expand,
               children: [
                 MediaQuery.removePadding(
                   context: context,
-                  removeTop: !compactTaskDetailsOpen,
-                  removeBottom: !wide,
+                  removeTop: !compactTaskDetailsOpen && !mapFullscreen,
+                  removeBottom: !wide && !mapFullscreen,
                   child: widget.child,
                 ),
                 const Positioned(
@@ -286,7 +294,11 @@ class _AdaptiveShellState extends ConsumerState<AdaptiveShell> {
             children: [
               Row(
                 children: [
-                  _buildWideSidebar(context),
+                  Visibility(
+                    visible: !mapFullscreen,
+                    maintainState: true,
+                    child: _buildWideSidebar(context),
+                  ),
                   Expanded(
                     child: ThemeBackground(
                       zone: ThemeBackgroundZone.main,
@@ -296,8 +308,9 @@ class _AdaptiveShellState extends ConsumerState<AdaptiveShell> {
                   ),
                 ],
               ),
-              if ((!_wideSidebarVisible && !_wideSidebarMounted) ||
-                  _wideSidebarRevealingFromEdge)
+              if (!mapFullscreen &&
+                  ((!_wideSidebarVisible && !_wideSidebarMounted) ||
+                      _wideSidebarRevealingFromEdge))
                 _buildWideSidebarEdgeHandle(),
             ],
           ),
@@ -353,7 +366,9 @@ class _AdaptiveShellState extends ConsumerState<AdaptiveShell> {
                   floatingActionButton: ValueListenableBuilder<bool>(
                     valueListenable: voiceQuickAddActiveOf(context),
                     builder: (context, voiceActive, _) =>
-                        voiceActive || widget.location == '/calendar'
+                        mapFullscreen ||
+                            voiceActive ||
+                            widget.location == '/calendar'
                         ? const SizedBox.shrink()
                         : LearningTourAnchor(
                             id: LearningTourAnchorId.addMobile,
@@ -402,7 +417,7 @@ class _AdaptiveShellState extends ConsumerState<AdaptiveShell> {
                         _addTaskDrag != null ||
                         MediaQuery.disableAnimationsOf(context),
                   ),
-                  bottomNavigationBar: compactTaskDetailsOpen
+                  bottomNavigationBar: compactTaskDetailsOpen || mapFullscreen
                       ? null
                       : VoicePanelBottomClearance(
                           child: _ShellBottomChrome(
@@ -1036,118 +1051,135 @@ class _TodoistSidebarState extends ConsumerState<_TodoistSidebar> {
                 ),
                 const SizedBox(height: 10),
                 Expanded(
-                  child: ListView(
-                    padding: EdgeInsets.zero,
-                    children: [
-                      groupLabel(l10n.sidebarDaily),
-                      for (final path in [
-                        '/inbox',
-                        '/today',
-                        '/upcoming',
-                        '/focus',
-                      ])
-                        destinationTile(path),
-                      groupLabel(l10n.sidebarViews),
-                      for (final path in [
-                        '/calendar',
-                        '/timeline',
-                        '/kanban',
-                        '/priority-matrix',
-                      ])
-                        destinationTile(path),
-                      const SizedBox(height: 20),
-                      LearningTourAnchor(
-                        id: LearningTourAnchorId.projectsDesktop,
-                        child: _ProjectsHeader(
-                          count: projectCount,
-                          expanded: _projectsExpanded,
-                          selected: widget.location == '/projects',
-                          onTitleTap: () =>
-                              widget.onDestinationSelected('/projects'),
-                          onToggle: () => setState(
-                            () => _projectsExpanded = !_projectsExpanded,
-                          ),
-                          onAdd: () => showCreateProjectDialog(context),
+                  child: ScrollbarTheme(
+                    data: ScrollbarTheme.of(context).copyWith(
+                      thickness: const WidgetStatePropertyAll(4),
+                      thumbColor: WidgetStateProperty.resolveWith(
+                        (states) => colors.secondaryText.withValues(
+                          alpha: states.contains(WidgetState.dragged)
+                              ? 0.55
+                              : states.contains(WidgetState.hovered)
+                              ? 0.4
+                              : 0.25,
                         ),
                       ),
-                      if (_projectsExpanded) ...[
-                        const SizedBox(height: 6),
-                        projects.when(
-                          data: (items) {
-                            final visibleProjects = items
-                                .where(
-                                  (project) =>
-                                      project.id != inboxProjectId &&
-                                      !project.isArchived,
-                                )
-                                .toList();
-                            if (visibleProjects.isEmpty) {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 8,
-                                ),
-                                child: Text(
-                                  l10n.noProjects,
-                                  style: textTheme.bodySmall?.copyWith(
-                                    color: colors.mutedText,
-                                  ),
-                                ),
-                              );
-                            }
-                            final rows = projectRows(
-                              visibleProjects,
-                              collapsedIds: _projectTree.collapsedIds,
-                            );
-                            return ProjectTreeScope(
-                              controller: _projectTree,
-                              child: Column(
-                                children: [
-                                  const ProjectTreeRootTarget(),
-                                  for (final row in rows)
-                                    ProjectTreeRow(
-                                      key: ValueKey(
-                                        'sidebar-tree-${row.project.id}',
-                                      ),
-                                      row: row,
-                                      child: _SidebarProjectTile(
-                                        project: row.project,
-                                        count:
-                                            projectTaskCounts[row.project.id] ??
-                                            0,
-                                        selected:
-                                            widget.location ==
-                                            '/project/${row.project.id}',
-                                        onTap: () =>
-                                            widget.onDestinationSelected(
-                                              '/project/${row.project.id}',
-                                            ),
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            );
-                          },
-                          loading: () => const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 10),
-                            child: LinearProgressIndicator(minHeight: 2),
-                          ),
-                          error: (error, stackTrace) => Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 8,
+                    ),
+                    child: ListView(
+                      padding: EdgeInsets.zero,
+                      children: [
+                        groupLabel(l10n.sidebarDaily),
+                        for (final path in [
+                          '/inbox',
+                          '/today',
+                          '/upcoming',
+                          '/focus',
+                          '/habits',
+                        ])
+                          destinationTile(path),
+                        groupLabel(l10n.sidebarViews),
+                        for (final path in [
+                          '/calendar',
+                          '/timeline',
+                          '/kanban',
+                          '/priority-matrix',
+                        ])
+                          destinationTile(path),
+                        const SizedBox(height: 20),
+                        LearningTourAnchor(
+                          id: LearningTourAnchorId.projectsDesktop,
+                          child: _ProjectsHeader(
+                            count: projectCount,
+                            expanded: _projectsExpanded,
+                            selected: widget.location == '/projects',
+                            onTitleTap: () =>
+                                widget.onDestinationSelected('/projects'),
+                            onToggle: () => setState(
+                              () => _projectsExpanded = !_projectsExpanded,
                             ),
-                            child: Text(
-                              l10n.projectsUnavailableShort,
-                              style: textTheme.bodySmall?.copyWith(
-                                color: colors.mutedText,
-                              ),
-                            ),
+                            onAdd: () => showCreateProjectDialog(context),
                           ),
                         ),
+                        if (_projectsExpanded) ...[
+                          const SizedBox(height: 6),
+                          projects.when(
+                            data: (items) {
+                              final visibleProjects = items
+                                  .where(
+                                    (project) =>
+                                        project.id != inboxProjectId &&
+                                        !project.isArchived,
+                                  )
+                                  .toList();
+                              if (visibleProjects.isEmpty) {
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 8,
+                                  ),
+                                  child: Text(
+                                    l10n.noProjects,
+                                    style: textTheme.bodySmall?.copyWith(
+                                      color: colors.mutedText,
+                                    ),
+                                  ),
+                                );
+                              }
+                              final rows = projectRows(
+                                visibleProjects,
+                                collapsedIds: _projectTree.collapsedIds,
+                              );
+                              return ProjectTreeScope(
+                                controller: _projectTree,
+                                child: Column(
+                                  children: [
+                                    const ProjectTreeRootTarget(),
+                                    for (final row in rows)
+                                      ProjectTreeRow(
+                                        key: ValueKey(
+                                          'sidebar-tree-${row.project.id}',
+                                        ),
+                                        row: row,
+                                        child: _SidebarProjectTile(
+                                          project: row.project,
+                                          count:
+                                              projectTaskCounts[row
+                                                  .project
+                                                  .id] ??
+                                              0,
+                                          selected:
+                                              widget.location ==
+                                              '/project/${row.project.id}',
+                                          onTap: () =>
+                                              widget.onDestinationSelected(
+                                                '/project/${row.project.id}',
+                                              ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              );
+                            },
+                            loading: () => const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 10),
+                              child: LinearProgressIndicator(minHeight: 2),
+                            ),
+                            error: (error, stackTrace) => Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 8,
+                              ),
+                              child: Text(
+                                l10n.projectsUnavailableShort,
+                                style: textTheme.bodySmall?.copyWith(
+                                  color: colors.mutedText,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                        footer,
                       ],
-                      footer,
-                    ],
+                    ),
                   ),
                 ),
               ],
@@ -1570,6 +1602,12 @@ List<_Destination> _desktopDestinations(BuildContext context) {
       '/upcoming',
       LucideIcons.calendarDays,
       LucideIcons.calendarDays,
+    ),
+    _Destination(
+      l10n.navHabits,
+      '/habits',
+      LucideIcons.repeat2,
+      LucideIcons.repeat2,
     ),
     _Destination(l10n.navFocus, '/focus', LucideIcons.timer, LucideIcons.timer),
     _Destination(l10n.navInbox, '/inbox', LucideIcons.inbox, LucideIcons.inbox),

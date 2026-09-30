@@ -461,6 +461,11 @@ Use `textTheme.titleMedium` for destination labels, Add task, and project names
 and their header, matching task titles. Group captions, counts, and shortcut
 hints keep their smaller text styles.
 
+The sidebar's desktop scrollbar is 4 px wide in every state. Use `secondaryText`
+at 25% opacity normally, 40% on hover and 55% while dragging; preserve Flutter's
+standard scrolling, hit targets and fade behavior. Scope this treatment to the
+sidebar rather than other scrollable views.
+
 Project rows share their context menu between the sidebar and Projects screen.
 Secondary click, touch long press, and the Context Menu / Shift+F10 keys expose
 renaming, icon and color selection, favorites, and confirmed deletion. Sidebar
@@ -673,22 +678,43 @@ Native mobile rows use a separate, flat composition in both Modern and Classic.
 The completion circle and disclosure have 44 px targets aligned with the first
 title line, independently of the row's total height. Titles and schedule labels
 wrap without a line limit, ellipsis, or font shrinking. Description previews
-retain their existing limit. Parent context, description, schedule, and metadata
-follow the heading with 4 px gaps (2 px in Compact) only between present blocks. Schedule and
-metadata occupy the full text width, including the space below disclosure.
+retain their existing limit. Description, schedule, and metadata follow the
+heading with only the small internal gap of the selected density.
+Keep only the first-line inset needed to align the title with the 44 px controls.
+Mobile rows replace the parent-context text line with one muted 12 px
+`cornerDownRight` marker after the title, separated by 4 px. Keep the marker
+beside the first title line, mirror it in RTL, and preserve the full ancestor
+path in tooltip and screen-reader semantics. Its tooltip must not claim the
+row's long-press menu gesture. Show it under the same hidden-parent/deep-nesting
+conditions as the parent context. Parent navigation lives in the native row's
+context menu, with a localized 44 px action only for an accessible parent outside
+bulk selection. Revalidate the parent before navigation; unavailable parents
+retain the neutral marker without an action.
 
-Mobile metadata puts the project on the leading side and reserves two trailing
-slots for focus (56 px) and descendant progress (72 px), scaled with text size.
-Slots have a 4 px gap and never exchange places when a value is absent. If less
-than 64 scaled pixels remain for the project, move the counter group below it;
-at extreme text sizes the group itself may wrap to avoid overflow. Project
-names may ellipsize; task titles and times may not. Omit an empty metadata block.
-Touch actions stay available. Project and timing colors retain their semantics.
+Schedule occupies the full text width below the title and description,
+independently of parent context and metadata. Use separate localized date/time
+blocks rather than parsing a combined string. Keep a same-day time range whole
+when wrapping below its date; only an individually oversized block may wrap
+internally for accessibility. Recurrence gets its own line. Ranges crossing
+local midnight use separate dated start/end lines; Start only still omits the
+end, and Upcoming omits the start date already shown in its group heading.
+Preserve Smart / Start only / Range and the system's 12/24-hour format.
+
+The next metadata row groups project, Focus count and descendant count together
+at the leading edge, in that order, with 8 px horizontal gaps and intrinsic
+widths. Reserve no absent slots and do not push counts to the trailing edge.
+Wrap whole elements with the selected density's internal gap between runs. Project names keep their
+160 px maximum (also bounded by available width) and may ellipsize. Align count
+labels to the first text line. The native descendant count is an informational
+label with localized screen-reader semantics; opening details uses the containing
+task row's target of at least 44 px. Do not reserve a separate button height below
+the count. Omit empty schedule/metadata blocks.
+Project and timing colors retain their semantics.
 Custom Kanban and Timeline blocks keep their specialized layouts.
 Kanban card action menus open on activation; pointer hover only highlights the
 ellipsis button and must not open its menu (`ShadMenubar.selectOnHover: false`).
 
-Task row spacing is independent of Modern / Classic. The local
+Task row spacing is independent of Modern / Classic. On desktop/web, the local
 `tasks.rowSpacing` preference selects Compact (0 px), Comfortable (8 px), or
 Spacious (20 px) vertical padding on each side of a row. Comfortable is the
 default for missing or unknown values. Changes apply immediately without a new
@@ -696,9 +722,15 @@ animation; a late preference load must not replace a local selection. A failed
 save keeps the current session's selection and reports the error in Settings.
 Compact also caps existing vertical gaps between text blocks and wrapped metadata
 rows at 2 px; Comfortable and Spacious retain their existing internal gaps.
-`TaskRowGeometry` defines both spacing rules for shared mobile and desktop rows,
-including grouped branches. Font sizes, icons, metadata placement, horizontal
-spacing, separator heights, and touch targets of at least 44 px stay unchanged.
+`TaskRowGeometry` defines these density rules for desktop/web rows, including
+grouped branches. Native mobile rows use the same 0 / 8 / 20 px outer vertical
+padding per side. Their internal gaps are 0 / 2 / 4 px for Compact / Comfortable /
+Spacious, only between present title, description, schedule and metadata blocks
+and between wrapped metadata runs. Do not reserve space for absent content.
+Keep mobile branch anchors offset by the outer padding so their arms still meet
+the completion controls. Specialized compact rows retain their existing geometry.
+Font sizes, separator heights, and touch targets of at least 44 px stay
+unchanged.
 
 All shared task lists use `TaskListDivider` between rows, including completed
 groups, subtasks, and the priority matrix. The line is 1 px in `appColors.border`,
@@ -757,8 +789,9 @@ Disclosure has no additional animation. Preserve focus on its button when a
 branch closes; remove hidden rows from bulk selection. Expand ancestors after
 explicit task creation or nesting in the current destination. Completion, Undo,
 row density and drag semantics remain independent of disclosure. Interactive
-disclosure and parent links have at least 44 px touch targets; compact summaries rely
-on the containing task's accessible activation target.
+disclosure and desktop parent links have at least 44 px touch targets; native
+mobile parent navigation uses the 44 px menu action. Compact summaries rely on
+the containing task's accessible activation target.
 
 The local `tasks.branchStyle` preference independently selects Connected lines
 (default) or Grouped branch on all platforms. Keep Modern/Classic, row spacing,
@@ -784,6 +817,14 @@ choice is a single local preference for every project, initially List; it is not
 an Appearance setting or synchronized project data. Keep the shared Quick Add
 composer mounted, preserve detail routing and drafts, and retain each visited
 view's scroll position while the project remains open.
+
+Both project and catalog maps offer a 48 px expand/collapse control at the
+viewport's top trailing corner. Expanded Map fills the app viewport, hiding the
+sidebar, shell bars, project heading and composers while keeping the same map
+and header state mounted. Collapse, Escape or Back restores the ordinary layout;
+nested menus, task selection and task details handle their own dismissal first.
+Keep safe-area insets, task-detail navigation, filters, expansion and scroll state.
+Expansion is temporary route state, independent of the saved List/Map preference.
 
 Map lays out the current project horizontally through existing subprojects,
 tasks and subtasks. It uses a shared hierarchy projection and a local
@@ -996,6 +1037,24 @@ widget subtree when changing direction so editing state survives resizing.
 Keep tap targets at least 48 px on phones, and use shared hover/focus states.
 Only substantive previews and status notices need cards. Section transitions
 use the existing 180 ms fade and end immediately with Reduce Motion.
+
+Appearance has one full-width task-list preview below the list controls. It
+reflects the current list style, branch style, row density and light/dark/system
+theme using the live row content widgets and branch geometry, never a separate
+mobile layout. Palette choices and the theme editor retain their existing
+color/background samples; the navigation editor retains its existing draft
+preview. The task-list sample shows a localized parent and two subtasks, short and
+long titles, a description, schedule, project and counts, plus a completed row
+with absent metadata. Previews observe the existing settings state immediately.
+The sample creates no records, loads no user tasks and exposes no task actions;
+keep informational text available to screen readers and exclude preview controls
+from keyboard focus. Do not shrink text or clip content to a fixed preview height.
+Show the real action controls in the desktop sample, including Modern's hover
+reveal in the column layout and Classic's persistent Focus action. Reuse the live
+action widgets and opacity rules. Absorb task gestures inside each sample row,
+after its hover region, so hovering works without opening menus or starting Focus.
+Native mobile samples preserve the actual shared layout; Modern's heavier title
+weight is the style difference, not an invented desktop layout on a phone.
 
 The theme editor uses Colors and Backgrounds tabs with one shared light/dark
 draft. Keep its heading, palette switch, tabs, validation feedback and Save/Cancel
@@ -1331,3 +1390,29 @@ The user performs visual and manual checks. Widget, golden, integration, and
 end-to-end tests, builds, app launches, browser checks, emulators, and profiling
 are outside the agent's default styling scope unless the user requests them
 separately. Passing analysis or unit tests does not establish visual quality.
+
+## Habits
+
+The personal `/habits` destination reuses the shell, palette, Geist typography,
+Lucide icons and shared controls. It is optional in bottom navigation; adding
+the destination never changes an existing selection. The week strip starts on
+Monday and keeps the selected day visible when moving between weeks. Today
+is marked separately from the selected day. Summaries count fully completed
+habits; rows retain partial progress and clamp displayed counts to the daily
+goal. Future days are read-only. Ended habits remain available in Finished
+so earlier dates can still be corrected.
+
+At 960 px of content width, the editor occupies a 380 px right panel. Narrower
+layouts use the shared adaptive dialog. Forms retain failed drafts and expose
+saving, loading, empty and error states. Use calendar date pickers, weekday
+choices, a 1–99 daily goal, inclusive duration presets and an optional active
+personal project. Unsupported reminders and denied permissions are explained
+in the editor. Destructive deletion requires confirmation. No bespoke motion
+is introduced; shared dialog and control behavior respects Reduce Motion.
+
+Dates are local calendar values, event timestamps are UTC, and schedule edits
+take effect today without rewriting previous rules. Local reminders share one
+serialized replacement queue, cover the next 30 calendar days and occupy at
+most 30 slots, preserving iOS capacity for other notifications and Focus.
+Validation for this feature is unit tests, SQL tests, localization/Drift
+generation and static/architecture analysis only.

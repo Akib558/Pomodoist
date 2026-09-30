@@ -12,10 +12,16 @@ final class NotificationCopy {
     required this.openApp,
     required this.taskStarting,
     required this.returnMessages,
+    this.habitChannel = 'Habits',
+    this.habitDescription = 'Reminders for unfinished daily habit goals',
+    this.habitReminderTitle = 'Time for your habit',
   });
 
   const NotificationCopy.english()
-    : focusCompleted = 'Focus interval completed',
+    : habitChannel = 'Habits',
+      habitDescription = 'Reminders for unfinished daily habit goals',
+      habitReminderTitle = 'Time for your habit',
+      focusCompleted = 'Focus interval completed',
       longBreakCompleted = 'Long break completed',
       breakCompleted = 'Break completed',
       focusChannel = 'Focus',
@@ -49,6 +55,7 @@ final class NotificationCopy {
         ),
       ];
 
+  final String habitChannel, habitDescription, habitReminderTitle;
   final String focusCompleted;
   final String longBreakCompleted;
   final String breakCompleted;

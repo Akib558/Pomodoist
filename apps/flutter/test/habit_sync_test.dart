@@ -1,0 +1,283 @@
+import 'package:app_account/app_account.dart';
+import 'package:drift/native.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:pomodoist/data/services/local/database/app_database.dart';
+import 'package:pomodoist/data/services/local/outbox_service.dart';
+import 'package:pomodoist/data/repositories/habits/habit_repository_impl.dart';
+import 'package:pomodoist/domain/models/habits/habit_models.dart';
+import 'package:uuid/uuid.dart';
+import 'support/account_sync_engine.dart';
+
+void main() {
+  final now = DateTime(2026, 9, 30, 12);
+  late AppDatabase db;
+  late DriftHabitRepository repo;
+  late _Account account;
+  setUp(() async {
+    db = AppDatabase(NativeDatabase.memory());
+    await db.ensureSeedData();
+    repo = DriftHabitRepository(db, DriftOutboxService(db));
+    account = _Account();
+  });
+  tearDown(() => db.close());
+  test(
+    'outbox and snapshot use public calendar format and import tombstones',
+    () async {
+      final id = (await repo.createHabit(
+        HabitDraft(title: 'Read', startDate: now, targetPerDay: 2),
+        now: now,
+      )).getOrThrow();
+      (await repo.addCheckIn(id, now, now: now)).getOrThrow();
+      final engine = testSyncEngine(
+        db: db,
+        account: account,
+        uuid: const Uuid(),
+      );
+      await engine.pushPending();
+      final habits = account.pushed.where((o) => o.entityType == 'habit');
+      expect(habits.single.payload['scheduleHistory'], isA<List>());
+      expect(
+        (habits.single.payload['scheduleHistory'] as List).single['startDate'],
+        '2026-09-30',
+      );
+      expect(
+        account.pushed
+            .singleWhere((o) => o.entityType == 'habit_check_in')
+            .payload['day'],
+        '2026-09-30',
+      );
+      (await repo.deleteHabit(id, now: now)).getOrThrow();
+      account.pushed.clear();
+      await engine.importLocalSnapshotIfNeeded();
+      expect(
+        account.pushed.singleWhere((o) => o.entityType == 'habit').operation,
+        'delete',
+      );
+    },
+  );
+  test(
+    'initial import includes active habits before their independent check-ins',
+    () async {
+      final id = (await repo.createHabit(
+        HabitDraft(title: 'Read', startDate: now),
+        now: now,
+      )).getOrThrow();
+      (await repo.addCheckIn(id, now, now: now)).getOrThrow();
+      final engine = testSyncEngine(
+        db: db,
+        account: account,
+        uuid: const Uuid(),
+      );
+      await engine.importLocalSnapshotIfNeeded();
+      final habitIndex = account.pushed.indexWhere(
+        (o) => o.entityType == 'habit',
+      );
+      final checkIndex = account.pushed.indexWhere(
+        (o) => o.entityType == 'habit_check_in',
+      );
+      expect(habitIndex, greaterThanOrEqualTo(0));
+      expect(checkIndex, greaterThan(habitIndex));
+      expect(account.pushed[checkIndex].payload['habitId'], id);
+      expect(account.pushed[checkIndex].payload['day'], '2026-09-30');
+      final imported = account.pushed.length;
+      await engine.importLocalSnapshotIfNeeded();
+      expect(account.pushed, hasLength(imported));
+    },
+  );
+  test(
+    'a full pull may deliver a check-in before its parent and retains offline edits',
+    () async {
+      final id = (await repo.createHabit(
+        HabitDraft(title: 'Read', startDate: DateTime(2026, 9, 28)),
+        now: DateTime(2026, 9, 28),
+      )).getOrThrow();
+      final original = (await repo.watchHabits().first).single;
+      (await repo.updateHabit(
+        id,
+        HabitDraft(
+          title: 'Read new',
+          startDate: DateTime(2026, 9, 28),
+          targetPerDay: 3,
+        ),
+        now: now,
+      )).getOrThrow();
+      account.changes = [
+        AccountSyncEntity(
+          entityType: 'habit_check_in',
+          entityId: 'remote-check',
+          serverRevision: 1,
+          data: HabitCheckIn(
+            id: 'remote-check',
+            userId: localUserId,
+            habitId: 'other',
+            day: now,
+            createdAt: now,
+            updatedAt: now,
+          ).toJson(),
+        ),
+        AccountSyncEntity(
+          entityType: 'habit',
+          entityId: 'other',
+          serverRevision: 2,
+          data: Habit(
+            id: 'other',
+            userId: localUserId,
+            title: 'Other',
+            scheduleHistory: original.scheduleHistory,
+            createdAt: now,
+            updatedAt: now,
+          ).toJson(),
+        ),
+        AccountSyncEntity(
+          entityType: 'habit',
+          entityId: id,
+          serverRevision: 3,
+          data: original.toJson(),
+        ),
+      ];
+      await testSyncEngine(
+        db: db,
+        account: account,
+        uuid: const Uuid(),
+      ).pullLatest();
+      final habits = await repo.watchHabits().first;
+      expect(habits, hasLength(2));
+      final edited = habits.singleWhere((h) => h.id == id);
+      expect(edited.title, 'Read new');
+      expect(edited.scheduleFor(now)!.targetPerDay, 3);
+      expect(
+        habitCompletionCount('other', now, await repo.watchCheckIns().first),
+        1,
+      );
+    },
+  );
+  test(
+    'repeated pulls deduplicate check-ins from independent devices',
+    () async {
+      final habit = Habit(
+        id: 'h',
+        userId: localUserId,
+        title: 'Read',
+        scheduleHistory: [
+          HabitDraft(
+            title: 'Read',
+            startDate: now,
+            targetPerDay: 2,
+          ).schedule(now),
+        ],
+        createdAt: now,
+        updatedAt: now,
+      );
+      account.changes = [
+        AccountSyncEntity(
+          entityType: 'habit',
+          entityId: 'h',
+          serverRevision: 1,
+          data: habit.toJson(),
+        ),
+        for (var i = 0; i < 2; i++)
+          AccountSyncEntity(
+            entityType: 'habit_check_in',
+            entityId: 'c$i',
+            serverRevision: 2 + i,
+            data: HabitCheckIn(
+              id: 'c$i',
+              userId: localUserId,
+              habitId: 'h',
+              day: now,
+              createdAt: now,
+              updatedAt: now,
+            ).toJson(),
+          ),
+      ];
+      final engine = testSyncEngine(
+        db: db,
+        account: account,
+        uuid: const Uuid(),
+      );
+      await engine.pullLatest();
+      await engine.pullLatest();
+      expect(await repo.watchHabits().first, hasLength(1));
+      expect(await repo.watchCheckIns().first, hasLength(2));
+      expect(
+        habitCompletionCount('h', now, await repo.watchCheckIns().first),
+        2,
+      );
+    },
+  );
+  test(
+    'delete arriving before creation cannot resurrect a habit or check-in',
+    () async {
+      final habit = Habit(
+        id: 'h',
+        userId: localUserId,
+        title: 'Read',
+        scheduleHistory: [
+          HabitDraft(title: 'Read', startDate: now).schedule(now),
+        ],
+        createdAt: now,
+        updatedAt: now,
+      );
+      account.changes = [
+        AccountSyncEntity(
+          entityType: 'habit',
+          entityId: 'h',
+          serverRevision: 5,
+          data: habit.toJson(),
+          deletedAt: now,
+        ),
+        AccountSyncEntity(
+          entityType: 'habit',
+          entityId: 'h',
+          serverRevision: 1,
+          data: habit.toJson(),
+        ),
+        AccountSyncEntity(
+          entityType: 'habit_check_in',
+          entityId: 'c',
+          serverRevision: 6,
+          data: HabitCheckIn(
+            id: 'c',
+            userId: localUserId,
+            habitId: 'h',
+            day: now,
+            createdAt: now,
+            updatedAt: now,
+          ).toJson(),
+        ),
+      ];
+      await testSyncEngine(
+        db: db,
+        account: account,
+        uuid: const Uuid(),
+      ).pullLatest();
+      expect(await repo.watchHabits().first, isEmpty);
+      expect(await repo.watchCheckIns().first, isEmpty);
+    },
+  );
+}
+
+class _Account implements AccountClient {
+  List<AccountSyncEntity> changes = [];
+  final pushed = <AccountSyncOperation>[];
+  @override
+  Future<AccountSyncPullResult> pullChanges({
+    required String appId,
+    required String deviceId,
+    required int sinceRevision,
+    int limit = 500,
+  }) async =>
+      AccountSyncPullResult(nextCursor: 6, hasMore: false, changes: changes);
+  @override
+  Future<AccountSyncPushResult> pushChanges({
+    required String appId,
+    required String deviceId,
+    required List<AccountSyncOperation> operations,
+  }) async {
+    pushed.addAll(operations);
+    return AccountSyncPushResult(serverRevision: 6, applied: const []);
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation i) => super.noSuchMethod(i);
+}

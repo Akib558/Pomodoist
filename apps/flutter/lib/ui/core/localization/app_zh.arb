@@ -1156,6 +1156,7 @@
   "taskExpandSubtasks": "展开子任务",
   "taskCollapseSubtasks": "折叠子任务",
   "taskAllSubtasksProgress": "所有下级任务：已完成 {completed}/{total}",
+  "taskOpenParent": "打开父任务",
   "taskOpenFullBranch": "打开所有子任务",
   "taskParentPath": "所属任务：{path}",
   "projectViewList": "列表",
@@ -1235,5 +1236,65 @@
   "taskDiscussionTab": "讨论",
   "taskProperties": "属性",
   "filesGrouping": "分组",
-  "taskDescriptionHint": "添加描述"
+  "taskDescriptionHint": "添加描述",
+  "projectMapExpand": "全屏展开地图",
+  "projectMapCollapse": "退出地图全屏",
+  "navHabits": "习惯",
+  "habitsSubtitle": "每天一小步",
+  "habitNew": "新建习惯",
+  "habitEdit": "编辑习惯",
+  "habitsActive": "进行中",
+  "habitsFinished": "已结束",
+  "habitsEmpty": "添加你的第一个习惯。",
+  "habitsFinishedEmpty": "暂无已结束的习惯。",
+  "habitsFuture": "未来日期仅可查看。",
+  "habitName": "习惯名称",
+  "habitDaily": "每天",
+  "habitWeekdays": "选择星期",
+  "habitFrequency": "计划",
+  "habitTarget": "每天次数",
+  "habitStart": "开始日期",
+  "habitEnd": "结束日期",
+  "habitForever": "无限期",
+  "habitCustom": "选择日期",
+  "habitProject": "项目",
+  "habitNoProject": "无项目",
+  "habitReminder": "提醒",
+  "habitReminderTime": "提醒时间",
+  "habitReminderDenied": "通知已关闭。请在系统设置中允许通知。",
+  "habitReminderUnavailable": "此平台不支持后台提醒。",
+  "habitReminderFailed": "无法更新提醒，请重试。",
+  "habitDeleteConfirm": "删除此习惯及其历史记录？",
+  "habitLoadError": "无法加载习惯。",
+  "habitSaveError": "无法保存。请检查输入并重试。",
+  "habitAddCheckIn": "增加一次完成",
+  "habitUndoCheckIn": "撤销最后一次完成",
+  "habitPreviousWeek": "上一周",
+  "habitNextWeek": "下一周",
+  "notificationHabitChannel": "习惯",
+  "notificationHabitDescription": "未完成习惯的提醒",
+  "notificationHabitTitle": "该完成习惯了",
+  "habitsSummary": "已完成 {completed}/{planned} 个习惯",
+  "habitDurationDays": "{days} 天",
+  "@habitsSummary": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "planned": {
+        "type": "int"
+      }
+    }
+  },
+  "@habitDurationDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsAppearancePreview": "预览",
+  "settingsPreviewProject": "个人",
+  "settingsPreviewLongTask": "准备资料并规划下一步",
+  "settingsPreviewCompletedTask": "检查笔记"
 }

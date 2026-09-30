@@ -1156,6 +1156,7 @@
   "taskExpandSubtasks": "Раскрыть подзадачи",
   "taskCollapseSubtasks": "Свернуть подзадачи",
   "taskAllSubtasksProgress": "Все вложенные задачи: выполнено {completed} из {total}",
+  "taskOpenParent": "Открыть родительскую задачу",
   "taskOpenFullBranch": "Открыть все подзадачи",
   "taskParentPath": "Часть задачи: {path}",
   "projectViewList": "Список",
@@ -1235,5 +1236,65 @@
   "taskDiscussionTab": "Обсуждение",
   "taskProperties": "Свойства",
   "filesGrouping": "Группировка",
-  "taskDescriptionHint": "Добавить описание"
+  "taskDescriptionHint": "Добавить описание",
+  "projectMapExpand": "Развернуть карту на весь экран",
+  "projectMapCollapse": "Выйти из полноэкранной карты",
+  "navHabits": "Привычки",
+  "habitsSubtitle": "Маленькие шаги каждый день",
+  "habitNew": "Новая привычка",
+  "habitEdit": "Изменить привычку",
+  "habitsActive": "Активные",
+  "habitsFinished": "Завершённые",
+  "habitsEmpty": "Добавьте свою первую привычку.",
+  "habitsFinishedEmpty": "Завершённых привычек пока нет.",
+  "habitsFuture": "Будущие дни доступны только для просмотра.",
+  "habitName": "Название привычки",
+  "habitDaily": "Каждый день",
+  "habitWeekdays": "Выбранные дни недели",
+  "habitFrequency": "Расписание",
+  "habitTarget": "Раз в день",
+  "habitStart": "Дата начала",
+  "habitEnd": "Дата окончания",
+  "habitForever": "Без окончания",
+  "habitCustom": "Выбрать дату",
+  "habitProject": "Проект",
+  "habitNoProject": "Без проекта",
+  "habitReminder": "Напоминание",
+  "habitReminderTime": "Время напоминания",
+  "habitReminderDenied": "Уведомления отключены. Разрешите их в настройках системы.",
+  "habitReminderUnavailable": "Фоновые напоминания недоступны на этой платформе.",
+  "habitReminderFailed": "Не удалось обновить напоминания. Попробуйте снова.",
+  "habitDeleteConfirm": "Удалить привычку и её историю?",
+  "habitLoadError": "Не удалось загрузить привычки.",
+  "habitSaveError": "Не удалось сохранить. Проверьте поля и попробуйте снова.",
+  "habitAddCheckIn": "Добавить одно выполнение",
+  "habitUndoCheckIn": "Отменить последнее выполнение",
+  "habitPreviousWeek": "Предыдущая неделя",
+  "habitNextWeek": "Следующая неделя",
+  "notificationHabitChannel": "Привычки",
+  "notificationHabitDescription": "Напоминания о невыполненных привычках",
+  "notificationHabitTitle": "Время для вашей привычки",
+  "habitsSummary": "Выполнено привычек: {completed} из {planned}",
+  "habitDurationDays": "{days, plural, one{{days} день} few{{days} дня} many{{days} дней} other{{days} дней}}",
+  "@habitsSummary": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "planned": {
+        "type": "int"
+      }
+    }
+  },
+  "@habitDurationDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsAppearancePreview": "Пример",
+  "settingsPreviewProject": "Личное",
+  "settingsPreviewLongTask": "Подготовить материалы и спланировать следующие шаги",
+  "settingsPreviewCompletedTask": "Проверить заметки"
 }

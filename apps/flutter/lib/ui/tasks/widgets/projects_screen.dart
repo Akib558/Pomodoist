@@ -14,6 +14,7 @@ import 'package:shadcn_ui/shadcn_ui.dart'
         ShadTabs;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:pomodoist/routing/project_map_navigation.dart';
 
 import 'package:pomodoist/ui/core/localization/app_l10n.dart';
 import 'package:pomodoist/ui/core/widgets/app_context_menu_region.dart';
@@ -81,8 +82,10 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
     final labels = viewState.labels;
     final taskCounts = viewState.taskCounts;
     final archivedOnly = viewState.archivedOnly;
-    final projectMode = _mode == _ProjectsMode.projects;
-    final catalogMode = ref.watch(projectCatalogViewModeProvider);
+    final fullscreen = isProjectMapFullscreen(GoRouterState.of(context).uri);
+    final projectMode = fullscreen || _mode == _ProjectsMode.projects;
+    final savedMode = ref.watch(projectCatalogViewModeProvider);
+    final catalogMode = fullscreen ? ProjectViewMode.map : savedMode;
     final diagram = ref.watch(projectDiagramViewModelProvider(null));
     final tabHeight = (MediaQuery.textScalerOf(context).scale(16) + 16).clamp(
       44.0,
@@ -94,175 +97,185 @@ class _ProjectsScreenState extends ConsumerState<ProjectsScreen> {
       child: LayoutBuilder(
         builder: (context, constraints) => Column(
           children: [
-            ConstrainedBox(
-              constraints: BoxConstraints(
-                maxHeight: constraints.maxHeight * .55,
-              ),
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 22, 20, 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Wrap(
-                        spacing: 10,
-                        runSpacing: 8,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          Text(
-                            l10n.navProjects,
-                            style: Theme.of(context).textTheme.headlineMedium,
-                          ),
-                          IntrinsicWidth(
-                            child: ShadTabs<_ProjectsMode>(
-                              key: const Key('projects-mode-segmented-button'),
-                              value: _mode,
-                              tabs: [
-                                ShadTab(
-                                  value: _ProjectsMode.projects,
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Icon(LucideIcons.folder),
-                                      const SizedBox(width: 8),
-                                      Text(l10n.navProjects),
-                                    ],
-                                  ),
-                                ),
-                                ShadTab(
-                                  value: _ProjectsMode.labels,
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Icon(LucideIcons.tag),
-                                      const SizedBox(width: 8),
-                                      Text(l10n.labelsTitle),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                              onChanged: (mode) => setState(() => _mode = mode),
-                              gap: 0,
+            Visibility(
+              visible: !fullscreen,
+              maintainState: true,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: constraints.maxHeight * .55,
+                ),
+                child: SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 22, 20, 10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Wrap(
+                          spacing: 10,
+                          runSpacing: 8,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            Text(
+                              l10n.navProjects,
+                              style: Theme.of(context).textTheme.headlineMedium,
                             ),
-                          ),
-                          LearningTourAnchor(
-                            id: LearningTourAnchorId.projectsAdd,
-                            child: Tooltip(
-                              message: projectMode
-                                  ? l10n.addProject
-                                  : l10n.addLabel,
-                              child: ShadIconButton(
-                                key: Key(
-                                  projectMode
-                                      ? 'projects-add-button'
-                                      : 'labels-add-button',
+                            IntrinsicWidth(
+                              child: ShadTabs<_ProjectsMode>(
+                                key: const Key(
+                                  'projects-mode-segmented-button',
                                 ),
-                                onPressed: projectMode
-                                    ? () => showCreateProjectDialog(context)
-                                    : () => showCreateLabelDialog(context),
-                                icon: const Icon(LucideIcons.plus),
-                                foregroundColor: colors.accent,
-                                backgroundColor: colors.accentTint,
-                                height: 42,
-                                width: 42,
+                                value: _mode,
+                                tabs: [
+                                  ShadTab(
+                                    value: _ProjectsMode.projects,
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(LucideIcons.folder),
+                                        const SizedBox(width: 8),
+                                        Text(l10n.navProjects),
+                                      ],
+                                    ),
+                                  ),
+                                  ShadTab(
+                                    value: _ProjectsMode.labels,
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Icon(LucideIcons.tag),
+                                        const SizedBox(width: 8),
+                                        Text(l10n.labelsTitle),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                                onChanged: (mode) =>
+                                    setState(() => _mode = mode),
+                                gap: 0,
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                      if (projectMode) ...[
-                        const SizedBox(height: 12),
-                        ShadTabs<ProjectViewMode>(
-                          value: catalogMode,
-                          scrollable: true,
-                          gap: 0,
-                          onChanged: (value) => unawaited(_setViewMode(value)),
-                          tabs: [
-                            ShadTab(
-                              value: ProjectViewMode.list,
-                              height: tabHeight,
-                              child: Text(l10n.projectViewList),
-                            ),
-                            ShadTab(
-                              value: ProjectViewMode.map,
-                              height: tabHeight,
-                              child: Text(l10n.projectViewMap),
+                            LearningTourAnchor(
+                              id: LearningTourAnchorId.projectsAdd,
+                              child: Tooltip(
+                                message: projectMode
+                                    ? l10n.addProject
+                                    : l10n.addLabel,
+                                child: ShadIconButton(
+                                  key: Key(
+                                    projectMode
+                                        ? 'projects-add-button'
+                                        : 'labels-add-button',
+                                  ),
+                                  onPressed: projectMode
+                                      ? () => showCreateProjectDialog(context)
+                                      : () => showCreateLabelDialog(context),
+                                  icon: const Icon(LucideIcons.plus),
+                                  foregroundColor: colors.accent,
+                                  backgroundColor: colors.accentTint,
+                                  height: 42,
+                                  width: 42,
+                                ),
+                              ),
                             ),
                           ],
                         ),
-                        if (catalogMode != ProjectViewMode.list)
-                          Wrap(
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            spacing: 12,
-                            children: [
-                              TextButton.icon(
-                                onPressed: () => _diagramModel.showCompleted(
-                                  !diagram.showCompleted,
-                                ),
-                                icon: Icon(
-                                  diagram.showCompleted
-                                      ? LucideIcons.circleCheck
-                                      : LucideIcons.circle,
-                                  size: 16,
-                                ),
-                                label: Text(l10n.projectShowCompleted),
+                        if (projectMode) ...[
+                          const SizedBox(height: 12),
+                          ShadTabs<ProjectViewMode>(
+                            value: catalogMode,
+                            scrollable: true,
+                            gap: 0,
+                            onChanged: (value) =>
+                                unawaited(_setViewMode(value)),
+                            tabs: [
+                              ShadTab(
+                                value: ProjectViewMode.list,
+                                height: tabHeight,
+                                child: Text(l10n.projectViewList),
                               ),
-                              if (!diagram.loading &&
-                                  !diagram.hasError &&
-                                  diagram.tree.nodes[diagram.tree.rootKey] !=
-                                      null)
-                                Text(
-                                  diagram
-                                      .tree
-                                      .nodes[diagram.tree.rootKey]!
-                                      .progress
-                                      .label,
-                                  style: Theme.of(context).textTheme.labelSmall,
-                                ),
+                              ShadTab(
+                                value: ProjectViewMode.map,
+                                height: tabHeight,
+                                child: Text(l10n.projectViewMap),
+                              ),
                             ],
                           ),
-                      ],
-                      const SizedBox(height: 18),
-                      ShadInput(
-                        key: const Key('projects-search-field'),
-                        controller: _searchController,
-                        placeholder: Text(
-                          projectMode
-                              ? (catalogMode == ProjectViewMode.list
-                                    ? l10n.searchProjects
-                                    : l10n.projectCatalogSearch)
-                              : l10n.searchLabels,
+                          if (catalogMode != ProjectViewMode.list)
+                            Wrap(
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              spacing: 12,
+                              children: [
+                                TextButton.icon(
+                                  onPressed: () => _diagramModel.showCompleted(
+                                    !diagram.showCompleted,
+                                  ),
+                                  icon: Icon(
+                                    diagram.showCompleted
+                                        ? LucideIcons.circleCheck
+                                        : LucideIcons.circle,
+                                    size: 16,
+                                  ),
+                                  label: Text(l10n.projectShowCompleted),
+                                ),
+                                if (!diagram.loading &&
+                                    !diagram.hasError &&
+                                    diagram.tree.nodes[diagram.tree.rootKey] !=
+                                        null)
+                                  Text(
+                                    diagram
+                                        .tree
+                                        .nodes[diagram.tree.rootKey]!
+                                        .progress
+                                        .label,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.labelSmall,
+                                  ),
+                              ],
+                            ),
+                        ],
+                        const SizedBox(height: 18),
+                        ShadInput(
+                          key: const Key('projects-search-field'),
+                          controller: _searchController,
+                          placeholder: Text(
+                            projectMode
+                                ? (catalogMode == ProjectViewMode.list
+                                      ? l10n.searchProjects
+                                      : l10n.projectCatalogSearch)
+                                : l10n.searchLabels,
+                          ),
+                          leading: const Icon(LucideIcons.search),
                         ),
-                        leading: const Icon(LucideIcons.search),
-                      ),
-                      if (projectMode) ...[
-                        const SizedBox(height: 14),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                l10n.archivedProjectsOnly,
-                                style: Theme.of(context).textTheme.titleMedium
-                                    ?.copyWith(
-                                      color: colors.secondaryText,
-                                      fontWeight: FontWeight.w500,
-                                    ),
+                        if (projectMode) ...[
+                          const SizedBox(height: 14),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  l10n.archivedProjectsOnly,
+                                  style: Theme.of(context).textTheme.titleMedium
+                                      ?.copyWith(
+                                        color: colors.secondaryText,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                ),
                               ),
-                            ),
-                            ShadSwitch(
-                              key: const Key('projects-archived-switch'),
-                              value: archivedOnly,
-                              onChanged: (value) {
-                                _viewModel.setArchivedOnly(value);
-                                _diagramModel.setCatalogFilter(
-                                  archivedOnly: value,
-                                );
-                              },
-                            ),
-                          ],
-                        ),
+                              ShadSwitch(
+                                key: const Key('projects-archived-switch'),
+                                value: archivedOnly,
+                                onChanged: (value) {
+                                  _viewModel.setArchivedOnly(value);
+                                  _diagramModel.setCatalogFilter(
+                                    archivedOnly: value,
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
               ),

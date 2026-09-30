@@ -1156,6 +1156,7 @@
   "taskExpandSubtasks": "Unteraufgaben aufklappen",
   "taskCollapseSubtasks": "Unteraufgaben einklappen",
   "taskAllSubtasksProgress": "Alle Unteraufgaben: {completed} von {total} erledigt",
+  "taskOpenParent": "Übergeordnete Aufgabe öffnen",
   "taskOpenFullBranch": "Alle Unteraufgaben öffnen",
   "taskParentPath": "Teil von: {path}",
   "projectViewList": "Liste",
@@ -1235,5 +1236,65 @@
   "taskDiscussionTab": "Diskussion",
   "taskProperties": "Eigenschaften",
   "filesGrouping": "Gruppierung",
-  "taskDescriptionHint": "Beschreibung hinzufügen"
+  "taskDescriptionHint": "Beschreibung hinzufügen",
+  "projectMapExpand": "Karte im Vollbild anzeigen",
+  "projectMapCollapse": "Vollbildkarte verlassen",
+  "navHabits": "Gewohnheiten",
+  "habitsSubtitle": "Kleine Schritte, jeden Tag",
+  "habitNew": "Neue Gewohnheit",
+  "habitEdit": "Gewohnheit bearbeiten",
+  "habitsActive": "Aktiv",
+  "habitsFinished": "Abgeschlossen",
+  "habitsEmpty": "Füge deine erste Gewohnheit hinzu.",
+  "habitsFinishedEmpty": "Noch keine abgeschlossenen Gewohnheiten.",
+  "habitsFuture": "Zukünftige Tage sind nur zur Ansicht.",
+  "habitName": "Name der Gewohnheit",
+  "habitDaily": "Jeden Tag",
+  "habitWeekdays": "Bestimmte Wochentage",
+  "habitFrequency": "Zeitplan",
+  "habitTarget": "Mal pro Tag",
+  "habitStart": "Startdatum",
+  "habitEnd": "Enddatum",
+  "habitForever": "Unbegrenzt",
+  "habitCustom": "Datum wählen",
+  "habitProject": "Projekt",
+  "habitNoProject": "Kein Projekt",
+  "habitReminder": "Erinnerung",
+  "habitReminderTime": "Erinnerungszeit",
+  "habitReminderDenied": "Benachrichtigungen sind deaktiviert. Erlaube sie in den Systemeinstellungen.",
+  "habitReminderUnavailable": "Hintergrunderinnerungen sind auf dieser Plattform nicht verfügbar.",
+  "habitReminderFailed": "Erinnerungen konnten nicht aktualisiert werden. Erneut versuchen.",
+  "habitDeleteConfirm": "Diese Gewohnheit und ihren Verlauf löschen?",
+  "habitLoadError": "Gewohnheiten konnten nicht geladen werden.",
+  "habitSaveError": "Änderungen konnten nicht gespeichert werden. Prüfe die Felder und versuche es erneut.",
+  "habitAddCheckIn": "Eine Erledigung hinzufügen",
+  "habitUndoCheckIn": "Letzte Erledigung rückgängig machen",
+  "habitPreviousWeek": "Vorherige Woche",
+  "habitNextWeek": "Nächste Woche",
+  "notificationHabitChannel": "Gewohnheiten",
+  "notificationHabitDescription": "Erinnerungen an unerledigte Gewohnheiten",
+  "notificationHabitTitle": "Zeit für deine Gewohnheit",
+  "habitsSummary": "{completed} von {planned} Gewohnheiten erledigt",
+  "habitDurationDays": "{days} Tage",
+  "@habitsSummary": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "planned": {
+        "type": "int"
+      }
+    }
+  },
+  "@habitDurationDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsAppearancePreview": "Vorschau",
+  "settingsPreviewProject": "Persönlich",
+  "settingsPreviewLongTask": "Materialien vorbereiten und die nächsten Schritte planen",
+  "settingsPreviewCompletedTask": "Notizen prüfen"
 }

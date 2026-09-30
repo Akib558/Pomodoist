@@ -135,6 +135,37 @@ extension AccountSyncOperations on AccountSyncEngine {
       }
     }
 
+    for (final row in await _db.select(_db.habits).get()) {
+      final habit = habitFromRow(row);
+      operations.add(
+        _operation(
+          opId:
+              'import:habit:${row.id}:${row.updatedAt.toUtc().toIso8601String()}',
+          entityType: 'habit',
+          entityId: row.id,
+          operation: row.isDeleted ? 'delete' : 'upsert',
+          payload: habit.toJson(),
+          clientUpdatedAt: row.updatedAt,
+        ),
+      );
+    }
+    final deletedHabits = (await (_db.select(
+      _db.habits,
+    )..where((h) => h.isDeleted)).get()).map((h) => h.id).toSet();
+    for (final row in await _db.select(_db.habitCheckIns).get()) {
+      if (deletedHabits.contains(row.habitId)) continue;
+      operations.add(
+        _operation(
+          opId:
+              'import:habit_check_in:${row.id}:${row.updatedAt.toUtc().toIso8601String()}',
+          entityType: 'habit_check_in',
+          entityId: row.id,
+          operation: row.isDeleted ? 'delete' : 'upsert',
+          payload: habitCheckInFromRow(row).toJson(),
+          clientUpdatedAt: row.updatedAt,
+        ),
+      );
+    }
     return operations;
   }
 

@@ -471,6 +471,35 @@ class SharedEntities extends Table {
   Set<Column<Object>> get primaryKey => {scopeId, entityType, entityId};
 }
 
+@DataClassName('HabitRow')
+class Habits extends Table {
+  TextColumn get id => text()();
+  TextColumn get userId => text()();
+  TextColumn get title => text()();
+  TextColumn get projectId => text().nullable()();
+  IntColumn get reminderMinutes => integer().nullable()();
+  TextColumn get scheduleHistoryJson => text()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
+@TableIndex(name: 'habit_check_ins_by_day', columns: {#habitId, #day})
+@DataClassName('HabitCheckInRow')
+class HabitCheckIns extends Table {
+  TextColumn get id => text()();
+  TextColumn get userId => text()();
+  TextColumn get habitId => text()();
+  TextColumn get day => text()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+}
+
 @DriftDatabase(
   tables: [
     Users,
@@ -496,6 +525,8 @@ class SharedEntities extends Table {
     GoogleCalendarConnections,
     GoogleCalendarEventLinks,
     IdMappings,
+    Habits,
+    HabitCheckIns,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -516,12 +547,26 @@ class AppDatabase extends _$AppDatabase {
       );
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) => m.createAll(),
     onUpgrade: (m, from, to) async {
+      if (from < 9) {
+        await _runResumableMigrationStep(
+          () => m.createTable(habits),
+          alreadyAppliedMessage: 'already exists',
+        );
+        await _runResumableMigrationStep(
+          () => m.createTable(habitCheckIns),
+          alreadyAppliedMessage: 'already exists',
+        );
+        await _runResumableMigrationStep(
+          () => m.createIndex(habitCheckInsByDay),
+          alreadyAppliedMessage: 'already exists',
+        );
+      }
       if (from < 8) {
         await _runResumableMigrationStep(
           () => m.createTable(sharedScopes),
@@ -744,6 +789,8 @@ class AppDatabase extends _$AppDatabase {
       await delete(focusIntervals).go();
       await delete(focusRuns).go();
       await delete(focusDailyStats).go();
+      await delete(habitCheckIns).go();
+      await delete(habits).go();
       await delete(reminders).go();
       await delete(taskLabels).go();
       await delete(taskCompletions).go();

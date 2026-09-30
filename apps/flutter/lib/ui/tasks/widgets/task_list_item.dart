@@ -224,23 +224,12 @@ class TaskListItem extends ConsumerWidget {
         project ??
         (isModern || usesTouchTaskInteraction ? viewState.project : null);
 
-    Widget focusAction({Key? key}) {
-      return IconButton(
-        key: key,
-        tooltip: l10n.startFocus,
-        onPressed: task.isCompleted || (selection?.active ?? false)
-            ? null
-            : () => _startFocus(context, ref),
-        style: IconButton.styleFrom(
-          backgroundColor: colors.accentTint,
-          foregroundColor: colors.accent,
-          disabledBackgroundColor: Colors.transparent,
-          disabledForegroundColor: colors.mutedText,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-        icon: const Icon(LucideIcons.play),
-      );
-    }
+    Widget focusAction({Key? key}) => _taskFocusAction(
+      context,
+      enabled: !task.isCompleted && !(selection?.active ?? false),
+      onPressed: () => _startFocus(context, ref),
+      key: key,
+    );
 
     Widget overflowAction() => AppActionMenu(
       key: ValueKey('agenda-overflow-action-${task.id}'),
@@ -505,20 +494,12 @@ class TaskListItem extends ConsumerWidget {
       final trailingAction = usesTouchTaskInteraction
           ? SizedBox(width: 44, height: 44, child: branchDisclosure())
           : isModern
-          ? SizedBox(
-              width: agendaDesktop ? 96 : 48,
-              child: AnimatedOpacity(
-                opacity: !agendaDesktop || showAgendaFocusAction ? 1 : 0,
-                duration: AppMotion.duration(context, AppMotion.hover),
-                curve: AppMotion.curve,
-                alwaysIncludeSemantics: true,
-                child: Row(
-                  children: [
-                    if (agendaDesktop) Expanded(child: focusAction()),
-                    Expanded(child: overflowAction()),
-                  ],
-                ),
-              ),
+          ? _desktopTaskActions(
+              context,
+              columns: agendaDesktop,
+              active: showAgendaFocusAction,
+              focusAction: focusAction(),
+              overflowAction: overflowAction(),
             )
           : switch (presentation) {
               TaskListItemPresentation.standard => focusAction(),
@@ -819,19 +800,6 @@ class TaskListItem extends ConsumerWidget {
     );
   }
 
-  Color _priorityColor(
-    int priority,
-    ColorScheme scheme,
-    AppThemePalette colors,
-  ) {
-    return switch (priority) {
-      1 => colors.overdue,
-      2 => colors.warning,
-      3 => colors.info,
-      _ => scheme.outline,
-    };
-  }
-
   bool _hasListMeta(TaskItem task, int? focusEstimate) {
     return task.schedule != null || focusEstimate != null;
   }
@@ -845,6 +813,13 @@ class TaskListItem extends ConsumerWidget {
     final l10n = context.l10n;
     final colors = context.appColors;
     final selection = TaskSelectionScope.maybeOf(context);
+    final parent = usesTouchTaskInteraction
+        ? taskParentForNavigation(
+            task,
+            ref.watch(taskHierarchyViewModelProvider).byId,
+            selectionActive: selection?.active ?? false,
+          )
+        : null;
     return [
       if (includeFocus)
         ShadContextMenuItem(
@@ -864,6 +839,26 @@ class TaskListItem extends ConsumerWidget {
           label: l10n.taskSchedule,
         ),
       ),
+      if (parent != null)
+        ShadContextMenuItem(
+          height: 44,
+          onPressed: () {
+            final data = ref.read(taskHierarchyViewModelProvider);
+            final current = data.byId[task.id];
+            final destination = current == null
+                ? null
+                : taskParentForNavigation(
+                    current,
+                    data.byId,
+                    selectionActive: selection?.active ?? false,
+                  );
+            if (destination != null) openTaskDetails(context, destination.id);
+          },
+          child: _TaskMenuRow(
+            icon: LucideIcons.cornerUpLeft,
+            label: l10n.taskOpenParent,
+          ),
+        ),
       if (selection != null) ...[
         ShadContextMenuItem(
           height: 44,
@@ -1232,34 +1227,51 @@ class TaskListDivider extends ConsumerWidget {
     this.nextRow,
     this.previousRow,
     super.key,
-  });
+  }) : _previewBranchStyle = null,
+       _previewHasTrailingContent = null;
+
+  TaskListDivider.preview({
+    required VisibleTaskRow previous,
+    required VisibleTaskRow next,
+    required TaskBranchStyle branchStyle,
+    required bool hasTrailingContent,
+    super.key,
+  }) : previousRow = previous,
+       nextRow = next,
+       previousDepth = previous.depth,
+       nextDepth = next.depth,
+       _previewBranchStyle = branchStyle,
+       _previewHasTrailingContent = hasTrailingContent;
 
   final int previousDepth;
   final int nextDepth;
   final VisibleTaskRow? nextRow;
   final VisibleTaskRow? previousRow;
+  final TaskBranchStyle? _previewBranchStyle;
+  final bool? _previewHasTrailingContent;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final grouped =
-        ref.watch(taskBranchStyleViewModelProvider) == TaskBranchStyle.grouped;
+        (_previewBranchStyle ?? ref.watch(taskBranchStyleViewModelProvider)) ==
+        TaskBranchStyle.grouped;
     var lineOffset = 0.0;
     if (usesTouchTaskInteraction && previousRow != null) {
-      final task = previousRow!.task;
-      final state = ref.watch(taskItemViewModelProvider(task));
-      final progress = ref
-          .watch(taskHierarchyViewModelProvider)
-          .progress[task.id];
       final hasTrailingContent =
-          (task.parentId != null &&
-              (previousRow!.visibleParentId == null ||
-                  previousRow!.depth > 2)) ||
-          (task.description?.trim().isNotEmpty ?? false) ||
-          task.schedule != null ||
-          state.project != null ||
-          state.focusEstimate != null ||
-          (progress?.total ?? 0) > 0 ||
-          previousRow!.hasVisibleChildren;
+          _previewHasTrailingContent ??
+          (() {
+            final task = previousRow!.task;
+            final state = ref.watch(taskItemViewModelProvider(task));
+            final progress = ref
+                .watch(taskHierarchyViewModelProvider)
+                .progress[task.id];
+            return (task.description?.trim().isNotEmpty ?? false) ||
+                task.schedule != null ||
+                state.project != null ||
+                state.focusEstimate != null ||
+                (progress?.total ?? 0) > 0 ||
+                previousRow!.hasVisibleChildren;
+          })();
       if (hasTrailingContent) {
         lineOffset = math.min(5, _mobileGeometry(context).titleInset / 2);
       }
@@ -1308,8 +1320,260 @@ TaskRowGeometry _mobileGeometry(BuildContext context) {
   final style = Theme.of(context).textTheme.titleMedium!;
   final scaler = MediaQuery.textScalerOf(context);
   return TaskRowGeometry(
-    textScale: scaler.scale(14) / 14,
     titleLineHeight: scaler.scale(style.fontSize ?? 16) * (style.height ?? 1.5),
+  );
+}
+
+Color _priorityColor(
+  int priority,
+  ColorScheme scheme,
+  AppThemePalette colors,
+) => switch (priority) {
+  1 => colors.overdue,
+  2 => colors.warning,
+  3 => colors.info,
+  _ => scheme.outline,
+};
+
+Widget _taskFocusAction(
+  BuildContext context, {
+  required bool enabled,
+  required VoidCallback onPressed,
+  Key? key,
+}) => IconButton(
+  key: key,
+  tooltip: context.l10n.startFocus,
+  onPressed: enabled ? onPressed : null,
+  style: IconButton.styleFrom(
+    backgroundColor: context.appColors.accentTint,
+    foregroundColor: context.appColors.accent,
+    disabledBackgroundColor: Colors.transparent,
+    disabledForegroundColor: context.appColors.mutedText,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+  ),
+  icon: const Icon(LucideIcons.play),
+);
+
+Widget _desktopTaskActions(
+  BuildContext context, {
+  required bool columns,
+  required bool active,
+  required Widget focusAction,
+  required Widget overflowAction,
+}) => SizedBox(
+  width: columns ? 96 : 48,
+  child: AnimatedOpacity(
+    opacity: !columns || active ? 1 : 0,
+    duration: AppMotion.duration(context, AppMotion.hover),
+    curve: AppMotion.curve,
+    alwaysIncludeSemantics: true,
+    child: Row(
+      children: [
+        if (columns) Expanded(child: focusAction),
+        Expanded(child: overflowAction),
+      ],
+    ),
+  ),
+);
+
+/// Appearance sample shares row contents and hover feedback; actions stay inert.
+class TaskListRowPreview extends StatelessWidget {
+  const TaskListRowPreview({
+    required this.task,
+    required this.row,
+    required this.style,
+    required this.spacing,
+    required this.branchStyle,
+    this.project,
+    this.progress,
+    this.timeDisplayMode = TaskTimeDisplayMode.smart,
+    this.timedMinutes = 30,
+    super.key,
+  });
+
+  final TaskItem task;
+  final VisibleTaskRow row;
+  final TaskListStyle style;
+  final TaskRowSpacing spacing;
+  final TaskBranchStyle branchStyle;
+  final ProjectItem? project;
+  final TaskSubtaskProgress? progress;
+  final TaskTimeDisplayMode timeDisplayMode;
+  final int timedMinutes;
+
+  @override
+  Widget build(BuildContext context) => _AgendaInteractionRegion(
+    taskId: task.id,
+    builder: (context, active) => LayoutBuilder(
+      builder: (context, constraints) {
+        final mobile = usesTouchTaskInteraction;
+        final desktopColumns =
+            constraints.maxWidth - taskBranchGutterWidth - 56 >=
+            840 * MediaQuery.textScalerOf(context).scale(14) / 14;
+        final grouped = branchStyle == TaskBranchStyle.grouped;
+        final padding = TaskRowGeometry.verticalPadding(spacing);
+        final completion = SizedBox(
+          width: mobile ? 44 : 34,
+          height: mobile ? 44 : null,
+          child: Center(
+            child: TaskCompletionControl(
+              taskId: task.id,
+              isCompleted: task.isCompleted,
+              color: task.isCompleted
+                  ? context.appColors.accent
+                  : _priorityColor(
+                      task.priority,
+                      Theme.of(context).colorScheme,
+                      context.appColors,
+                    ),
+              fillColor: context.appColors.accentFill,
+              hitSize: mobile ? 44 : 24,
+              onPressed: null,
+            ),
+          ),
+        );
+        final focusAction = _taskFocusAction(
+          context,
+          enabled: !task.isCompleted,
+          onPressed: () {},
+        );
+        final disclosure = mobile
+            ? SizedBox.square(
+                dimension: 44,
+                child: row.hasVisibleChildren
+                    ? Icon(
+                        LucideIcons.chevronDown,
+                        size: 16,
+                        color: context.appColors.secondaryText,
+                      )
+                    : null,
+              )
+            : style == TaskListStyle.modern
+            ? _desktopTaskActions(
+                context,
+                columns: desktopColumns,
+                active:
+                    active || !_usesImmediateTaskDrag(defaultTargetPlatform),
+                focusAction: focusAction,
+                overflowAction: AppActionMenu(
+                  tooltip: context.l10n.moreFocusActions,
+                  items: const [],
+                ),
+              )
+            : focusAction;
+        final state = task.isCompleted
+            ? TaskTimeState.completed
+            : TaskTimeState.future;
+        final focusEstimate = task.estimatedFocusIntervals;
+        final content = Padding(
+          padding: EdgeInsetsDirectional.fromSTEB(
+            grouped ? row.groupDisplayDepth * 12.0 : row.displayDepth * 28.0,
+            padding,
+            4,
+            padding,
+          ),
+          child: mobile
+              ? _MobileTaskContent(
+                  rowSpacing: spacing,
+                  task: task,
+                  modern: style == TaskListStyle.modern,
+                  description: task.description,
+                  project: project,
+                  progress: progress,
+                  focusEstimate: focusEstimate,
+                  taskTimeState: state,
+                  timeDisplayMode: timeDisplayMode,
+                  defaultTimedBlockMinutes: timedMinutes,
+                  withinDate: false,
+                  parentContext: row.depth > 2
+                      ? TaskParentContext(task: task, ancestors: row.ancestors)
+                      : null,
+                  completion: completion,
+                  disclosure: disclosure,
+                )
+              : Row(
+                  children: [
+                    SizedBox(
+                      width: taskBranchGutterWidth,
+                      child: row.hasVisibleChildren && progress != null
+                          ? TaskBranchProgressButton(
+                              taskId: task.id,
+                              progress: progress!,
+                              expanded: row.expanded,
+                              onToggle: () {},
+                              showProgress: false,
+                            )
+                          : null,
+                    ),
+                    completion,
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: style == TaskListStyle.modern
+                          ? _AgendaTaskContent(
+                              rowSpacing: spacing,
+                              task: task,
+                              project: project,
+                              focusEstimate: focusEstimate,
+                              allowMetadataWrap: !desktopColumns,
+                              subtaskProgress: progress,
+                              dragEnabled: false,
+                              taskTimeState: state,
+                              timeDisplayMode: timeDisplayMode,
+                              defaultTimedBlockMinutes: timedMinutes,
+                              modern: true,
+                              withinDate: false,
+                              description: task.description,
+                            )
+                          : Row(
+                              children: [
+                                Expanded(
+                                  child: _TaskContent(
+                                    rowSpacing: spacing,
+                                    task: task,
+                                    description: task.description,
+                                    hasDescription:
+                                        task.description?.isNotEmpty ?? false,
+                                    hasMeta:
+                                        task.schedule != null ||
+                                        focusEstimate != null,
+                                    focusEstimate: focusEstimate,
+                                    taskTimeState: state,
+                                    timeDisplayMode: timeDisplayMode,
+                                    defaultTimedBlockMinutes: timedMinutes,
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: MediaQuery.textScalerOf(
+                                    context,
+                                  ).scale(72),
+                                  child: progress == null
+                                      ? null
+                                      : TaskBranchProgressButton(
+                                          taskId: task.id,
+                                          progress: progress!,
+                                        ),
+                                ),
+                              ],
+                            ),
+                    ),
+                    const SizedBox(width: 8),
+                    disclosure,
+                  ],
+                ),
+        );
+        return AbsorbPointer(
+          child: grouped
+              ? TaskBranchSurface(row: row, child: content)
+              : TaskBranchLines(
+                  row: row,
+                  anchor: mobile
+                      ? padding + _mobileGeometry(context).anchor
+                      : null,
+                  child: content,
+                ),
+        );
+      },
+    ),
   );
 }
 
@@ -1341,7 +1605,7 @@ class _MobileTaskContent extends StatelessWidget {
   final TaskTimeDisplayMode timeDisplayMode;
   final int defaultTimedBlockMinutes;
   final bool withinDate;
-  final Widget? parentContext;
+  final TaskParentContext? parentContext;
   final Widget completion;
   final Widget disclosure;
 
@@ -1349,26 +1613,28 @@ class _MobileTaskContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.appColors;
     final geometry = _mobileGeometry(context);
+    final blockGap = TaskRowGeometry.mobileBlockGap(rowSpacing);
     final titleStyle = Theme.of(context).textTheme.titleMedium!.copyWith(
       height: Theme.of(context).textTheme.titleMedium!.height ?? 1.5,
       fontWeight: modern ? FontWeight.w600 : null,
       color: task.isCompleted ? colors.mutedText : colors.primaryText,
       decoration: task.isCompleted ? TextDecoration.lineThrough : null,
     );
-    final schedule = task.schedule;
-    final scheduleLabel = schedule == null
+    final scheduleRows = formatTaskListScheduleRows(
+      context,
+      task.schedule,
+      withinDate: withinDate,
+      displayMode: timeDisplayMode,
+      defaultTimedBlockMinutes: defaultTimedBlockMinutes,
+    );
+    final scheduleColor = taskTimeState == null
+        ? colors.mutedText
+        : colors.taskTimeColor(taskTimeState!);
+    final scheduleLabel = scheduleRows.map((row) => row.join(' ')).join(', ');
+    final status = taskTimeState == null
         ? null
-        : (withinDate
-              ? formatTaskListScheduleWithinDate
-              : formatTaskListSchedule)(
-            context,
-            schedule,
-            displayMode: timeDisplayMode,
-            defaultTimedBlockMinutes: defaultTimedBlockMinutes,
-          );
-    final hasCounts = focusEstimate != null || (progress?.total ?? 0) > 0;
+        : taskTimeStatusLabel(context.l10n, taskTimeState!);
     final blocks = <Widget>[
-      ?parentContext,
       if (description?.isNotEmpty ?? false)
         Text(
           description!,
@@ -1378,102 +1644,69 @@ class _MobileTaskContent extends StatelessWidget {
             context,
           ).textTheme.bodySmall?.copyWith(color: colors.mutedText),
         ),
-      if (scheduleLabel != null)
-        _TaskTimeMetaText(
-          taskId: task.id,
-          label: scheduleLabel,
-          state: taskTimeState,
-          color: taskTimeState == null
-              ? colors.mutedText
-              : colors.taskTimeColor(taskTimeState!),
-          textStyle: Theme.of(context).textTheme.labelMedium,
-          expanded: true,
-          wrap: true,
-        ),
-      if (project != null || hasCounts)
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final counters = SizedBox(
-              width: geometry.countersWidth,
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: geometry.focusWidth,
-                    child: focusEstimate == null
-                        ? null
-                        : _FixedMetaText(
-                            icon: LucideIcons.timer,
-                            label:
-                                '${task.completedFocusIntervals}/$focusEstimate',
-                            flexible: true,
-                          ),
-                  ),
-                  const SizedBox(width: TaskRowGeometry.gap),
-                  SizedBox(
-                    width: geometry.branchWidth,
-                    child: (progress?.total ?? 0) > 0
-                        ? TaskBranchProgressButton(
-                            taskId: task.id,
-                            progress: progress!,
-                          )
-                        : null,
-                  ),
-                ],
-              ),
-            );
-            final projectLabel = project == null
-                ? const SizedBox.shrink()
-                : _AgendaProjectLabel(project: project!);
-            if (hasCounts && geometry.stackCounters(constraints.maxWidth)) {
-              return Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (project != null) ...[
-                    projectLabel,
-                    SizedBox(
-                      height: TaskRowGeometry.blockGap(
-                        rowSpacing,
-                        TaskRowGeometry.gap,
+      if (scheduleRows.isNotEmpty)
+        Semantics(
+          label: status == null ? scheduleLabel : '$scheduleLabel, $status',
+          excludeSemantics: true,
+          child: Row(
+            key: ValueKey('task-time-meta-${task.id}'),
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(LucideIcons.calendar, size: 14, color: scheduleColor),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Column(
+                  key: ValueKey('task-time-label-${task.id}'),
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    for (final row in scheduleRows)
+                      Wrap(
+                        spacing: 4,
+                        children: [
+                          for (final part in row)
+                            Text(
+                              part,
+                              softWrap: true,
+                              style: Theme.of(context).textTheme.labelMedium
+                                  ?.copyWith(color: scheduleColor),
+                            ),
+                        ],
                       ),
-                    ),
                   ],
-                  Align(
-                    alignment: AlignmentDirectional.centerEnd,
-                    child: constraints.maxWidth >= geometry.countersWidth
-                        ? counters
-                        : Wrap(
-                            alignment: WrapAlignment.end,
-                            spacing: TaskRowGeometry.gap,
-                            children: [
-                              if (focusEstimate != null)
-                                _FixedMetaText(
-                                  flexible: true,
-                                  icon: LucideIcons.timer,
-                                  label:
-                                      '${task.completedFocusIntervals}/$focusEstimate',
-                                ),
-                              if ((progress?.total ?? 0) > 0)
-                                TaskBranchProgressButton(
-                                  taskId: task.id,
-                                  progress: progress!,
-                                ),
-                            ],
-                          ),
-                  ),
-                ],
-              );
-            }
-            return Row(
-              children: [
-                Expanded(child: projectLabel),
-                if (hasCounts) ...[
-                  const SizedBox(width: TaskRowGeometry.gap),
-                  counters,
-                ],
-              ],
-            );
-          },
+                ),
+              ),
+            ],
+          ),
+        ),
+      if (project != null ||
+          focusEstimate != null ||
+          (progress?.total ?? 0) > 0)
+        Wrap(
+          spacing: 8,
+          runSpacing: blockGap,
+          children: [
+            if (project != null) _AgendaProjectLabel(project: project!),
+            if (focusEstimate != null)
+              _FixedMetaText(
+                flexible: true,
+                icon: LucideIcons.timer,
+                label: '${task.completedFocusIntervals}/$focusEstimate',
+              ),
+            if ((progress?.total ?? 0) > 0)
+              Semantics(
+                label: context.l10n.taskAllSubtasksProgress(
+                  progress!.completed,
+                  progress!.total,
+                ),
+                excludeSemantics: true,
+                child: _FixedMetaText(
+                  flexible: true,
+                  icon: LucideIcons.gitBranch,
+                  label: progress!.label,
+                ),
+              ),
+          ],
         ),
     ];
     return ConstrainedBox(
@@ -1493,15 +1726,33 @@ class _MobileTaskContent extends StatelessWidget {
                     top: geometry.titleInset,
                     end: TaskRowGeometry.controlSize,
                   ),
-                  child: Text(task.content, softWrap: true, style: titleStyle),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          task.content,
+                          softWrap: true,
+                          style: titleStyle,
+                        ),
+                      ),
+                      if (parentContext != null) ...[
+                        const SizedBox(width: 4),
+                        Padding(
+                          padding: EdgeInsets.only(
+                            top: math.max(
+                              0,
+                              (geometry.titleLineHeight - 12) / 2,
+                            ),
+                          ),
+                          child: parentContext!,
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
                 for (final block in blocks) ...[
-                  SizedBox(
-                    height: TaskRowGeometry.blockGap(
-                      rowSpacing,
-                      TaskRowGeometry.gap,
-                    ),
-                  ),
+                  SizedBox(height: blockGap),
                   block,
                 ],
               ],
@@ -1889,7 +2140,6 @@ class _TaskTimeMetaText extends StatelessWidget {
     required this.color,
     required this.textStyle,
     this.expanded = false,
-    this.wrap = false,
     super.key,
   });
 
@@ -1899,7 +2149,6 @@ class _TaskTimeMetaText extends StatelessWidget {
   final Color color;
   final TextStyle? textStyle;
   final bool expanded;
-  final bool wrap;
 
   @override
   Widget build(BuildContext context) {
@@ -1908,9 +2157,7 @@ class _TaskTimeMetaText extends StatelessWidget {
         : taskTimeStatusLabel(context.l10n, state!);
     final content = Row(
       key: ValueKey('task-time-meta-$taskId'),
-      crossAxisAlignment: wrap
-          ? CrossAxisAlignment.start
-          : CrossAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisSize: expanded ? MainAxisSize.max : MainAxisSize.min,
       children: [
         Icon(LucideIcons.calendar, size: 14, color: color),
@@ -1928,9 +2175,9 @@ class _TaskTimeMetaText extends StatelessWidget {
     return Text(
       label,
       key: ValueKey('task-time-label-$taskId'),
-      maxLines: wrap ? null : 1,
-      overflow: wrap ? TextOverflow.visible : TextOverflow.ellipsis,
-      softWrap: wrap,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      softWrap: false,
       style: textStyle?.copyWith(color: color),
     );
   }

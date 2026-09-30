@@ -8,6 +8,7 @@ import 'package:pomodoist/domain/models/tasks/task_time.dart';
 import 'package:pomodoist/domain/models/settings/task_preferences.dart';
 import 'package:pomodoist/ui/settings/view_models/task_settings_view_model.dart';
 import 'package:pomodoist/ui/settings/widgets/settings_components.dart';
+import 'package:pomodoist/ui/settings/widgets/appearance_previews.dart';
 
 class TaskListStyleSettings extends ConsumerWidget {
   const TaskListStyleSettings({super.key});
@@ -18,6 +19,7 @@ class TaskListStyleSettings extends ConsumerWidget {
     final state = ref.watch(taskListSettingsViewModelProvider);
     final style = state.style;
     final spacing = state.spacing;
+    final timing = ref.watch(taskDurationSettingsViewModelProvider);
     return SettingsGroup(
       children: [
         SettingsRow(
@@ -138,6 +140,28 @@ class TaskListStyleSettings extends ConsumerWidget {
                     }
                   },
                 ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              ExcludeSemantics(
+                child: Text(
+                  l10n.settingsAppearancePreview,
+                  style: Theme.of(context).textTheme.labelMedium,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TaskListAppearancePreview(
+                style: style,
+                spacing: spacing,
+                branchStyle: state.branchStyle,
+                timeDisplayMode: timing.timeDisplayMode,
+                timedMinutes: timing.minutes,
+              ),
             ],
           ),
         ),

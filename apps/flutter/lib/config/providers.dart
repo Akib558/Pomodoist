@@ -100,6 +100,7 @@ final notificationRepositoryProvider = Provider<NotificationRepository>((ref) {
     () => lookupAppLocalizations(
       resolveAppLocale(ref.read(appLanguageProvider)),
     ).notificationCopy,
+    clock: ref.watch(clockProvider),
   );
   ref.listen(appLanguageProvider, (_, _) {
     unawaited(

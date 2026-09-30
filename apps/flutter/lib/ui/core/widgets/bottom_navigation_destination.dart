@@ -7,6 +7,7 @@ extension BottomNavigationPresentation on BottomNavigationDestination {
   String label(BuildContext context) {
     final l10n = context.l10n;
     return switch (this) {
+      BottomNavigationDestination.habits => l10n.navHabits,
       BottomNavigationDestination.today => l10n.navToday,
       BottomNavigationDestination.upcoming => l10n.navUpcoming,
       BottomNavigationDestination.focus => l10n.navFocus,
@@ -24,6 +25,7 @@ extension BottomNavigationPresentation on BottomNavigationDestination {
   }
 
   IconData get icon => switch (this) {
+    BottomNavigationDestination.habits => LucideIcons.repeat2,
     BottomNavigationDestination.today => LucideIcons.calendarCheck,
     BottomNavigationDestination.upcoming => LucideIcons.calendarDays,
     BottomNavigationDestination.focus => LucideIcons.timer,

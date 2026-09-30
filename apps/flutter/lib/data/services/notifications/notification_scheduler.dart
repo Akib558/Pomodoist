@@ -29,6 +29,7 @@ class NotificationScheduler {
     final (name, description) = switch (channel.channelId) {
       'focus' => (copy.focusChannel, copy.focusDescription),
       'task_start' => (copy.taskChannel, copy.taskDescription),
+      'habits' => (copy.habitChannel, copy.habitDescription),
       _ => (copy.returnChannel, copy.returnDescription),
     };
     return NotificationDetails(
@@ -42,6 +43,112 @@ class NotificationScheduler {
       iOS: base.iOS,
       macOS: base.macOS,
       windows: base.windows,
+    );
+  }
+
+  static const int habitNotificationBaseId = 44000;
+  static const String habitPayloadPrefix = 'habit.reminder:';
+  bool get supportsHabitReminders =>
+      !kIsWeb &&
+      defaultTargetPlatform != TargetPlatform.linux &&
+      defaultTargetPlatform != TargetPlatform.fuchsia;
+  static const NotificationDetails habitDetails = NotificationDetails(
+    android: AndroidNotificationDetails(
+      'habits',
+      'Habits',
+      channelDescription: 'Reminders for unfinished daily habit goals',
+      importance: Importance.defaultImportance,
+      priority: Priority.defaultPriority,
+    ),
+    iOS: DarwinNotificationDetails(),
+    macOS: DarwinNotificationDetails(),
+    windows: WindowsNotificationDetails(),
+  );
+
+  Future<bool> requestHabitPermission() async {
+    await initialize();
+    return switch (defaultTargetPlatform) {
+      TargetPlatform.android =>
+        await _plugin
+                .resolvePlatformSpecificImplementation<
+                  AndroidFlutterLocalNotificationsPlugin
+                >()
+                ?.requestNotificationsPermission() ??
+            false,
+      TargetPlatform.iOS =>
+        await _plugin
+                .resolvePlatformSpecificImplementation<
+                  IOSFlutterLocalNotificationsPlugin
+                >()
+                ?.requestPermissions(alert: true, badge: true, sound: true) ??
+            false,
+      TargetPlatform.macOS =>
+        await _plugin
+                .resolvePlatformSpecificImplementation<
+                  MacOSFlutterLocalNotificationsPlugin
+                >()
+                ?.requestPermissions(alert: true, badge: true, sound: true) ??
+            false,
+      TargetPlatform.windows => true,
+      _ => false,
+    };
+  }
+
+  Future<int> habitNotificationBudget() async {
+    await initialize();
+    final zone = await FlutterTimezone.getLocalTimezone();
+    tz.setLocalLocation(tz.getLocation(zone.identifier));
+    if (defaultTargetPlatform != TargetPlatform.iOS) return 30;
+    final pending = await _plugin.pendingNotificationRequests();
+    return habitNotificationCapacity(pending);
+  }
+
+  static int habitNotificationCapacity(
+    Iterable<PendingNotificationRequest> pending,
+  ) {
+    final other = pending
+        .where((p) => !(p.payload?.startsWith(habitPayloadPrefix) ?? false))
+        .toList();
+    final reserve = other.any((p) => p.id == focusNotificationId) ? 0 : 1;
+    return (64 - other.length - reserve).clamp(0, 30);
+  }
+
+  static tz.TZDateTime habitReminderDate(DateTime day) => tz.TZDateTime(
+    tz.local,
+    day.year,
+    day.month,
+    day.day,
+    day.hour,
+    day.minute,
+  );
+
+  Future<void> cancelHabitNotifications() async {
+    if (!supportsHabitReminders) return;
+    await initialize();
+    for (var i = 0; i < 30; i++) {
+      await _plugin.cancel(id: habitNotificationBaseId + i);
+    }
+  }
+
+  Future<void> scheduleHabitReminder({
+    required int id,
+    required String habitId,
+    required DateTime scheduledAt,
+    required String title,
+    required String body,
+  }) async {
+    if (!supportsHabitReminders) return;
+    await initialize();
+    await _scheduleTimeSensitive(
+      (mode) => _plugin.zonedSchedule(
+        id: id,
+        title: title,
+        body: body,
+        scheduledDate: habitReminderDate(scheduledAt),
+        notificationDetails: localizedDetails(habitDetails),
+        androidScheduleMode: mode,
+        payload: '$habitPayloadPrefix$habitId',
+      ),
     );
   }
 
@@ -126,6 +233,7 @@ class NotificationScheduler {
         focusDetails,
         taskStartDetails,
         reengagementDetails,
+        habitDetails,
       ]) {
         final channel = localizedDetails(details).android!;
         await android?.createNotificationChannel(

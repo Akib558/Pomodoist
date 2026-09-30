@@ -80,6 +80,24 @@ class TaskParentContext extends StatelessWidget {
         : context.l10n.taskParentPath(
             ancestors.map((item) => item.content).join(' / '),
           );
+    if (usesTouchTaskInteraction) {
+      return Tooltip(
+        message: label,
+        triggerMode: TooltipTriggerMode.manual,
+        excludeFromSemantics: true,
+        child: Semantics(
+          label: label,
+          child: Transform.flip(
+            flipX: Directionality.of(context) == TextDirection.rtl,
+            child: Icon(
+              LucideIcons.cornerDownRight,
+              size: 12,
+              color: context.appColors.secondaryText,
+            ),
+          ),
+        ),
+      );
+    }
     final content = Row(
       mainAxisSize: MainAxisSize.min,
       children: [

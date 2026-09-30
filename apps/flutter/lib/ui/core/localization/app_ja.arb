@@ -1767,6 +1767,7 @@
   "taskExpandSubtasks": "サブタスクを展開",
   "taskCollapseSubtasks": "サブタスクを折りたたむ",
   "taskAllSubtasksProgress": "すべてのサブタスク：{total}件中{completed}件完了",
+  "taskOpenParent": "親タスクを開く",
   "taskOpenFullBranch": "すべてのサブタスクを開く",
   "taskParentPath": "親タスク：{path}",
   "projectViewList": "リスト",
@@ -1846,5 +1847,65 @@
   "taskDiscussionTab": "ディスカッション",
   "taskProperties": "プロパティ",
   "filesGrouping": "グループ化",
-  "taskDescriptionHint": "説明を追加"
+  "taskDescriptionHint": "説明を追加",
+  "projectMapExpand": "マップを全画面表示",
+  "projectMapCollapse": "マップの全画面表示を終了",
+  "navHabits": "習慣",
+  "habitsSubtitle": "毎日の小さな一歩",
+  "habitNew": "新しい習慣",
+  "habitEdit": "習慣を編集",
+  "habitsActive": "継続中",
+  "habitsFinished": "終了済み",
+  "habitsEmpty": "最初の習慣を追加しましょう。",
+  "habitsFinishedEmpty": "終了した習慣はまだありません。",
+  "habitsFuture": "未来の日は閲覧のみです。",
+  "habitName": "習慣の名前",
+  "habitDaily": "毎日",
+  "habitWeekdays": "曜日を選択",
+  "habitFrequency": "スケジュール",
+  "habitTarget": "1日の回数",
+  "habitStart": "開始日",
+  "habitEnd": "終了日",
+  "habitForever": "無期限",
+  "habitCustom": "日付を選択",
+  "habitProject": "プロジェクト",
+  "habitNoProject": "プロジェクトなし",
+  "habitReminder": "リマインダー",
+  "habitReminderTime": "リマインダーの時刻",
+  "habitReminderDenied": "通知が無効です。システム設定で許可してください。",
+  "habitReminderUnavailable": "このプラットフォームではバックグラウンド通知を利用できません。",
+  "habitReminderFailed": "リマインダーを更新できませんでした。再試行してください。",
+  "habitDeleteConfirm": "この習慣と履歴を削除しますか？",
+  "habitLoadError": "習慣を読み込めませんでした。",
+  "habitSaveError": "保存できませんでした。入力内容を確認して再試行してください。",
+  "habitAddCheckIn": "完了を1回追加",
+  "habitUndoCheckIn": "最後の完了を取り消す",
+  "habitPreviousWeek": "前の週",
+  "habitNextWeek": "次の週",
+  "notificationHabitChannel": "習慣",
+  "notificationHabitDescription": "未完了の習慣のリマインダー",
+  "notificationHabitTitle": "習慣の時間です",
+  "habitsSummary": "{planned}件中{completed}件完了",
+  "habitDurationDays": "{days}日",
+  "@habitsSummary": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "planned": {
+        "type": "int"
+      }
+    }
+  },
+  "@habitDurationDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsAppearancePreview": "プレビュー",
+  "settingsPreviewProject": "個人",
+  "settingsPreviewLongTask": "資料を準備し、次のステップを計画する",
+  "settingsPreviewCompletedTask": "メモを確認する"
 }

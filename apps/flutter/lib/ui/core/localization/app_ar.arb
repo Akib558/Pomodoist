@@ -1156,6 +1156,7 @@
   "taskExpandSubtasks": "توسيع المهام الفرعية",
   "taskCollapseSubtasks": "طي المهام الفرعية",
   "taskAllSubtasksProgress": "جميع المهام المتفرعة: اكتمل {completed} من {total}",
+  "taskOpenParent": "فتح المهمة الأصلية",
   "taskOpenFullBranch": "فتح جميع المهام الفرعية",
   "taskParentPath": "جزء من: {path}",
   "projectViewList": "قائمة",
@@ -1235,5 +1236,65 @@
   "taskDiscussionTab": "النقاش",
   "taskProperties": "الخصائص",
   "filesGrouping": "التجميع",
-  "taskDescriptionHint": "إضافة وصف"
+  "taskDescriptionHint": "إضافة وصف",
+  "projectMapExpand": "توسيع الخريطة إلى ملء الشاشة",
+  "projectMapCollapse": "الخروج من خريطة ملء الشاشة",
+  "navHabits": "العادات",
+  "habitsSubtitle": "خطوات صغيرة كل يوم",
+  "habitNew": "عادة جديدة",
+  "habitEdit": "تعديل العادة",
+  "habitsActive": "نشطة",
+  "habitsFinished": "منتهية",
+  "habitsEmpty": "أضف عادتك الأولى.",
+  "habitsFinishedEmpty": "لا توجد عادات منتهية بعد.",
+  "habitsFuture": "الأيام القادمة للعرض فقط.",
+  "habitName": "اسم العادة",
+  "habitDaily": "كل يوم",
+  "habitWeekdays": "أيام الأسبوع المحددة",
+  "habitFrequency": "الجدول",
+  "habitTarget": "مرات في اليوم",
+  "habitStart": "تاريخ البدء",
+  "habitEnd": "تاريخ الانتهاء",
+  "habitForever": "بلا نهاية",
+  "habitCustom": "اختيار تاريخ",
+  "habitProject": "المشروع",
+  "habitNoProject": "بلا مشروع",
+  "habitReminder": "تذكير",
+  "habitReminderTime": "وقت التذكير",
+  "habitReminderDenied": "الإشعارات معطلة. اسمح بها في إعدادات النظام.",
+  "habitReminderUnavailable": "تذكيرات الخلفية غير متاحة على هذه المنصة.",
+  "habitReminderFailed": "تعذر تحديث التذكيرات. حاول مجددًا.",
+  "habitDeleteConfirm": "هل تريد حذف هذه العادة وسجلها؟",
+  "habitLoadError": "تعذر تحميل العادات.",
+  "habitSaveError": "تعذر الحفظ. تحقق من الحقول وحاول مجددًا.",
+  "habitAddCheckIn": "إضافة إتمام واحد",
+  "habitUndoCheckIn": "التراجع عن آخر إتمام",
+  "habitPreviousWeek": "الأسبوع السابق",
+  "habitNextWeek": "الأسبوع التالي",
+  "notificationHabitChannel": "العادات",
+  "notificationHabitDescription": "تذكيرات للعادات غير المكتملة",
+  "notificationHabitTitle": "حان وقت عادتك",
+  "habitsSummary": "تم إتمام {completed} من {planned} عادات",
+  "habitDurationDays": "{days} أيام",
+  "@habitsSummary": {
+    "placeholders": {
+      "completed": {
+        "type": "int"
+      },
+      "planned": {
+        "type": "int"
+      }
+    }
+  },
+  "@habitDurationDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsAppearancePreview": "معاينة",
+  "settingsPreviewProject": "شخصي",
+  "settingsPreviewLongTask": "إعداد المواد والتخطيط للخطوات التالية",
+  "settingsPreviewCompletedTask": "مراجعة الملاحظات"
 }

@@ -906,8 +906,8 @@ MACOS_PACKAGE_PATH = $(MACOS_EXPORT_PATH)/$(TESTFLIGHT_PRODUCT_NAME).pkg
 # Keep Xcode's archive intermediates under build/ instead of the global
 # ~/Library/Developer/Xcode/DerivedData.
 MACOS_DERIVED_DATA = $(abspath build/TestFlight/derived-data)
-TESTFLIGHT_MACOS_SCHEME ?= $(if $(filter $(FLAVOR_STAGING),$(TESTFLIGHT_FLAVOR)),Staging,Runner)
-TESTFLIGHT_MACOS_CONFIGURATION ?= $(if $(filter $(FLAVOR_STAGING),$(TESTFLIGHT_FLAVOR)),Release-Staging,Release)
+TESTFLIGHT_MACOS_SCHEME ?= $(if $(filter $(FLAVOR_STAGING),$(TESTFLIGHT_FLAVOR)),Staging,Production)
+TESTFLIGHT_MACOS_CONFIGURATION ?= $(if $(filter $(FLAVOR_STAGING),$(TESTFLIGHT_FLAVOR)),Release-Staging,Release-Production)
 
 testflight-macos: testflight-preflight testflight-auth flutter-build-link
 	@set -eu; \

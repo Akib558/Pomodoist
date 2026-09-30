@@ -3680,6 +3680,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get taskOpenParent => 'Open parent task';
+
+  @override
   String get taskOpenFullBranch => 'Open all subtasks';
 
   @override
@@ -3934,4 +3937,141 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get taskDescriptionHint => 'Add a description';
+
+  @override
+  String get projectMapExpand => 'Expand map to full screen';
+
+  @override
+  String get projectMapCollapse => 'Exit full-screen map';
+
+  @override
+  String get navHabits => 'Habits';
+
+  @override
+  String get habitsSubtitle => 'Small steps, every day';
+
+  @override
+  String get habitNew => 'New habit';
+
+  @override
+  String get habitEdit => 'Edit habit';
+
+  @override
+  String get habitsActive => 'Active';
+
+  @override
+  String get habitsFinished => 'Finished';
+
+  @override
+  String get habitsEmpty => 'Your habits start here. Add your first habit.';
+
+  @override
+  String get habitsFinishedEmpty => 'No finished habits yet.';
+
+  @override
+  String get habitsFuture => 'Future days are view only.';
+
+  @override
+  String get habitName => 'Habit name';
+
+  @override
+  String get habitDaily => 'Every day';
+
+  @override
+  String get habitWeekdays => 'Selected weekdays';
+
+  @override
+  String get habitFrequency => 'Schedule';
+
+  @override
+  String get habitTarget => 'Times per day';
+
+  @override
+  String get habitStart => 'Start date';
+
+  @override
+  String get habitEnd => 'End date';
+
+  @override
+  String get habitForever => 'Forever';
+
+  @override
+  String get habitCustom => 'Choose date';
+
+  @override
+  String get habitProject => 'Project';
+
+  @override
+  String get habitNoProject => 'No project';
+
+  @override
+  String get habitReminder => 'Reminder';
+
+  @override
+  String get habitReminderTime => 'Reminder time';
+
+  @override
+  String get habitReminderDenied =>
+      'Notifications are disabled. Allow them in system settings.';
+
+  @override
+  String get habitReminderUnavailable =>
+      'Background reminders are unavailable on this platform.';
+
+  @override
+  String get habitReminderFailed => 'Could not update reminders. Try again.';
+
+  @override
+  String get habitDeleteConfirm => 'Delete this habit and its history?';
+
+  @override
+  String get habitLoadError => 'Could not load habits.';
+
+  @override
+  String get habitSaveError =>
+      'Could not save changes. Check the fields and try again.';
+
+  @override
+  String get habitAddCheckIn => 'Add one completion';
+
+  @override
+  String get habitUndoCheckIn => 'Undo last completion';
+
+  @override
+  String get habitPreviousWeek => 'Previous week';
+
+  @override
+  String get habitNextWeek => 'Next week';
+
+  @override
+  String get notificationHabitChannel => 'Habits';
+
+  @override
+  String get notificationHabitDescription => 'Reminders for unfinished habits';
+
+  @override
+  String get notificationHabitTitle => 'Time for your habit';
+
+  @override
+  String habitsSummary(int completed, int planned) {
+    return '$completed of $planned habits completed';
+  }
+
+  @override
+  String habitDurationDays(int days) {
+    return '$days days';
+  }
+
+  @override
+  String get settingsAppearancePreview => 'Preview';
+
+  @override
+  String get settingsPreviewProject => 'Personal';
+
+  @override
+  String get settingsPreviewLongTask =>
+      'Prepare materials and plan the next steps';
+
+  @override
+  String get settingsPreviewCompletedTask => 'Review notes';
 }
