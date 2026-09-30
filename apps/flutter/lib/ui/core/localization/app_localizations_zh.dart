@@ -228,7 +228,10 @@ class AppLocalizationsZh extends AppLocalizations {
       'Stripe 付款暂时不可用。请稍后重试或联系支持。';
 
   @override
-  String get billingStripeCheckoutFailed => '无法开始付款。请检查网络连接后重试。';
+  String get billingStripeCheckoutFailed => '无法开始付款。请重试。';
+
+  @override
+  String get billingStripeCheckoutPending => '正在准备或确认付款。请稍后重试。';
 
   @override
   String get purchaseSuccessTitle => 'Pro 已激活';

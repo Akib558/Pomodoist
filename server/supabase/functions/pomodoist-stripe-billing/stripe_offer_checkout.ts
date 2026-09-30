@@ -88,62 +88,136 @@ export async function createReservedStripeCheckout(
   now = Math.floor(Date.now() / 1000),
   livemode = false,
 ): Promise<{ url: string | null }> {
-  const reservation = await reserve();
-  let existing: Stripe.Checkout.Session | null = null;
-  // Also covers a process crash after Stripe creation but before returning URL.
-  for await (
-    const session of stripe.checkout.sessions.list({
-      customer: input.customerId,
-      limit: 100,
-    })
-  ) {
-    if (session.livemode !== livemode) {
-      throw new Error("Stripe Checkout mode mismatch.");
+  const owns = (session: Stripe.Checkout.Session) =>
+    session.customer === input.customerId &&
+    session.client_reference_id === input.userId &&
+    session.metadata?.supabase_user_id === input.userId &&
+    /^pomodoist\.pro\.(monthly|annual|lifetime(?:\.launch)?)$/.test(
+      session.metadata?.product_id ?? "",
+    );
+  const eligible = async () => {
+    if (!await verify()) throw new Error("offer_not_eligible");
+  };
+  const expire = async (session: Stripe.Checkout.Session) => {
+    let closed: Stripe.Checkout.Session;
+    try {
+      closed = await stripe.checkout.sessions.expire(session.id);
+    } catch {
+      // A concurrent expiration is harmless; completion or an unknown result is not.
+      closed = await stripe.checkout.sessions.retrieve(session.id);
     }
-    if (session.metadata?.offer_reservation === reservation.id) {
-      existing = session;
-    } // Block legacy open/processing sessions too during the cutover. They can
-    // otherwise purchase a second subscription after this check.
-    else if (
-      session.status === "open" ||
-      (session.status === "complete" && session.payment_status === "unpaid")
+    if (
+      closed.livemode !== livemode || !owns(closed) ||
+      closed.status !== "expired"
     ) {
       throw new Error("offer_pending");
     }
-  }
-  if (existing != null && existing.status !== "open") {
+  };
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const reservation = await reserve();
     if (
-      existing.status === "complete" && existing.payment_status === "unpaid"
-    ) throw new Error("offer_pending");
-    // Fresh history must be eligible again before releasing completed checkout.
-    if (!await verify()) throw new Error("offer_pending");
-    await release(reservation.id);
-    throw new Error("offer_pending"); // Explicit retry; never choose a new offer silently.
+      reservation.input.customerId !== input.customerId ||
+      reservation.input.userId !== input.userId
+    ) {
+      throw new Error("offer_pending");
+    }
+    let existing: Stripe.Checkout.Session | null = null;
+    const legacy: Stripe.Checkout.Session[] = [];
+    for await (
+      const session of stripe.checkout.sessions.list({
+        customer: input.customerId,
+        limit: 100,
+      })
+    ) {
+      if (session.livemode !== livemode) {
+        throw new Error("Stripe Checkout mode mismatch.");
+      }
+      if (session.status == null) throw new Error("offer_pending");
+      if (session.metadata?.offer_reservation === reservation.id) {
+        if (!owns(session) || existing != null) {
+          throw new Error("offer_pending");
+        }
+        existing = session;
+      } else if (session.status === "open") {
+        if (
+          !owns(session) || session.metadata?.offer_reservation ||
+          session.payment_status === "paid"
+        ) {
+          throw new Error("offer_pending");
+        }
+        legacy.push(session);
+      } else if (
+        session.status === "complete" && session.payment_status === "unpaid"
+      ) {
+        throw new Error("offer_pending");
+      }
+    }
+    if (
+      existing?.status === "complete" && existing.payment_status === "unpaid"
+    ) {
+      throw new Error("offer_pending");
+    }
+    await eligible();
+    if (existing != null) {
+      existing = await stripe.checkout.sessions.retrieve(existing.id);
+      if (
+        existing.livemode !== livemode || !owns(existing) ||
+        existing.metadata?.offer_reservation !== reservation.id ||
+        existing.metadata?.product_id !== reservation.input.productId ||
+        existing.status == null ||
+        (existing.status === "open" && existing.payment_status === "paid") ||
+        (existing.status === "complete" && existing.payment_status === "unpaid")
+      ) throw new Error("offer_pending");
+    }
+    if (legacy.length > 0) {
+      if (attempt > 0) throw new Error("offer_pending");
+      for (const session of legacy) await expire(session);
+      await eligible();
+    }
+    const matches =
+      (["productId", "selectedOffer", "priceId", "couponId", "mode"] as const)
+        .every((key) => reservation.input[key] === input[key]);
+    if (
+      (existing != null && (existing.status !== "open" || !matches)) ||
+      reservation.expiresAt <= now
+    ) {
+      if (attempt > 0) throw new Error("offer_pending");
+      if (existing?.status === "open") {
+        if (existing.payment_status === "paid") {
+          throw new Error("offer_pending");
+        }
+        await expire(existing);
+        await eligible();
+      }
+      if (existing?.status === "complete") await eligible();
+      // Only the old ID is released. Late creators cannot use an expired anchored deadline.
+      await release(reservation.id);
+      continue;
+    }
+    // Another plan may still be creating its session. Never release that live reservation.
+    if (!matches) throw new Error("offer_pending");
+    if (existing != null) return { url: existing.url };
+    const params = stripeCheckoutParams(
+      reservation.input,
+    ) as Stripe.Checkout.SessionCreateParams;
+    params.expires_at = reservation.expiresAt;
+    params.metadata = { ...params.metadata, offer_reservation: reservation.id };
+    const created = await stripe.checkout.sessions.create(params, {
+      idempotencyKey: `pomodoist-test-offer:${reservation.id}`,
+    });
+    if (created.livemode !== livemode) {
+      throw new Error("Stripe Checkout mode mismatch.");
+    }
+    // Idempotency can replay the original response after another request expired the session.
+    const session = await stripe.checkout.sessions.retrieve(created.id);
+    if (
+      session.livemode !== livemode || !owns(session) ||
+      session.metadata?.offer_reservation !== reservation.id
+    ) {
+      throw new Error("offer_pending");
+    }
+    if (session.status !== "open") throw new Error("offer_pending");
+    return { url: session.url };
   }
-  if (existing == null && reservation.expiresAt <= now) {
-    // The anchored expiry is in the past, so delayed create requests cannot
-    // produce another payable session using this reservation.
-    await release(reservation.id);
-    throw new Error("offer_pending");
-  }
-  if (
-    reservation.input.productId !== input.productId ||
-    reservation.input.selectedOffer !== input.selectedOffer ||
-    reservation.input.customerId !== input.customerId ||
-    !await verify()
-  ) throw new Error("offer_pending");
-  if (existing != null) return { url: existing.url };
-  const params = stripeCheckoutParams(
-    reservation.input,
-  ) as Stripe.Checkout.SessionCreateParams;
-  params.expires_at = reservation.expiresAt;
-  params.metadata = { ...params.metadata, offer_reservation: reservation.id };
-  // Reuse the exact stored parameters even after a locale/surface change.
-  const session = await stripe.checkout.sessions.create(params, {
-    idempotencyKey: `pomodoist-test-offer:${reservation.id}`,
-  });
-  if (session.livemode !== livemode) {
-    throw new Error("Stripe Checkout mode mismatch.");
-  }
-  return { url: session.url };
+  throw new Error("offer_pending");
 }

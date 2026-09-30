@@ -35,7 +35,7 @@ The existing daily history maintenance call now applies 365 days for free comple
 
 Upload quotas use decimal units: 20,000,000 bytes/file, 1,000,000,000 successful uploaded bytes per UTC month, and 5,000,000,000 stored bytes per uploading user per completion UTC year. Pending reservations participate in quota admission. Finalization rechecks the actual completion period. Deleting a file releases only its original completion year's stored bytes. Files uploaded in other years do not consume the current year's stored quota.
 
-The SQL deletion queue is drained best-effort after authenticated state/finalization/deletion calls. Deployments that require physical cleanup while there are no client requests should schedule an authenticated service worker to drain this existing queue. Do not delete `storage.objects` rows directly. Already issued download URLs can remain usable for their remaining 60-second lifetime after access removal; new signing requests require current membership.
+The SQL deletion queue is drained best-effort after authenticated finalization/deletion calls. State reads do not dispatch Storage cleanup. The file-storage migration schedules the authenticated `pomodoist-files-cleanup` worker every five minutes, including retries and expired upload cleanup while there are no client requests. Do not delete `storage.objects` rows directly. Already issued download URLs can remain usable for their remaining 60-second lifetime after access removal; new signing requests require current membership.
 
 ## Unit verification
 

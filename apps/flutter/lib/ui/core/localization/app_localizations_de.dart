@@ -244,7 +244,11 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get billingStripeCheckoutFailed =>
-      'Die Zahlung konnte nicht gestartet werden. Prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.';
+      'Die Zahlung konnte nicht gestartet werden. Versuchen Sie es erneut.';
+
+  @override
+  String get billingStripeCheckoutPending =>
+      'Eine Zahlung wird vorbereitet oder bestätigt. Versuchen Sie es in Kürze erneut.';
 
   @override
   String get purchaseSuccessTitle => 'Pro ist aktiv';

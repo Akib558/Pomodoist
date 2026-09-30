@@ -244,7 +244,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get billingStripeCheckoutFailed =>
-      'Impossible de démarrer le paiement. Vérifiez votre connexion et réessayez.';
+      'Impossible de démarrer le paiement. Réessayez.';
+
+  @override
+  String get billingStripeCheckoutPending =>
+      'Un paiement est en cours de préparation ou de confirmation. Réessayez dans quelques instants.';
 
   @override
   String get purchaseSuccessTitle => 'Pro est actif';

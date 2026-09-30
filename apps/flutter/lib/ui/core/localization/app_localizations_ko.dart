@@ -233,8 +233,11 @@ class AppLocalizationsKo extends AppLocalizations {
       'Stripe 결제를 일시적으로 이용할 수 없습니다. 나중에 다시 시도하거나 지원팀에 문의하세요.';
 
   @override
-  String get billingStripeCheckoutFailed =>
-      '결제를 시작하지 못했습니다. 연결을 확인하고 다시 시도하세요.';
+  String get billingStripeCheckoutFailed => '결제를 시작하지 못했습니다. 다시 시도하세요.';
+
+  @override
+  String get billingStripeCheckoutPending =>
+      '결제를 준비하거나 확인하고 있습니다. 잠시 후 다시 시도하세요.';
 
   @override
   String get purchaseSuccessTitle => 'Pro 활성화 완료';

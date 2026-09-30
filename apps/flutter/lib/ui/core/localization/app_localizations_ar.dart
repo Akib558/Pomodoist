@@ -238,8 +238,11 @@ class AppLocalizationsAr extends AppLocalizations {
       'مدفوعات Stripe غير متاحة مؤقتًا. حاول لاحقًا أو تواصل مع الدعم.';
 
   @override
-  String get billingStripeCheckoutFailed =>
-      'تعذّر بدء الدفع. تحقق من اتصالك بالإنترنت وحاول مرة أخرى.';
+  String get billingStripeCheckoutFailed => 'تعذّر بدء الدفع. حاول مرة أخرى.';
+
+  @override
+  String get billingStripeCheckoutPending =>
+      'يجري إعداد دفعة أو تأكيدها. حاول مرة أخرى بعد قليل.';
 
   @override
   String get purchaseSuccessTitle => 'Pro مفعل';

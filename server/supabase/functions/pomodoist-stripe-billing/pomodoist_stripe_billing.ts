@@ -355,6 +355,12 @@ export async function handlePomodoistStripeBilling(
       if (error instanceof Error && error.message === "offer_pending") {
         return json({ code: "offer_pending" }, 409);
       }
+      if (error instanceof Error && error.message === "offer_not_eligible") {
+        return json({
+          code: "offer_not_eligible",
+          error: "Refresh the offer before checkout.",
+        }, 409);
+      }
       if (
         isRecord(error) &&
         (String(error.param ?? "").startsWith("managed_payments") ||

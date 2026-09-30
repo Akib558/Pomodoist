@@ -337,10 +337,7 @@ void main() {
       findsNothing,
     );
     expect(
-      find.text(
-        'Purchase error: Could not start payment. Check your connection and '
-        'try again.',
-      ),
+      find.text('Purchase error: Could not start payment. Try again.'),
       findsOneWidget,
     );
     expect(find.textContaining('Stripe catalog failed.'), findsNothing);

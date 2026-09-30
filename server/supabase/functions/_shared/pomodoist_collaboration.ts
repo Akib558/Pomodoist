@@ -128,8 +128,8 @@ export async function handleCollaboration(request: Request, deps: CollaborationD
     if (action === "publicRead") {
       return reply(publicCollaborationProjection(result));
     }
-    // Storage cleanup must not delay an already committed mutation past the client's timeout.
-    if (["deleteAttachment", "delete", "unshare", "state", "finishUpload"].includes(action)) {
+    // Reads leave retry work to the scheduled worker; mutations also request immediate cleanup.
+    if (["deleteAttachment", "delete", "unshare", "finishUpload"].includes(action)) {
       const cleanup = deps.cleanup().catch(() => { /* Retained in the SQL deletion queue. */ });
       if (deps.waitUntil) deps.waitUntil(cleanup);
       else await cleanup;

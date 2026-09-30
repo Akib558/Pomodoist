@@ -1,9 +1,116 @@
 import 'package:app_account/app_account.dart';
 import 'package:pomodoist/data/services/billing/account_billing_service.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pomodoist/domain/models/billing/billing_models.dart';
+import 'package:pomodoist/ui/billing/widgets/billing_paywall.dart';
+import 'package:pomodoist/ui/core/localization/app_localizations_en.dart';
 
 void main() {
+  test(
+    'account changes during SDK requests discard both success and server errors',
+    () async {
+      for (final status in [200, 409]) {
+        for (final checkout in [false, true]) {
+          late _TransportAccount account;
+          final backend = SupabaseClient(
+            'https://example.invalid',
+            'unit-test-key',
+            httpClient: MockClient((_) async {
+              account.userId = 'another-account';
+              return http.Response(
+                status == 409
+                    ? '{"code":"offer_pending"}'
+                    : '{"url":"https://checkout.stripe.com/test"}',
+                status,
+                headers: {'content-type': 'application/json'},
+              );
+            }),
+          );
+          addTearDown(backend.dispose);
+          account = _TransportAccount(
+            AccountClient.fromSupabaseClient(backend),
+          );
+          final service = AccountBillingService(
+            account: account,
+            locale: () => 'en',
+            onLinked: () {},
+          );
+          await expectLater(
+            checkout
+                ? service.createStripeCheckout(
+                    pomodoistMonthlyProductId,
+                    BillingCheckoutSurface.web,
+                    'trial',
+                  )
+                : service.loadStripeCatalog(),
+            throwsA(
+              isA<StripeBillingException>().having(
+                (e) => e.code,
+                'code',
+                'authentication_required',
+              ),
+            ),
+          );
+        }
+      }
+    },
+  );
+  test(
+    'real SDK errors preserve server codes for catalog and checkout',
+    () async {
+      for (final code in [
+        'offer_pending',
+        'authentication_required',
+        'offer_not_eligible',
+      ]) {
+        final backend = SupabaseClient(
+          'https://example.invalid',
+          'unit-test-key',
+          httpClient: MockClient(
+            (_) async => http.Response(
+              '{"code":"$code"}',
+              409,
+              headers: {'content-type': 'application/json'},
+            ),
+          ),
+        );
+        addTearDown(backend.dispose);
+        final service = AccountBillingService(
+          account: _TransportAccount(AccountClient.fromSupabaseClient(backend)),
+          locale: () => 'en',
+          onLinked: () {},
+        );
+        final expected = throwsA(
+          isA<StripeBillingException>().having((e) => e.code, 'code', code),
+        );
+        await expectLater(service.loadStripeCatalog(), expected);
+        await expectLater(
+          service.createStripeCheckout(
+            pomodoistMonthlyProductId,
+            BillingCheckoutSurface.web,
+            'trial',
+          ),
+          expected,
+        );
+      }
+    },
+  );
+  test(
+    'pending payment has a payment status message rather than a return offer error',
+    () {
+      final l10n = AppLocalizationsEn();
+      final message = stripeBillingErrorMessage(l10n, 'offer_pending');
+      expect(message.toLowerCase(), contains('payment'));
+      expect(message, isNot(l10n.billingReturnFailed));
+      expect(
+        stripeBillingErrorMessage(l10n, 'checkout_failed').toLowerCase(),
+        isNot(contains('connection')),
+      );
+    },
+  );
   Map<String, Object?> catalog(String kind) => {
     'enabled': true,
     'introEligible': false,
@@ -148,6 +255,28 @@ void main() {
         isNull,
       );
     },
+  );
+}
+
+class _TransportAccount extends Fake implements AccountClient {
+  _TransportAccount(this.actual);
+  final AccountClient actual;
+  String userId = 'account';
+  @override
+  String get currentUserId => userId;
+  @override
+  Future<AccountFunctionResponse> invokeFunction(
+    String functionName, {
+    Map<String, String>? headers,
+    Object? body,
+    Map<String, dynamic>? queryParameters,
+    String? region,
+  }) => actual.invokeFunction(
+    functionName,
+    headers: headers,
+    body: body,
+    queryParameters: queryParameters,
+    region: region,
   );
 }
 

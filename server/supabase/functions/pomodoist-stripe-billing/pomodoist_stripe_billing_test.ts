@@ -244,6 +244,25 @@ function billingRequest(body: unknown) {
   });
 }
 
+Deno.test("Checkout recovery preserves pending and changed eligibility error codes", async () => {
+  for (const code of ["offer_pending", "offer_not_eligible"]) {
+    const response = await handlePomodoistStripeBilling(
+      billingRequest({
+        action: "checkout",
+        productId: "pomodoist.pro.lifetime",
+        surface: "web",
+      }),
+      billingDeps({
+        createCheckoutSession: async () => {
+          throw new Error(code);
+        },
+      }),
+    );
+    assertEquals(response.status, 409);
+    assertEquals((await response.json()).code, code);
+  }
+});
+
 function billingDeps(
   overrides: Partial<PomodoistStripeBillingDeps> = {},
 ): PomodoistStripeBillingDeps {

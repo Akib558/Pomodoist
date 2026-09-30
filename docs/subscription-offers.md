@@ -325,15 +325,40 @@ backend, and never commit or copy the file into production.
 **Cancellation/concurrency:** one account-wide SQL reservation stores immutable
 Checkout parameters and anchors a 40-minute session expiry. Identical retries
 reuse the open session/Stripe idempotency key. Closing the browser does not
-consume the offer. Selecting another product waits for the old session to
-expire; retry then releases it after Stripe verification. A completed payment
-that is still processing remains blocked. Completed sessions are released only
-when fresh history permits another purchase. Legacy open/processing sessions
-also block the transition. These checks fail closed if Stripe is unavailable.
+consume the offer. Selecting another product closes the old open, unpaid session
+only after checking its customer, account and Pomodoist product metadata. A
+replacement is created only after Stripe confirms expiration. Owned legacy open
+sessions without reservation metadata follow the same closure checks; sessions
+with insufficient ownership evidence remain blocked. Expired reservations and
+eligible completed purchases recover automatically in the same request, with at
+most two reservation passes. Release always targets the old reservation ID so a
+stale request cannot delete a newer reservation.
 
-### Verification performed
+A payment still being processed and an unknown concurrent creation retain the
+reservation. Fresh server account state and Stripe history must permit the
+selected offer before reuse or replacement; recovery never falls back to a
+different offer or full price. API failures preserve the reservation. The Flutter
+client extracts server error codes from Supabase `FunctionException` responses
+for both catalog and Checkout. Pending payments have a specific status message;
+the general error no longer assumes a connection problem.
 
-Current checks passed: 32 Flutter unit tests, 29 Deno tests, full Flutter
+### Checkout recovery unit verification
+
+The recovery regression suites use mocked Stripe/SQL boundaries and the real
+Supabase Flutter SDK with `MockClient`. They cover HTTP 409 codes, same-plan reuse,
+expired reservations/sessions, plan changes, owned legacy sessions, repeat
+purchases, changed eligibility, concurrent creation, account changes, completion
+during expiration, API failures and stale-release protection. No application,
+browser, external billing API or database integration test is needed for these
+unit suites.
+
+The targeted run passed 34 Flutter unit tests and 51 Deno unit tests. It did not
+run widget, golden, end-to-end or SQL integration tests, make real Stripe or
+Supabase requests, or publish any changes.
+
+### Earlier offer rollout verification
+
+The earlier offer rollout passed 32 Flutter unit tests, 29 Deno tests, full Flutter
 analysis, Deno entry-point checks, architecture boundaries and localization
 contracts. No app was launched for manual acceptance.
 

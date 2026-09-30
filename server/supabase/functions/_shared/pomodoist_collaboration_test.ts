@@ -40,6 +40,25 @@ Deno.test("unauthenticated private operations never reach SQL, Storage or email"
   const f = fixture(); const response = await handleCollaboration(f.request({ action: "state" }, false), f.deps);
   equal(response.status, 401); equal(f.calls, []);
 });
+Deno.test("state reads skip Storage cleanup while file mutations still schedule it", async () => {
+  for (const input of [
+    { action: "state" },
+    { action: "delete", scopeId: "s" },
+    { action: "unshare", scopeId: "s" },
+    { action: "deleteAttachment", scopeId: "s", attachmentId: "a" },
+    { action: "finishUpload", scopeId: "s", uploadId: "u" },
+  ]) {
+    const f = fixture({ ok: true });
+    const background: Promise<unknown>[] = [];
+    f.deps.waitUntil = task => { background.push(task); };
+    const response = await handleCollaboration(f.request(input), f.deps);
+    equal(response.status, 200);
+    equal(await response.json(), { ok: true });
+    equal(f.calls, input.action === "state" ? ["auth", "rpc:state"] : ["auth", `rpc:${input.action}`, "cleanup"]);
+    equal(background.length, input.action === "state" ? 0 : 1);
+    await Promise.all(background);
+  }
+});
 Deno.test("revoked access from SQL prevents service-role signing", async () => {
   const f = fixture(); f.deps.rpc = async () => { throw new CollaborationError("Revoked", "42501", 403); };
   const response = await handleCollaboration(f.request({ action: "download", scopeId: "s", attachmentId: "a" }), f.deps);

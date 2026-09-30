@@ -232,7 +232,11 @@ class AppLocalizationsJa extends AppLocalizations {
       'Stripe決済は一時的に利用できません。後で再試行するか、サポートにお問い合わせください。';
 
   @override
-  String get billingStripeCheckoutFailed => '支払いを開始できませんでした。接続を確認して再試行してください。';
+  String get billingStripeCheckoutFailed => '支払いを開始できませんでした。もう一度お試しください。';
+
+  @override
+  String get billingStripeCheckoutPending =>
+      '支払いを準備または確認しています。しばらくしてからもう一度お試しください。';
 
   @override
   String get purchaseSuccessTitle => 'Proが有効になりました';

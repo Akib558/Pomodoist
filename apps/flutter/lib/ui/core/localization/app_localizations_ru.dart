@@ -241,7 +241,11 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get billingStripeCheckoutFailed =>
-      'Не удалось начать оплату. Проверьте подключение к интернету и попробуйте снова.';
+      'Не удалось начать оплату. Повторите попытку.';
+
+  @override
+  String get billingStripeCheckoutPending =>
+      'Оплата ещё подготавливается или подтверждается. Повторите попытку чуть позже.';
 
   @override
   String get purchaseSuccessTitle => 'Готово, Pro активен';

@@ -1,4 +1,5 @@
 import 'package:app_account/app_account.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show FunctionException;
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:pomodoist/domain/models/billing/billing_models.dart';
@@ -69,16 +70,8 @@ final class AccountBillingService {
   }
 
   Future<StripeBillingCatalog> loadStripeCatalog() async {
-    _checkStripeOwner();
-    final response = await _account.invokeFunction(
-      'pomodoist-stripe-billing',
-      body: {'action': 'catalog', 'offerVersion': 1},
-    );
-    if (response.status < 200 || response.status >= 300) {
-      throw StripeBillingException(_stripeError(response.data));
-    }
-    final catalog = StripeBillingCatalog.fromJson(response.data);
-    return catalog;
+    final data = await _invokeStripe({'action': 'catalog', 'offerVersion': 1});
+    return StripeBillingCatalog.fromJson(data);
   }
 
   Future<Uri> createStripeCheckout(
@@ -86,22 +79,33 @@ final class AccountBillingService {
     BillingCheckoutSurface surface,
     String? selectedOffer,
   ) async {
+    final data = await _invokeStripe({
+      'action': 'checkout',
+      'offerVersion': 1,
+      'selectedOffer': ?selectedOffer,
+      'productId': productId,
+      'surface': surface.name,
+      'locale': _locale(),
+    });
+    return stripeCheckoutUrlFromJson(data);
+  }
+
+  Future<Object?> _invokeStripe(Map<String, Object?> body) async {
     _checkStripeOwner();
-    final response = await _account.invokeFunction(
-      'pomodoist-stripe-billing',
-      body: {
-        'action': 'checkout',
-        'offerVersion': 1,
-        'selectedOffer': ?selectedOffer,
-        'productId': productId,
-        'surface': surface.name,
-        'locale': _locale(),
-      },
-    );
-    if (response.status < 200 || response.status >= 300) {
-      throw StripeBillingException(_stripeError(response.data));
+    try {
+      final response = await _account.invokeFunction(
+        'pomodoist-stripe-billing',
+        body: body,
+      );
+      _checkStripeOwner();
+      if (response.status < 200 || response.status >= 300) {
+        throw StripeBillingException(_stripeError(response.data));
+      }
+      return response.data;
+    } on FunctionException catch (error) {
+      _checkStripeOwner();
+      throw StripeBillingException(_stripeError(error.details));
     }
-    return stripeCheckoutUrlFromJson(response.data);
   }
 
   void _checkStripeOwner() {

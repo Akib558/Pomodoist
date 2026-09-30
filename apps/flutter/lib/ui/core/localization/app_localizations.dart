@@ -532,8 +532,14 @@ abstract class AppLocalizations {
   /// No description provided for @billingStripeCheckoutFailed.
   ///
   /// In en, this message translates to:
-  /// **'Could not start payment. Check your connection and try again.'**
+  /// **'Could not start payment. Try again.'**
   String get billingStripeCheckoutFailed;
+
+  /// Checkout is still being prepared or a previous payment is being confirmed.
+  ///
+  /// In en, this message translates to:
+  /// **'A payment is being prepared or confirmed. Try again shortly.'**
+  String get billingStripeCheckoutPending;
 
   /// No description provided for @purchaseSuccessTitle.
   ///

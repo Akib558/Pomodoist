@@ -241,7 +241,11 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get billingStripeCheckoutFailed =>
-      'Não foi possível iniciar o pagamento. Verifique sua conexão e tente novamente.';
+      'Não foi possível iniciar o pagamento. Tente novamente.';
+
+  @override
+  String get billingStripeCheckoutPending =>
+      'Um pagamento está sendo preparado ou confirmado. Tente novamente em instantes.';
 
   @override
   String get purchaseSuccessTitle => 'Pro está ativo';

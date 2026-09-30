@@ -19,7 +19,7 @@ String stripeBillingErrorMessage(AppLocalizations l10n, String code) {
     'billing_disabled' => l10n.billingStripeDisabled,
     'already_entitled' => l10n.billingStripeAlreadyEntitled,
     'offer_expired' || 'offer_not_eligible' => l10n.billingStripeOfferExpired,
-    'offer_pending' => l10n.billingReturnFailed,
+    'offer_pending' => l10n.billingStripeCheckoutPending,
     'managed_payments_unavailable' =>
       l10n.billingStripeManagedPaymentsUnavailable,
     _ => l10n.billingStripeCheckoutFailed,
