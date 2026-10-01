@@ -307,6 +307,8 @@ class _FakeAccountClient implements AccountClient {
 }
 
 class _OverviewAccountClient implements AccountClient {
+  @override
+  AccountSession get currentSession => const AccountSession(userId: 'user');
   _OverviewAccountClient({
     required this.overview,
     required this.registerInstallCallback,

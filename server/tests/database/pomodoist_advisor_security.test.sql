@@ -8,7 +8,7 @@ where n.nspname='public' and p.proname in
   and not p.prosecdef and not has_function_privilege('anon',p.oid,'EXECUTE')
   and has_function_privilege('authenticated',p.oid,'EXECUTE')
   and has_function_privilege('service_role',p.oid,'EXECUTE');
-select is(count(*), 9::bigint, 'only nine private RPCs are executable by authenticated')
+select is(count(*), 10::bigint, 'only nine private RPCs and the session predicate are executable by authenticated')
 from pg_proc p join pg_namespace n on n.oid=p.pronamespace
 where n.nspname='private' and has_function_privilege('authenticated',p.oid,'EXECUTE');
 select ok(not p.prosecdef and not has_function_privilege('anon',p.oid,'EXECUTE')
@@ -40,12 +40,15 @@ update private.pomodoist_instance_settings set selfhost_features_enabled=true;
 insert into auth.users(id,email,aud,role,created_at,updated_at) values
   ('b0000000-0000-4000-8000-000000000001','advisor-alice@example.test','authenticated','authenticated',now(),now()),
   ('b0000000-0000-4000-8000-000000000002','advisor-bob@example.test','authenticated','authenticated',now(),now());
+insert into auth.sessions(id,user_id,created_at,updated_at)
+select id,id,now(),now() from auth.users where id in
+  ('b0000000-0000-4000-8000-000000000001','b0000000-0000-4000-8000-000000000002');
 insert into public.usage_periods(user_id,app_id,quota_key,period_start,period_end,used,limit_value,unit)
 values ('b0000000-0000-4000-8000-000000000001','pomodoist','llm_requests',date_trunc('month',now(),'UTC'),
   date_trunc('month',now(),'UTC')+interval '1 month',2,1000,'request');
 
 set local role authenticated;
-set local request.jwt.claims='{"sub":"b0000000-0000-4000-8000-000000000001","role":"authenticated"}';
+set local request.jwt.claims='{"sub":"b0000000-0000-4000-8000-000000000001","session_id":"b0000000-0000-4000-8000-000000000001","role":"authenticated"}';
 select is(private.ensure_profile(),auth.uid(),'direct private profile entry remains bound to caller');
 select is(public.ensure_profile(),auth.uid(),'public profile entry remains compatible');
 select is(private.get_account_overview() #>> '{profile,id}',auth.uid()::text,'private overview belongs to caller');
@@ -70,7 +73,7 @@ select throws_ok($$select private.push_changes_for_user('b0000000-0000-4000-8000
 select throws_ok($$select private.grant_pomodoist_selfhost_access(auth.uid())$$,
   '42501','permission denied for function grant_pomodoist_selfhost_access','schema USAGE does not grant privileged helpers');
 
-set local request.jwt.claims='{"sub":"b0000000-0000-4000-8000-000000000002","role":"authenticated"}';
+set local request.jwt.claims='{"sub":"b0000000-0000-4000-8000-000000000002","session_id":"b0000000-0000-4000-8000-000000000002","role":"authenticated"}';
 select is(private.get_account_overview() #>> '{profile,id}',auth.uid()::text,'private overview switches to second account');
 select is(private.get_usage_period('pomodoist','llm_requests')->>'used','0','private reader does not expose another account usage');
 select is(jsonb_array_length(private.pull_changes('pomodoist','advisor-b')->'changes'),0,'private pull cannot see another account tasks');

@@ -994,6 +994,9 @@ String _snapshotJson(String statusId) =>
     '{"version":1,"kanban":{"previousStatusLabelId":"$statusId"}}';
 
 class _RecordingAccountClient implements AccountClient {
+  @override
+  AccountSession get currentSession =>
+      const AccountSession(userId: 'account-user');
   final pushed = <AccountSyncOperation>[];
   final pullResults = Queue<AccountSyncPullResult>();
   final pullSinceRevisions = <int>[];

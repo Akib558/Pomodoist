@@ -184,6 +184,37 @@ make restore \
 
 Restore stops client-facing services, loads the dump in one transaction, and starts the stack again. It refuses a backup made from a different migration set, because data-only restores require the same server release. If database loading fails, it rolls the database transaction back and restores the previous Vault key before reporting failure.
 
+## Password changes and session revocation
+
+The session-revocation migration checks each authenticated Data API request
+against `auth.sessions`, including RPCs in both `public` and `api_v1`. A revoked,
+missing, mismatched or expired session returns HTTP 401 (`PT401`), even while its
+JWT has not expired. Restrictive RLS policies also require an active session for
+direct account-table access and Realtime channel authorization. Existing
+ownership policies and server credentials retain their authority.
+
+Supabase Auth revokes other sessions when a password changes; the session making
+the change remains valid. The Flutter client signs out a rejected session on
+its next account-overview or synchronization request. A late rejection cannot
+sign out a newer session.
+
+Apply `20260930222811_pomodoist_session_revocation.sql` before releasing the client
+change. It registers `public.pomodoist_check_session` as the PostgREST pre-request
+function and reloads configuration. Deployments with an existing custom
+pre-request hook must incorporate this check into that hook instead of replacing
+their checks. A client release alone does not close the server-side vulnerability.
+
+Run the regression against a disposable local stack:
+
+```sh
+make test-db test-sessions
+```
+
+The API test creates and deletes a synthetic account, changes its password in
+one session, and checks the other session's unexpired JWT against profile reads,
+writes, account overview, and synchronization. It also checks the current/new
+sessions and local sign-out. It refuses non-loopback URLs.
+
 ## Updates
 
 The active migration directory contains the fresh-install baseline and subsequent

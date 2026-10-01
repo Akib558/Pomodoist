@@ -41,7 +41,7 @@ jobs:
             -f server/compose.yaml logs --no-color migrate
           exit 1
       - name: Test schema, ownership, and synchronization
-        run: make -C server test-db test-smoke
+        run: make -C server test-db test-smoke test-sessions
       - name: Verify OpenClaw OAuth, task, Focus, and revocation acceptance
         run: make -C server test-openclaw
       - name: Verify baseline upgrades and data restoration

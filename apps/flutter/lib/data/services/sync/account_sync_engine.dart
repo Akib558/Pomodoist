@@ -13,6 +13,7 @@ import 'package:pomodoist/data/services/sync/account_sync_mapping.dart';
 import 'package:pomodoist/data/services/collaboration/collaboration_api.dart';
 import 'package:pomodoist/domain/models/collaboration/collaboration_models.dart';
 import 'package:pomodoist/data/services/local/habit_row_mapping.dart';
+import 'package:pomodoist/data/services/auth/account_request.dart';
 import 'package:pomodoist/domain/models/habits/habit_models.dart';
 part 'habit_account_sync.dart';
 part 'shared_account_sync.dart';
@@ -82,31 +83,34 @@ class AccountSyncEngine {
     bool Function()? isSessionCurrent,
   }) {
     final userId = _account.currentUserId;
-    return SyncOwnerStore.serialized(_db, () async {
-      _syncUserId = userId;
-      _retentionCutoff = retentionCutoff;
-      _isSessionCurrent = isSessionCurrent;
-      try {
-        _checkSession();
-        await _prepareAccount();
-        _checkSession();
-        final imported = await importLocalSnapshotIfNeeded();
-        if (imported) {
-          await _broadcastSyncHint();
+    return accountRequest(
+      _account,
+      () => SyncOwnerStore.serialized(_db, () async {
+        _syncUserId = userId;
+        _retentionCutoff = retentionCutoff;
+        _isSessionCurrent = isSessionCurrent;
+        try {
+          _checkSession();
+          await _prepareAccount();
+          _checkSession();
+          final imported = await importLocalSnapshotIfNeeded();
+          if (imported) {
+            await _broadcastSyncHint();
+          }
+          return <String>{
+            ...await syncShared(),
+            ...await pushPending(),
+            ...await pullLatest(),
+          };
+        } on _StaleSyncSession {
+          return <String>{};
+        } finally {
+          _syncUserId = null;
+          _retentionCutoff = null;
+          _isSessionCurrent = null;
         }
-        return <String>{
-          ...await syncShared(),
-          ...await pushPending(),
-          ...await pullLatest(),
-        };
-      } on _StaleSyncSession {
-        return <String>{};
-      } finally {
-        _syncUserId = null;
-        _retentionCutoff = null;
-        _isSessionCurrent = null;
-      }
-    });
+      }),
+    );
   }
 
   Future<bool> prepareLocalAccountData({Future<void> Function()? onReset}) =>

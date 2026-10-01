@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:app_account/app_account.dart';
+import 'package:pomodoist/data/services/auth/account_request.dart';
 
 import 'package:pomodoist/domain/models/account/account_overview.dart';
 
@@ -15,7 +16,10 @@ final class AccountOverviewService {
     Duration timeout = const Duration(seconds: 30),
   }) async {
     if (deviceId != null) unawaited(_registerInstall(deviceId, timeout));
-    return map(await _account.getOverview().timeout(timeout));
+    return accountRequest(
+      _account,
+      () async => map(await _account.getOverview().timeout(timeout)),
+    );
   }
 
   Future<void> _registerInstall(

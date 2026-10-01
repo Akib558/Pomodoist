@@ -6,6 +6,7 @@ import 'package:pomodoist/domain/models/habits/habit_models.dart';
 import 'package:pomodoist/domain/models/notifications/habit_reminder_status.dart';
 import 'package:pomodoist/ui/core/localization/app_l10n.dart';
 import 'package:pomodoist/ui/core/themes/app_theme.dart';
+import 'package:pomodoist/ui/core/widgets/app_date_time_picker.dart';
 import 'package:pomodoist/ui/habits/view_models/habits_view_model.dart';
 
 class HabitEditor extends ConsumerStatefulWidget {
@@ -56,12 +57,12 @@ class _HabitEditorState extends ConsumerState<HabitEditor> {
 
   String _date(DateTime day) =>
       DateFormat.yMMMd(context.l10n.localeName).format(day);
-  Future<void> _pickDate(bool start) async {
-    final selected = await showDatePicker(
-      context: context,
+  Future<void> _pickDate(bool start, AppDateTimePickerState picker) async {
+    final selected = await picker.pickDate(
       initialDate: start ? _start : (_end ?? _start),
       firstDate: DateTime(1),
       lastDate: DateTime(9999, 12, 31),
+      helpText: start ? context.l10n.habitStart : context.l10n.habitEnd,
     );
     if (selected == null || !mounted) return;
     setState(() {
@@ -141,10 +142,15 @@ class _HabitEditorState extends ConsumerState<HabitEditor> {
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),
-                IconButton(
-                  tooltip: l.commonClose,
-                  onPressed: view.saving ? null : widget.onClose,
-                  icon: const Icon(LucideIcons.x, size: 20),
+                Tooltip(
+                  message: l.commonClose,
+                  child: ShadIconButton.ghost(
+                    enabled: !view.saving,
+                    onPressed: widget.onClose,
+                    width: 44,
+                    height: 44,
+                    icon: const Icon(LucideIcons.x, size: 20),
+                  ),
                 ),
               ],
             ),
@@ -165,25 +171,27 @@ class _HabitEditorState extends ConsumerState<HabitEditor> {
                     ),
                     _field(
                       l.habitFrequency,
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          ChoiceChip(
-                            label: Text(l.habitDaily),
-                            selected: _daily,
-                            onSelected: view.saving
-                                ? null
-                                : (_) => setState(() => _daily = true),
+                      ShadTabs<bool>(
+                        value: _daily,
+                        scrollable: true,
+                        gap: 0,
+                        tabBarAlignment: AlignmentDirectional.centerStart
+                            .resolve(Directionality.of(context)),
+                        tabs: [
+                          ShadTab(
+                            value: true,
+                            height: 44,
+                            enabled: !view.saving,
+                            child: Text(l.habitDaily),
                           ),
-                          ChoiceChip(
-                            label: Text(l.habitWeekdays),
-                            selected: !_daily,
-                            onSelected: view.saving
-                                ? null
-                                : (_) => setState(() => _daily = false),
+                          ShadTab(
+                            value: false,
+                            height: 44,
+                            enabled: !view.saving,
+                            child: Text(l.habitWeekdays),
                           ),
                         ],
+                        onChanged: (value) => setState(() => _daily = value),
                       ),
                     ),
                     if (!_daily)
@@ -194,20 +202,31 @@ class _HabitEditorState extends ConsumerState<HabitEditor> {
                           runSpacing: 4,
                           children: [
                             for (var d = 1; d <= 7; d++)
-                              FilterChip(
-                                label: Text(
-                                  DateFormat.E(
-                                    l.localeName,
-                                  ).format(DateTime(2026, 9, 28 + d - 1)),
-                                ),
+                              Semantics(
                                 selected: _weekdays.contains(d),
-                                onSelected: view.saving
-                                    ? null
-                                    : (value) => setState(
-                                        () => value
-                                            ? _weekdays.add(d)
-                                            : _weekdays.remove(d),
-                                      ),
+                                child: ShadButton.secondary(
+                                  height: 44,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                  ),
+                                  backgroundColor: _weekdays.contains(d)
+                                      ? colors.accentTint
+                                      : colors.surfaceTint,
+                                  foregroundColor: _weekdays.contains(d)
+                                      ? colors.accent
+                                      : colors.secondaryText,
+                                  enabled: !view.saving,
+                                  onPressed: () => setState(
+                                    () => _weekdays.contains(d)
+                                        ? _weekdays.remove(d)
+                                        : _weekdays.add(d),
+                                  ),
+                                  child: Text(
+                                    DateFormat.E(
+                                      l.localeName,
+                                    ).format(DateTime(2026, 9, 28 + d - 1)),
+                                  ),
+                                ),
                               ),
                           ],
                         ),
@@ -226,11 +245,19 @@ class _HabitEditorState extends ConsumerState<HabitEditor> {
                     ),
                     _field(
                       l.habitStart,
-                      ShadButton.outline(
-                        enabled: !view.saving,
-                        onPressed: () => _pickDate(true),
-                        leading: const Icon(LucideIcons.calendar, size: 16),
-                        child: Text(_date(_start)),
+                      AppDateTimePicker(
+                        builder: (context, picker) => ShadButton.outline(
+                          enabled: !view.saving,
+                          height: 44,
+                          foregroundColor: colors.primaryText,
+                          onPressed: () => _pickDate(true, picker),
+                          leading: Icon(
+                            LucideIcons.calendar,
+                            size: 16,
+                            color: colors.secondaryText,
+                          ),
+                          child: Text(_date(_start)),
+                        ),
                       ),
                     ),
                     _field(
@@ -239,6 +266,10 @@ class _HabitEditorState extends ConsumerState<HabitEditor> {
                         key: ValueKey(_duration),
                         initialValue: _duration,
                         enabled: !view.saving,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
                         options: [
                           ShadOption(value: 0, child: Text(l.habitForever)),
                           for (final d in [7, 21, 30, 365])
@@ -271,10 +302,19 @@ class _HabitEditorState extends ConsumerState<HabitEditor> {
                     if (_end != null)
                       _field(
                         l.habitEnd,
-                        ShadButton.outline(
-                          enabled: !view.saving,
-                          onPressed: () => _pickDate(false),
-                          child: Text(_date(_end!)),
+                        AppDateTimePicker(
+                          builder: (context, picker) => ShadButton.outline(
+                            enabled: !view.saving,
+                            height: 44,
+                            foregroundColor: colors.primaryText,
+                            onPressed: () => _pickDate(false, picker),
+                            leading: Icon(
+                              LucideIcons.calendar,
+                              size: 16,
+                              color: colors.secondaryText,
+                            ),
+                            child: Text(_date(_end!)),
+                          ),
                         ),
                       ),
                     _field(
@@ -283,6 +323,10 @@ class _HabitEditorState extends ConsumerState<HabitEditor> {
                         key: ValueKey(_project),
                         initialValue: _project ?? '',
                         enabled: !view.saving,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
                         options: [
                           ShadOption(value: '', child: Text(l.habitNoProject)),
                           for (final p in view.projects)
@@ -300,29 +344,61 @@ class _HabitEditorState extends ConsumerState<HabitEditor> {
                         ),
                       ),
                     ),
-                    ShadSwitch(
-                      value: _reminder,
-                      enabled: allowed && !view.saving,
-                      onChanged: (value) => setState(() => _reminder = value),
-                      label: Text(l.habitReminder),
+                    InkWell(
+                      borderRadius: BorderRadius.circular(8),
+                      onTap: allowed && !view.saving
+                          ? () => setState(() => _reminder = !_reminder)
+                          : null,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(minHeight: 44),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                l.habitReminder,
+                                style: Theme.of(context).textTheme.labelLarge,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Semantics(
+                              label: l.habitReminder,
+                              child: ShadSwitch(
+                                value: _reminder,
+                                enabled: allowed && !view.saving,
+                                onChanged: (value) =>
+                                    setState(() => _reminder = value),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                     if (_reminder)
                       Padding(
                         padding: const EdgeInsets.only(top: 12),
                         child: _field(
                           l.habitReminderTime,
-                          ShadButton.outline(
-                            enabled: allowed && !view.saving,
-                            onPressed: () async {
-                              final value = await showTimePicker(
-                                context: context,
-                                initialTime: _time,
-                              );
-                              if (value != null && mounted) {
-                                setState(() => _time = value);
-                              }
-                            },
-                            child: Text(_time.format(context)),
+                          AppDateTimePicker(
+                            builder: (context, picker) => ShadButton.outline(
+                              enabled: allowed && !view.saving,
+                              height: 44,
+                              foregroundColor: colors.primaryText,
+                              leading: Icon(
+                                LucideIcons.clock,
+                                size: 16,
+                                color: colors.secondaryText,
+                              ),
+                              onPressed: () async {
+                                final value = await picker.pickTime(
+                                  initialTime: _time,
+                                  helpText: l.habitReminderTime,
+                                );
+                                if (value != null && mounted) {
+                                  setState(() => _time = value);
+                                }
+                              },
+                              child: Text(_time.format(context)),
+                            ),
                           ),
                         ),
                       ),

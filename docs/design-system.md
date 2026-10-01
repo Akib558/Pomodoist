@@ -631,10 +631,10 @@ stops recording, transcription or analysis and never discards drafts.
 
 ### Date and time selection
 
-Use `AppDateTimePicker` for date/time selection in Quick Add, task details and
-Timeline. Keep its anchor mounted on the invoking chip or button. Its
-`ShadPopover` belongs above that surface, including manually inserted Quick Add
-and voice overlays; do not push a Navigator picker route underneath them.
+Use `AppDateTimePicker` for date/time selection in Quick Add, task details,
+Timeline and the habit editor. Keep its anchor mounted on the invoking chip or
+button. Its `ShadPopover` belongs above that surface, including manually inserted
+Quick Add and voice overlays; do not push a Navigator picker route underneath them.
 
 Use the shared palette and typography for a compact calendar and editable clock
 fields. Preserve locale-specific date input, first weekday, and 12/24-hour time
@@ -1407,8 +1407,12 @@ layouts use the shared adaptive dialog. Forms retain failed drafts and expose
 saving, loading, empty and error states. Use calendar date pickers, weekday
 choices, a 1–99 daily goal, inclusive duration presets and an optional active
 personal project. Unsupported reminders and denied permissions are explained
-in the editor. Destructive deletion requires confirmation. No bespoke motion
-is introduced; shared dialog and control behavior respects Reduce Motion.
+in the editor. Schedule frequency uses the shared scrollable segmented tabs;
+weekday choices use theme-aware buttons with selected semantics. Date and time
+fields use neutral outlined controls and the shared anchored picker. The reminder
+label sits beside a trailing switch, following Settings. Destructive deletion
+requires confirmation. No bespoke motion is introduced; shared dialog and
+control behavior respects Reduce Motion.
 
 Dates are local calendar values, event timestamps are UTC, and schedule edits
 take effect today without rewriting previous rules. Local reminders share one

@@ -656,6 +656,8 @@ class _RecordingAccountClient implements AccountClient {
   final String userId;
   final int nextCursor;
   final bool throwOnPull;
+  @override
+  AccountSession get currentSession => AccountSession(userId: userId);
   final List<AccountSyncOperation> pushed = [];
   final pullStarted = Completer<void>();
   Future<AccountSyncPullResult>? pendingPull;

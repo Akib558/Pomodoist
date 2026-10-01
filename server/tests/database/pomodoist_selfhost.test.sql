@@ -17,6 +17,9 @@ insert into auth.users (id, email, aud, role, created_at, updated_at)
 values
   ('a0000000-0000-4000-8000-000000000001', 'selfhost-alice@example.test', 'authenticated', 'authenticated', now(), now()),
   ('a0000000-0000-4000-8000-000000000002', 'selfhost-bob@example.test', 'authenticated', 'authenticated', now(), now());
+insert into auth.sessions(id,user_id,created_at,updated_at)
+select id,id,now(),now() from auth.users where id in
+  ('a0000000-0000-4000-8000-000000000001','a0000000-0000-4000-8000-000000000002');
 select is((select count(*) from public.profiles where pomodoist_is_pro and id in ('a0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000002')), 2::bigint,
   'new independent-server accounts receive full local feature access');
 select is((select count(*) from public.user_entitlements where source = 'selfhosted' and user_id in ('a0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000002')
@@ -26,7 +29,7 @@ select is((select count(*) from public.pomodoist_purchase_claims where linked_us
   'local feature access creates no official purchase claim');
 
 set local role authenticated;
-set local request.jwt.claims = '{"sub":"a0000000-0000-4000-8000-000000000001","role":"authenticated"}';
+set local request.jwt.claims = '{"sub":"a0000000-0000-4000-8000-000000000001","session_id":"a0000000-0000-4000-8000-000000000001","role":"authenticated"}';
 select is(public.ensure_profile(), 'a0000000-0000-4000-8000-000000000001'::uuid,
   'the public account SDK ensure_profile contract works');
 select is(public.ensure_profile(), 'a0000000-0000-4000-8000-000000000001'::uuid,
@@ -88,7 +91,7 @@ select ok(exists (
   where c->>'entityId' = 'task-a' and c->>'deletedAt' is not null
 ), 'the other device receives the deletion');
 
-set local request.jwt.claims = '{"sub":"a0000000-0000-4000-8000-000000000002","role":"authenticated"}';
+set local request.jwt.claims = '{"sub":"a0000000-0000-4000-8000-000000000002","session_id":"a0000000-0000-4000-8000-000000000002","role":"authenticated"}';
 select is(jsonb_array_length(public.pull_changes('pomodoist', 'desktop-b', 0, 500)->'changes'),
   0, 'another tenant cannot pull the first tenant data');
 select is((select count(*) from public.sync_entities), 0::bigint,

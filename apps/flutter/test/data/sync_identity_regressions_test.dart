@@ -6,6 +6,8 @@ import '../support/account_sync_engine.dart';
 import 'package:uuid/uuid.dart';
 
 class SwitchingAccount extends Fake implements AccountClient {
+  @override
+  AccountSession get currentSession => AccountSession(userId: userId);
   String userId = 'a';
   final pushedAs = <String>[];
   bool current = true;

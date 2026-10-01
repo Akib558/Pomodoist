@@ -188,6 +188,7 @@ docs/superpowers/specs/*
 !docs/superpowers/specs/2026-09-13-two-minor-release-refactor-design.md
 .kimi-code
 .agents
+.claude
 brag*/
 
 !apps/chrome-extension/.gitignore
