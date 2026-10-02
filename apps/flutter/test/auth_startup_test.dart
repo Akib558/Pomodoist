@@ -107,6 +107,11 @@ void main() {
 
     expect(find.byKey(const Key('account-ready-child')), findsOneWidget);
     expect(accountStartupCalls, 1);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
+    container.dispose();
+    await tester.pump(const Duration(seconds: 1));
   });
 
   testWidgets('startup warning never restarts the pending work', (

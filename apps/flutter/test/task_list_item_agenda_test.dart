@@ -327,8 +327,7 @@ void main() {
         activeFocusTaskId: item.activeFocusTaskId,
       );
 
-      final label = find.byKey(ValueKey('task-time-label-${item.id}'));
-      expect(tester.widget<Text>(label).style?.color, item.expectedColor);
+      expect(_timeLabelColor(tester, item.id), item.expectedColor);
       expect(
         tester
             .getSemantics(find.byKey(ValueKey('task-time-meta-${item.id}')))
@@ -358,24 +357,30 @@ void main() {
     ticker.add(DateTime.utc(2026, 7, 10, 9, 59));
     await tester.pump();
     expect(
-      tester
-          .widget<Text>(find.byKey(const ValueKey('task-time-label-boundary')))
-          .style
-          ?.color,
+      _timeLabelColor(tester, 'boundary'),
       AppTheme.light().extension<AppThemePalette>()!.info,
     );
 
     ticker.add(DateTime.utc(2026, 7, 10, 10));
     await tester.pump();
     expect(
-      tester
-          .widget<Text>(find.byKey(const ValueKey('task-time-label-boundary')))
-          .style
-          ?.color,
+      _timeLabelColor(tester, 'boundary'),
       AppTheme.light().extension<AppThemePalette>()!.warning,
     );
   });
 }
+
+Color? _timeLabelColor(WidgetTester tester, String taskId) => tester
+    .widget<Text>(
+      find
+          .descendant(
+            of: find.byKey(ValueKey('task-time-label-$taskId')),
+            matching: find.byType(Text),
+          )
+          .first,
+    )
+    .style
+    ?.color;
 
 Future<void> _pumpRow(
   WidgetTester tester, {

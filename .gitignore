@@ -129,6 +129,7 @@ docs/*
 temp**/
 tmp/
 habit*/
+variants/
 
 # FVM Version Cache
 .fvm/

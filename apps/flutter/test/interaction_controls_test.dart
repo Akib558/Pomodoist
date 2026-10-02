@@ -1867,12 +1867,9 @@ void main() {
 
     expect(find.text('Fresh list task'), findsOneWidget);
     expect(find.text('Old list snapshot'), findsNothing);
-    expect(
-      tester
-          .widget<Text>(find.byKey(ValueKey('task-time-label-${oldTask.id}')))
-          .data,
-      contains('11:00'),
-    );
+    expect(find.text('January 2'), findsOneWidget);
+    expect(find.text('11:00 AM-12:00 PM'), findsOneWidget);
+    expect(find.text('09:00 AM-10:00 AM'), findsNothing);
   });
 
   testWidgets('timeline task blocks follow the soft-fill visual contract', (
