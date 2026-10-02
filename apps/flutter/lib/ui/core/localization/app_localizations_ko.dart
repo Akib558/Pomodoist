@@ -3827,6 +3827,15 @@ class AppLocalizationsKo extends AppLocalizations {
   String get habitsSubtitle => '매일 작은 한 걸음';
 
   @override
+  String get habitHistory => '최근 5일';
+
+  @override
+  String get habitNotScheduled => '예정 없음';
+
+  @override
+  String get habitsCompletedLabel => '완료한 습관';
+
+  @override
   String get habitNew => '새 습관';
 
   @override

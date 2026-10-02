@@ -3819,6 +3819,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String get habitsSubtitle => '毎日の小さな一歩';
 
   @override
+  String get habitHistory => '直近5日間';
+
+  @override
+  String get habitNotScheduled => '予定なし';
+
+  @override
+  String get habitsCompletedLabel => '完了した習慣';
+
+  @override
   String get habitNew => '新しい習慣';
 
   @override

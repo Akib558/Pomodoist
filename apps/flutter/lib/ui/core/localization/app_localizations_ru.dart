@@ -3947,6 +3947,15 @@ class AppLocalizationsRu extends AppLocalizations {
   String get habitsSubtitle => 'Маленькие шаги каждый день';
 
   @override
+  String get habitHistory => 'Последние 5 дней';
+
+  @override
+  String get habitNotScheduled => 'Не запланировано';
+
+  @override
+  String get habitsCompletedLabel => 'Привычки выполнены';
+
+  @override
   String get habitNew => 'Новая привычка';
 
   @override

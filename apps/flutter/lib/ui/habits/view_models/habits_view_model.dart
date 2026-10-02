@@ -17,12 +17,14 @@ class HabitDayRow {
     required this.target,
     required this.canAdd,
     required this.canUndo,
+    required this.history,
     this.project,
   });
   final Habit habit;
   final int count, target;
   final bool canAdd, canUndo;
   final ProjectItem? project;
+  final List<({DateTime day, int count, int? target})> history;
 }
 
 class HabitsViewState {
@@ -90,10 +92,17 @@ class HabitsViewModel extends Notifier<HabitsViewState> {
         .where((h) => h.isScheduledOn(_selected!))
         .toList();
     final checkIns = checks.value ?? const <HabitCheckIn>[];
+    final counts = <(String, DateTime), int>{};
+    for (final check in checkIns) {
+      if (!check.isDeleted) {
+        final key = (check.habitId, check.day);
+        counts.update(key, (count) => count + 1, ifAbsent: () => 1);
+      }
+    }
     final complete = scheduled
         .where(
           (h) =>
-              habitCompletionCount(h.id, _selected!, checkIns) >=
+              (counts[(h.id, _selected!)] ?? 0) >=
               h.scheduleFor(_selected!)!.targetPerDay,
         )
         .length;
@@ -104,13 +113,32 @@ class HabitsViewModel extends Notifier<HabitsViewState> {
           (_finished || h.isScheduledOn(_selected!)),
     );
     final rows = visible.map((h) {
-      final count = habitCompletionCount(h.id, _selected!, checkIns);
+      final count = counts[(h.id, _selected!)] ?? 0;
       final target =
           (h.scheduleFor(_selected!) ?? h.scheduleHistory.last).targetPerDay;
       return HabitDayRow(
         habit: h,
         count: math.min(count, target),
         target: target,
+        history: List.unmodifiable(
+          List.generate(5, (index) {
+            final day = DateTime(
+              _selected!.year,
+              _selected!.month,
+              _selected!.day - 4 + index,
+            );
+            final target = h.isScheduledOn(day)
+                ? h.scheduleFor(day)!.targetPerDay
+                : null;
+            return (
+              day: day,
+              count: target == null || day.isAfter(today)
+                  ? 0
+                  : math.min(counts[(h.id, day)] ?? 0, target),
+              target: target,
+            );
+          }),
+        ),
         project: byId[h.projectId],
         canAdd:
             !_selected!.isAfter(today) &&

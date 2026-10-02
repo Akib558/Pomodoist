@@ -3951,6 +3951,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get habitsSubtitle => 'Small steps, every day';
 
   @override
+  String get habitHistory => 'Last 5 days';
+
+  @override
+  String get habitNotScheduled => 'Not scheduled';
+
+  @override
+  String get habitsCompletedLabel => 'Habits completed';
+
+  @override
   String get habitNew => 'New habit';
 
   @override

@@ -3733,6 +3733,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get habitsSubtitle => '每天一小步';
 
   @override
+  String get habitHistory => '最近5天';
+
+  @override
+  String get habitNotScheduled => '未安排';
+
+  @override
+  String get habitsCompletedLabel => '已完成的习惯';
+
+  @override
   String get habitNew => '新建习惯';
 
   @override

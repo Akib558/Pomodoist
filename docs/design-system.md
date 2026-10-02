@@ -1402,6 +1402,16 @@ habits; rows retain partial progress and clamp displayed counts to the daily
 goal. Future days are read-only. Ended habits remain available in Finished
 so earlier dates can still be corrected.
 
+Habit rows are flat with bottom dividers, a neutral repeat icon, muted completed
+titles, and trailing check-in and overflow actions. Show project, schedule and
+optional reminder time below the title. A compact five-day strip ends on the
+selected date and uses each day's historical schedule and goal: solid accent
+means complete, accent outline means partial, neutral fill means no check-ins,
+and neutral outline means unscheduled or future. Every mark exposes its date
+and count or availability through a tooltip and semantics. Multi-check-in goals
+also show a small progress bar beside the numeric count. The week strip uses
+transparent unselected surfaces; the summary pairs its count with a progress bar.
+
 At 960 px of content width, the editor occupies a 380 px right panel. Narrower
 layouts use the shared adaptive dialog. Forms retain failed drafts and expose
 saving, loading, empty and error states. Use calendar date pickers, weekday

@@ -6785,6 +6785,24 @@ abstract class AppLocalizations {
   /// **'Small steps, every day'**
   String get habitsSubtitle;
 
+  /// No description provided for @habitHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 5 days'**
+  String get habitHistory;
+
+  /// No description provided for @habitNotScheduled.
+  ///
+  /// In en, this message translates to:
+  /// **'Not scheduled'**
+  String get habitNotScheduled;
+
+  /// No description provided for @habitsCompletedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Habits completed'**
+  String get habitsCompletedLabel;
+
   /// No description provided for @habitNew.
   ///
   /// In en, this message translates to:
