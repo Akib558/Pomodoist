@@ -1,6 +1,12 @@
 -- Real reservation/finalization calls; synthetic rows and metadata roll back.
 -- No signed URLs, Storage uploads, or HTTP requests are made by this test.
 begin;
+\ir hosted-mode.inc
+select plan(1);
+-- A fresh DB-only test instance has no Storage service to provision this bucket.
+insert into storage.buckets(id,name,public,file_size_limit)
+  values('pomodoist-shared','pomodoist-shared',false,20000000)
+  on conflict(id) do update set public=false,file_size_limit=20000000;
 do $$
 declare
   actor uuid:=gen_random_uuid(); session uuid:=gen_random_uuid(); first_upload uuid;
@@ -135,5 +141,6 @@ begin
   exception when sqlstate '54000' then null; end;
   assert not has_function_privilege('anon','public.pomodoist_files(jsonb)','execute');
 end $$;
-select 'upload quota hold regression checks passed' as result;
+select pass('upload quota hold regression checks passed');
+select * from finish();
 rollback;

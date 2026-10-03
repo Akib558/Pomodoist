@@ -1,5 +1,6 @@
 -- Run against a migrated database. All fixtures are temporary; no HTTP calls.
 begin;
+select plan(1);
 create temp table cleanup_request (like private.pomodoist_files_cleanup_request including all);
 create temp table cleanup_response (like net._http_response including all);
 do $$
@@ -19,6 +20,10 @@ exception when raise_exception or invalid_text_representation then return true;
 end $$;
 do $$
 begin
+  assert (select relrowsecurity from pg_class where oid='private.pomodoist_files_cleanup_request'::regclass);
+  assert strpos(pg_get_functiondef('private.invoke_pomodoist_files_cleanup()'::regprocedure),
+    '''Authorization'',''Bearer ''||secret,''X-Pomodoist-Cleanup-Secret'',secret') > 0,
+    'Dispatch must support both old and new cleanup workers';
   perform pg_temp.check_cleanup(); -- Idle worker is healthy.
   insert into pg_temp.cleanup_request(singleton,request_id) values(true,-1);
   perform pg_temp.check_cleanup(); -- Give asynchronous dispatch time to finish.
@@ -46,5 +51,6 @@ begin
   assert not has_function_privilege('anon','private.invoke_pomodoist_files_cleanup()','execute');
   assert not has_table_privilege('authenticated','private.pomodoist_files_cleanup_request','select');
 end $$;
-select 'cleanup response regression checks passed' as result;
+select pass('cleanup response, worker compatibility and access regression checks passed');
+select * from finish();
 rollback;
