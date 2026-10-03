@@ -1,5 +1,6 @@
 import 'support/test_app.dart';
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:app_account/app_account.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,10 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
+import 'package:supabase_flutter/supabase_flutter.dart'
+    show SupabaseClient, AuthClientOptions;
 import 'package:pomodoist/config/account_providers.dart';
 import 'package:pomodoist/config/billing_store_dependencies.dart';
 import 'package:pomodoist/ui/settings/widgets/settings_screen.dart';
@@ -180,9 +185,12 @@ void main() {
       overview: () async => overview,
       registerInstallCallback: () async => throw StateError('offline'),
     );
+    final client = await _overviewClient(account);
+    addTearDown(client.dispose);
     final container = ProviderContainer(
       overrides: [
         accountClientProvider.overrideWithValue(account),
+        accountOverviewSupabaseClientProvider.overrideWithValue(client),
         accountAuthStateProvider.overrideWithValue(
           const AsyncData(AccountAuthState(signedIn: true)),
         ),
@@ -215,9 +223,12 @@ void main() {
         overview: () async => overview,
         registerInstallCallback: () async {},
       );
+      final client = await _overviewClient(account);
+      addTearDown(client.dispose);
       final container = ProviderContainer(
         overrides: [
           accountClientProvider.overrideWithValue(account),
+          accountOverviewSupabaseClientProvider.overrideWithValue(client),
           // The auth stream can report a stale signed-out snapshot while the
           // live session is intact, so the profile must still load.
           accountAuthStateProvider.overrideWithValue(
@@ -258,10 +269,13 @@ void main() {
       },
       registerInstallCallback: () async {},
     );
+    final client = await _overviewClient(account);
+    addTearDown(client.dispose);
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           accountClientProvider.overrideWithValue(account),
+          accountOverviewSupabaseClientProvider.overrideWithValue(client),
           accountAuthStateProvider.overrideWithValue(
             const AsyncData(AccountAuthState(signedIn: true)),
           ),
@@ -341,4 +355,54 @@ class _OverviewAccountClient implements AccountClient {
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+Future<SupabaseClient> _overviewClient(_OverviewAccountClient account) async {
+  final client = SupabaseClient(
+    'https://example.test',
+    'test-key',
+    authOptions: const AuthClientOptions(autoRefreshToken: false),
+    httpClient: MockClient((request) async {
+      if (request.url.path.startsWith('/auth/')) {
+        return http.Response(
+          jsonEncode({
+            'access_token': 'bootstrap-test',
+            'refresh_token': 'refresh-test',
+            'token_type': 'bearer',
+            'expires_in': 3600,
+            'user': {
+              'id': 'user',
+              'aud': 'authenticated',
+              'created_at': '2026-01-01T00:00:00Z',
+            },
+          }),
+          200,
+          headers: {'content-type': 'application/json'},
+          request: request,
+        );
+      }
+      expect(request.url.path, '/rest/v1/rpc/get_account_overview');
+      final overview = await account.overview();
+      return http.Response(
+        jsonEncode({
+          'profile': {
+            'id': overview.profile.id,
+            'displayName': overview.profile.displayName,
+            'email': overview.profile.email,
+            'pomodoistIsPro': overview.profile.pomodoistIsPro,
+          },
+          'apps': [],
+          'generatedAt': overview.generatedAt.toIso8601String(),
+        }),
+        200,
+        headers: {'content-type': 'application/json'},
+        request: request,
+      );
+    }),
+  );
+  await client.auth.signInWithPassword(
+    email: 'user@example.test',
+    password: 'test',
+  );
+  return client;
 }

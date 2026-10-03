@@ -5,6 +5,7 @@
 
 #include <app_links/app_links_plugin_c_api.h>
 #include <audioplayers_windows/audioplayers_windows_plugin.h>
+#include <emoji_picker_flutter/emoji_picker_flutter_plugin_c_api.h>
 #include <file_selector_windows/file_selector_windows.h>
 #include <flutter/plugin_registrar_windows.h>
 #include <flutter/standard_method_codec.h>
@@ -86,6 +87,8 @@ void RegisterPomodoistPlugins(FlutterDesktopEngineRef engine) {
   AudioplayersWindowsPluginRegisterWithRegistrar(
       FlutterDesktopEngineGetPluginRegistrar(engine,
                                              "AudioplayersWindowsPlugin"));
+  EmojiPickerFlutterPluginCApiRegisterWithRegistrar(
+      FlutterDesktopEngineGetPluginRegistrar(engine, "EmojiPickerFlutterPluginCApi"));
   FileSelectorWindowsRegisterWithRegistrar(
       FlutterDesktopEngineGetPluginRegistrar(engine, "FileSelectorWindows"));
   FlutterTimezonePluginCApiRegisterWithRegistrar(

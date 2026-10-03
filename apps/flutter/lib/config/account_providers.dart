@@ -16,7 +16,8 @@ import 'dart:async';
 import 'package:app_account/app_account.dart' hide AccountSession;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' show Supabase;
+import 'package:supabase_flutter/supabase_flutter.dart'
+    show Supabase, SupabaseClient;
 import 'package:uuid/uuid.dart';
 
 import 'package:pomodoist/data/services/sync/account_sync_engine.dart';
@@ -313,6 +314,10 @@ final pomodoistDeviceIdProvider = FutureProvider<String>((ref) {
   return pomodoistDeviceId(ref.watch(appDatabaseProvider));
 });
 
+final accountOverviewSupabaseClientProvider = Provider<SupabaseClient>(
+  (ref) => Supabase.instance.client,
+);
+
 final accountOverviewRepositoryProvider = Provider<AccountOverviewRepository?>((
   ref,
 ) {
@@ -322,7 +327,10 @@ final accountOverviewRepositoryProvider = Provider<AccountOverviewRepository?>((
       (authState?.signedIn ?? false) || account?.currentUserId != null;
   return account == null || !signedIn
       ? null
-      : AccountOverviewRepository(account, client: Supabase.instance.client);
+      : AccountOverviewRepository(
+          account,
+          client: ref.watch(accountOverviewSupabaseClientProvider),
+        );
 });
 
 final accountOverviewProvider = FutureProvider<PomodoistAccountOverview?>((
