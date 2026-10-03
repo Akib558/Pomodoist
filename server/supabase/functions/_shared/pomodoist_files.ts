@@ -22,11 +22,11 @@ export function handleFiles(request: Request, dependencies: CollaborationDepende
   return handleCollaboration(request, dependencies, validateFilesRequest);
 }
 
-export async function handleFilesCleanup(request: Request, serviceKey: string, cleanup: () => Promise<void>): Promise<Response> {
+export async function handleFilesCleanup(request: Request, workerSecret: string, cleanup: () => Promise<void>): Promise<Response> {
   const headers = { "Cache-Control": "no-store" };
   if (request.method !== "POST") return Response.json({ error: "POST required" }, { status: 405, headers });
   // Only the configured server credential can dispatch deletion work; user JWTs cannot.
-  if (!serviceKey || request.headers.get("Authorization") !== `Bearer ${serviceKey}`) {
+  if (!workerSecret || request.headers.get("X-Pomodoist-Cleanup-Secret") !== workerSecret) {
     return Response.json({ error: "Authentication required" }, { status: 401, headers });
   }
   try {

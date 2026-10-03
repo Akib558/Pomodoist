@@ -269,7 +269,7 @@ void main() {
       },
       registerInstallCallback: () async {},
     );
-    final client = await _overviewClient(account);
+    final client = (await tester.runAsync(() => _overviewClient(account)))!;
     addTearDown(client.dispose);
     await tester.pumpWidget(
       ProviderScope(

@@ -52,7 +52,13 @@ Deno.test("scheduled cleanup rejects users and retries failed storage work", asy
     assertEquals((await handleFilesCleanup(request, "service-secret", cleanup)).status, 401);
   }
   assertEquals(calls, 0);
-  const request = () => new Request("https://files.invalid", { method: "POST", headers: { Authorization: "Bearer service-secret" } });
+  for (const secret of ["", "user", "service-secret-wrong"]) {
+    const request = new Request("https://files.invalid", { method: "POST", headers: { "X-Pomodoist-Cleanup-Secret": secret } });
+    assertEquals((await handleFilesCleanup(request, "service-secret", cleanup)).status, 401);
+  }
+  const request = () => new Request("https://files.invalid", { method: "POST", headers: { "X-Pomodoist-Cleanup-Secret": "service-secret", Authorization: "Bearer gateway-rewritten-token" } });
+  assertEquals((await handleFilesCleanup(request(), "", cleanup)).status, 401);
+  assertEquals(calls, 0);
   assertEquals((await handleFilesCleanup(request(), "service-secret", cleanup)).status, 503);
   assertEquals((await handleFilesCleanup(request(), "service-secret", cleanup)).status, 200);
   assertEquals(calls, 2);

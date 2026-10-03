@@ -79,9 +79,10 @@ apply_directory "$root/migrations"
 $psql_base -f "$root/enable-selfhost.sql"
 
 if [ "${POMODOIST_FILES_STORAGE_ENABLED:-false}" = true ]; then
+  export POMODOIST_FILES_CLEANUP_SECRET="${POMODOIST_FILES_CLEANUP_SECRET:-$SUPABASE_SERVICE_ROLE_KEY}"
   $psql_base <<'SQL'
 \getenv files_url POMODOIST_FILES_CLEANUP_URL
-\getenv files_secret SUPABASE_SERVICE_ROLE_KEY
+\getenv files_secret POMODOIST_FILES_CLEANUP_SECRET
 select vault.create_secret(:'files_url', 'pomodoist-files-cleanup-url')
 where not exists(select 1 from vault.secrets where name='pomodoist-files-cleanup-url');
 select vault.update_secret(id, :'files_url')
