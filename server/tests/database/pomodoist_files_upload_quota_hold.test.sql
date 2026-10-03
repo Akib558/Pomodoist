@@ -1,22 +1,29 @@
--- Real reservation/finalization calls; synthetic rows and metadata roll back.
+-- Deployed reservation/finalization SQL; synthetic rows and metadata roll back.
 -- No signed URLs, Storage uploads, or HTTP requests are made by this test.
 begin;
 \ir hosted-mode.inc
 select plan(1);
--- DB-only CI does not start Storage. Model its metadata boundary transactionally;
--- installed Storage tables remain authoritative when this test runs on a full stack.
-create schema if not exists storage;
-create table if not exists storage.buckets (
+-- Exercise the deployed SQL body against a temporary Storage metadata boundary.
+-- The quota/account/synchronization tables and helper functions remain real.
+create temp table quota_storage_buckets (
   id text primary key, name text not null, public boolean not null default false,
   file_size_limit bigint
 );
-create table if not exists storage.objects (
-  bucket_id text not null references storage.buckets(id), name text not null,
+create temp table quota_storage_objects (
+  bucket_id text not null references quota_storage_buckets(id), name text not null,
   metadata jsonb, primary key(bucket_id,name)
 );
-insert into storage.buckets(id,name,public,file_size_limit)
-  values('pomodoist-shared','pomodoist-shared',false,20000000)
-  on conflict(id) do update set public=false,file_size_limit=20000000;
+insert into pg_temp.quota_storage_buckets(id,name,public,file_size_limit)
+  values('pomodoist-shared','pomodoist-shared',false,20000000);
+do $$
+declare definition text;
+begin
+  definition := pg_get_functiondef('private.pomodoist_files(jsonb)'::regprocedure);
+  definition := replace(definition,'private.pomodoist_files','pg_temp.quota_files');
+  definition := replace(definition,'storage.buckets','pg_temp.quota_storage_buckets');
+  definition := replace(definition,'storage.objects','pg_temp.quota_storage_objects');
+  execute definition;
+end $$;
 do $$
 declare
   actor uuid:=gen_random_uuid(); session uuid:=gen_random_uuid(); first_upload uuid;
@@ -35,27 +42,27 @@ begin
   for i in 1..50 loop
     upload_id:=gen_random_uuid();
     if i=1 then first_upload:=upload_id; end if;
-    result:=public.pomodoist_files(jsonb_build_object('action','reserveUpload','taskId','quota-test',
+    result:=pg_temp.quota_files(jsonb_build_object('action','reserveUpload','taskId','quota-test',
       'uploadId',upload_id,'name','small.txt','contentType','text/plain','bytes',1));
     assert result->>'uploadId'=upload_id::text;
   end loop;
-  result:=public.pomodoist_files('{"action":"capabilities","taskId":"quota-test"}');
+  result:=pg_temp.quota_files('{"action":"capabilities","taskId":"quota-test"}');
   assert result->>'reservedBytes'='1000000000', 'Fifty one-byte declarations must hold 1 GB';
   assert result->>'canUpload'='false' and result->>'reason'='quota_exceeded';
   begin
-    perform public.pomodoist_files(jsonb_build_object('action','reserveUpload','taskId','quota-test',
+    perform pg_temp.quota_files(jsonb_build_object('action','reserveUpload','taskId','quota-test',
       'uploadId',gen_random_uuid(),'name','small.txt','contentType','text/plain','bytes',1));
     raise exception 'Expected the 51st one-byte reservation to fail';
   exception when sqlstate '54000' then null; end;
   -- An idempotent retry reuses its slot without double charging.
-  perform public.pomodoist_files(jsonb_build_object('action','reserveUpload','taskId','quota-test',
+  perform pg_temp.quota_files(jsonb_build_object('action','reserveUpload','taskId','quota-test',
     'uploadId',first_upload,'name','small.txt','contentType','text/plain','bytes',1));
   update private.pomodoist_uploads set expires_at=now()-interval '1 minute' where user_id=actor;
   perform private.pomodoist_file_delete(first_upload);
-  result:=public.pomodoist_files('{"action":"capabilities","taskId":"quota-test"}');
+  result:=pg_temp.quota_files('{"action":"capabilities","taskId":"quota-test"}');
   assert result->>'reservedBytes'='1000000000', 'Expiry and deletion must not release live capabilities';
   begin
-    perform public.pomodoist_files(jsonb_build_object('action','reserveUpload','taskId','quota-test',
+    perform pg_temp.quota_files(jsonb_build_object('action','reserveUpload','taskId','quota-test',
       'uploadId',gen_random_uuid(),'name','small.txt','contentType','text/plain','bytes',1));
     raise exception 'Expected expired/deleted reservations to keep their hold';
   exception when sqlstate '54000' then null; end;
@@ -75,56 +82,56 @@ begin
   assert (select storage_deleted_at is not null from private.pomodoist_uploads where id=first_upload),
     'Storage acknowledgement after capability expiry must release the reservation';
   perform set_config('request.jwt.claims',jsonb_build_object('sub',actor,'session_id',session,'role','authenticated')::text,true);
-  result:=public.pomodoist_files('{"action":"capabilities","taskId":"quota-test"}');
+  result:=pg_temp.quota_files('{"action":"capabilities","taskId":"quota-test"}');
   assert result->>'reservedBytes'='980000000', 'Only the confirmed slot must be released';
 
   -- Simulate a confirmed Storage deletion after all capabilities have expired.
   update private.pomodoist_uploads set deleted_at=now(),storage_deleted_at=now() where user_id=actor;
-  result:=public.pomodoist_files('{"action":"capabilities","taskId":"quota-test"}');
+  result:=pg_temp.quota_files('{"action":"capabilities","taskId":"quota-test"}');
   assert result->>'reservedBytes'='0' and result->>'canUpload'='true';
   upload_id:=gen_random_uuid();
-  result:=public.pomodoist_files(jsonb_build_object('action','reserveUpload','taskId','quota-test',
+  result:=pg_temp.quota_files(jsonb_build_object('action','reserveUpload','taskId','quota-test',
     'uploadId',upload_id,'name','small.txt','contentType','text/plain','bytes',1));
   object_path:=result->>'objectPath';
-  insert into storage.objects(bucket_id,name,metadata)
+  insert into pg_temp.quota_storage_objects(bucket_id,name,metadata)
     values('pomodoist-shared',object_path,'{"size":20000000,"mimetype":"text/plain"}');
   begin
-    perform public.pomodoist_files(jsonb_build_object('action','finishUpload','uploadId',upload_id));
+    perform pg_temp.quota_files(jsonb_build_object('action','finishUpload','uploadId',upload_id));
     raise exception 'Expected the 1-byte declaration / 20 MB object mismatch to fail';
   exception when sqlstate '22023' then null; end;
-  result:=public.pomodoist_files('{"action":"capabilities","taskId":"quota-test"}');
+  result:=pg_temp.quota_files('{"action":"capabilities","taskId":"quota-test"}');
   assert result->>'reservedBytes'='20000000', 'Rejected finalization must retain the full hold';
-  update storage.objects set metadata='{"size":1,"mimetype":"text/plain"}'
+  update pg_temp.quota_storage_objects set metadata='{"size":1,"mimetype":"text/plain"}'
     where bucket_id='pomodoist-shared' and name=object_path;
-  perform public.pomodoist_files(jsonb_build_object('action','finishUpload','uploadId',upload_id));
-  perform public.pomodoist_files(jsonb_build_object('action','finishUpload','uploadId',upload_id));
-  result:=public.pomodoist_files('{"action":"capabilities","taskId":"quota-test"}');
+  perform pg_temp.quota_files(jsonb_build_object('action','finishUpload','uploadId',upload_id));
+  perform pg_temp.quota_files(jsonb_build_object('action','finishUpload','uploadId',upload_id));
+  result:=pg_temp.quota_files('{"action":"capabilities","taskId":"quota-test"}');
   assert result->>'reservedBytes'='0' and result->>'monthlyUsedBytes'='1' and result->>'yearlyUsedBytes'='1',
     'Successful completion replaces the hold with exact bytes, once';
-  perform public.pomodoist_files(jsonb_build_object('action','deleteAttachment','attachmentId',upload_id));
-  result:=public.pomodoist_files('{"action":"capabilities","taskId":"quota-test"}');
+  perform pg_temp.quota_files(jsonb_build_object('action','deleteAttachment','attachmentId',upload_id));
+  result:=pg_temp.quota_files('{"action":"capabilities","taskId":"quota-test"}');
   assert result->>'reservedBytes'='20000000', 'Deletion must hold the slot until Storage confirms removal';
   update private.pomodoist_uploads set storage_deleted_at=now() where id=upload_id;
 
   update private.pomodoist_upload_months set bytes=980000001 where user_id=actor;
   begin
-    perform public.pomodoist_files(jsonb_build_object('action','reserveUpload','taskId','quota-test',
+    perform pg_temp.quota_files(jsonb_build_object('action','reserveUpload','taskId','quota-test',
       'uploadId',gen_random_uuid(),'name','small.txt','contentType','text/plain','bytes',1));
     raise exception 'Expected insufficient monthly headroom for a full slot to fail';
   exception when sqlstate '54000' then null; end;
   update private.pomodoist_upload_months set bytes=0 where user_id=actor;
   update private.pomodoist_upload_years set bytes=4980000001 where user_id=actor;
   begin
-    perform public.pomodoist_files(jsonb_build_object('action','reserveUpload','taskId','quota-test',
+    perform pg_temp.quota_files(jsonb_build_object('action','reserveUpload','taskId','quota-test',
       'uploadId',gen_random_uuid(),'name','small.txt','contentType','text/plain','bytes',1));
     raise exception 'Expected insufficient yearly headroom for a full slot to fail';
   exception when sqlstate '54000' then null; end;
 
-  update storage.buckets set file_size_limit=null where id='pomodoist-shared';
-  result:=public.pomodoist_files('{"action":"capabilities","taskId":"quota-test"}');
+  update pg_temp.quota_storage_buckets set file_size_limit=null where id='pomodoist-shared';
+  result:=pg_temp.quota_files('{"action":"capabilities","taskId":"quota-test"}');
   assert result->>'canUpload'='false' and result->>'reason'='storage_unavailable',
     'An unbounded bucket must fail closed';
-  update storage.buckets set file_size_limit=20000000 where id='pomodoist-shared';
+  update pg_temp.quota_storage_buckets set file_size_limit=20000000 where id='pomodoist-shared';
   -- A free editor's shared uploads reserve the sponsoring owner's full slot.
   update public.user_entitlements set status='revoked' where user_id=actor;
   insert into auth.users(id,email,aud,role,created_at,updated_at)
@@ -139,13 +146,13 @@ begin
   insert into private.pomodoist_upload_months(user_id,month,bytes)
     values(owner_id,date_trunc('month',now() at time zone 'UTC')::date,980000000);
   upload_id:=gen_random_uuid();
-  perform public.pomodoist_files(jsonb_build_object('action','reserveUpload','scopeId',shared_scope,'taskId','quota-test',
+  perform pg_temp.quota_files(jsonb_build_object('action','reserveUpload','scopeId',shared_scope,'taskId','quota-test',
     'uploadId',upload_id,'name','small.txt','contentType','text/plain','bytes',1));
   assert (select quota_user_id=owner_id from private.pomodoist_uploads where id=upload_id);
-  result:=public.pomodoist_files(jsonb_build_object('action','capabilities','scopeId',shared_scope,'taskId','quota-test'));
+  result:=pg_temp.quota_files(jsonb_build_object('action','capabilities','scopeId',shared_scope,'taskId','quota-test'));
   assert result->>'reservedBytes'='20000000' and result->>'canUpload'='false';
   begin
-    perform public.pomodoist_files(jsonb_build_object('action','reserveUpload','scopeId',shared_scope,'taskId','quota-test',
+    perform pg_temp.quota_files(jsonb_build_object('action','reserveUpload','scopeId',shared_scope,'taskId','quota-test',
       'uploadId',gen_random_uuid(),'name','small.txt','contentType','text/plain','bytes',1));
     raise exception 'Expected the sponsoring owner quota to block a second slot';
   exception when sqlstate '54000' then null; end;
