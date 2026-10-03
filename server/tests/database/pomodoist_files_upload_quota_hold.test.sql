@@ -3,7 +3,17 @@
 begin;
 \ir hosted-mode.inc
 select plan(1);
--- A fresh DB-only test instance has no Storage service to provision this bucket.
+-- DB-only CI does not start Storage. Model its metadata boundary transactionally;
+-- installed Storage tables remain authoritative when this test runs on a full stack.
+create schema if not exists storage;
+create table if not exists storage.buckets (
+  id text primary key, name text not null, public boolean not null default false,
+  file_size_limit bigint
+);
+create table if not exists storage.objects (
+  bucket_id text not null references storage.buckets(id), name text not null,
+  metadata jsonb, primary key(bucket_id,name)
+);
 insert into storage.buckets(id,name,public,file_size_limit)
   values('pomodoist-shared','pomodoist-shared',false,20000000)
   on conflict(id) do update set public=false,file_size_limit=20000000;
