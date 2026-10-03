@@ -585,6 +585,8 @@
   "noLabels": "لا توجد تسميات",
   "labelsCount": "{count, plural, =1{تسمية واحدة} other{{count} تسميات}}",
   "renameProject": "إعادة تسمية المشروع",
+  "archiveProject": "أرشفة المشروع",
+  "restoreProject": "استعادة من الأرشيف",
   "deleteProject": "حذف المشروع",
   "deleteLabel": "حذف التسمية",
   "deleteProjectConfirmation": "حذف \"{name}\"؟ ستنتقل مهام هذا المشروع إلى Inbox.",

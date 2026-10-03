@@ -12,6 +12,7 @@ import 'package:pomodoist/ui/core/widgets/action_feedback.dart';
 import 'package:pomodoist/ui/tasks/view_models/project_view_model.dart';
 import 'package:pomodoist/ui/tasks/view_models/project_diagram_view_model.dart';
 import 'project_localizations.dart';
+import 'project_context_menu.dart';
 import 'project_diagram.dart';
 import 'quick_add_bar.dart';
 import 'task_list_view.dart';
@@ -78,10 +79,20 @@ class _ProjectContentState extends ConsumerState<_ProjectContent> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
+                  if (project != null && project.id != inboxProjectId)
+                    ProjectContextMenu(
+                      project: project,
+                      showMenuButton: true,
+                      child: Text(
+                        title,
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
+                    )
+                  else
+                    Text(
+                      title,
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
                   const SizedBox(height: 12),
                   ShadTabs<String>(
                     value: files ? 'files' : mode.name,

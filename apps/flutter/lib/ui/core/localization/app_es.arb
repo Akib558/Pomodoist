@@ -585,6 +585,8 @@
   "noLabels": "No hay etiquetas",
   "labelsCount": "{count, plural, =1{1 etiqueta} other{{count} etiquetas}}",
   "renameProject": "Renombrar proyecto",
+  "archiveProject": "Archivar proyecto",
+  "restoreProject": "Restaurar del archivo",
   "deleteProject": "Eliminar proyecto",
   "deleteLabel": "Eliminar etiqueta",
   "deleteProjectConfirmation": "¿Eliminar \"{name}\"? Las tareas de este proyecto se moverán a Inbox.",

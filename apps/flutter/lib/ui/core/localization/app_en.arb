@@ -816,6 +816,8 @@
     }
   },
   "renameProject": "Rename project",
+  "archiveProject": "Archive project",
+  "restoreProject": "Restore from archive",
   "deleteProject": "Delete project",
   "deleteLabel": "Delete label",
   "deleteProjectConfirmation": "Delete \"{name}\"? Tasks in this project will move to Inbox.",

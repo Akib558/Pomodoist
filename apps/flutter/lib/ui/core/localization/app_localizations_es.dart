@@ -1770,6 +1770,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get renameProject => 'Renombrar proyecto';
 
   @override
+  String get archiveProject => 'Archivar proyecto';
+
+  @override
+  String get restoreProject => 'Restaurar del archivo';
+
+  @override
   String get deleteProject => 'Eliminar proyecto';
 
   @override

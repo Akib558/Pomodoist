@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pomodoist/config/task_preferences_dependencies.dart';
@@ -8,9 +9,21 @@ import 'package:pomodoist/data/repositories/settings/preferences_repository.dart
 import 'package:pomodoist/domain/models/settings/bottom_navigation_preferences.dart';
 import 'package:pomodoist/ui/settings/view_models/bottom_navigation_view_model.dart';
 import 'package:pomodoist/ui/core/widgets/bottom_navigation_layout.dart';
+import 'package:pomodoist/ui/core/widgets/app_bottom_navigation.dart';
 import 'package:pomodoist/utils/result.dart';
 
 void main() {
+  test('an empty navigation leaves no panel or motion in the shell', () {
+    final navigation = AppBottomNavigation(
+      preferences: BottomNavigationPreferences(destinations: []),
+      selected: BottomNavigationDestination.today,
+      onSelected: (_) => fail('An empty navigation cannot select a route.'),
+    );
+    final panel = navigation.build(_UnusedContext()) as SizedBox;
+    expect(panel.width, 0);
+    expect(panel.height, 0);
+    expect(panel.child, isNull);
+  });
   test('habits can be selected without changing previous bottom tabs', () {
     final existing = BottomNavigationPreferences.decode(
       '{"destinations":["focus","calendar"]}',
@@ -56,18 +69,88 @@ void main() {
       final from = BottomNavigationFrame(
         widths: [100, ...List.filled(count - 1, 44.0)],
         labels: [1, ...List.filled(count - 1, 0.0)],
+        accentWidth: 100,
+        accentOpacity: 1,
       );
       final to = BottomNavigationFrame(
         widths: [...List.filled(count - 1, 44.0), 100],
         labels: [...List.filled(count - 1, 0.0), 1],
+        accentStart: (count - 1) * 44.0,
+        accentWidth: 100,
+        accentOpacity: 1,
       );
       for (final t in [0.0, .1, .5, .9, 1.0]) {
         final frame = BottomNavigationTween(begin: from, end: to).lerp(t);
         expect(frame.widths.every((width) => width >= 44), isTrue);
         expect(frame.contentWidth, closeTo(from.contentWidth, .000001));
+        expect(frame.accentStart, greaterThanOrEqualTo(0));
+        expect(
+          frame.accentStart + frame.accentWidth,
+          lessThanOrEqualTo(frame.contentWidth + .000001),
+        );
       }
     }
   });
+
+  test('sliding accent moves with widths and retargets the visible frame', () {
+    final from = BottomNavigationFrame(
+      widths: [120, 44],
+      labels: [1, 0],
+      accentStart: 0,
+      accentWidth: 120,
+      accentOpacity: 1,
+    );
+    final to = BottomNavigationFrame(
+      widths: [44, 100],
+      labels: [0, 1],
+      accentStart: 44,
+      accentWidth: 100,
+      accentOpacity: 1,
+    );
+    final tween = BottomNavigationTween(begin: from, end: to);
+    final middle = tween.lerp(.5);
+    expect(middle.accentStart, 22);
+    expect(middle.accentWidth, 110);
+    expect(middle.accentOpacity, 1);
+    expect(
+      middle.accentStart + middle.accentWidth,
+      lessThan(middle.contentWidth),
+    );
+    expect(tween.lerp(0), from);
+    expect(tween.lerp(1), to);
+
+    final reversed = BottomNavigationTween(begin: middle, end: from);
+    expect(reversed.lerp(0), middle);
+    expect(reversed.lerp(.5).accentStart, 11);
+    expect(reversed.lerp(.5).accentWidth, 115);
+    expect(
+      middle,
+      isNot(
+        BottomNavigationFrame(widths: middle.widths, labels: middle.labels),
+      ),
+    );
+  });
+
+  test(
+    'accent fades on unpinned routes and initial frames snap to the target',
+    () {
+      final selected = BottomNavigationFrame(
+        widths: [44, 100],
+        labels: [0, 1],
+        accentStart: 44,
+        accentWidth: 100,
+        accentOpacity: 1,
+      );
+      final unpinned = BottomNavigationFrame(widths: [72, 72], labels: [0, 0]);
+      final tween = BottomNavigationTween(begin: selected, end: unpinned);
+      expect(tween.lerp(.5).accentOpacity, .5);
+      expect(tween.lerp(1).accentOpacity, 0);
+      expect(tween.lerp(1).accentWidth, 0);
+      final initial = BottomNavigationTween(end: selected);
+      expect(initial.lerp(0), selected);
+      expect(initial.lerp(.5), selected);
+    },
+  );
 
   test(
     'defaults, empty selection, invalid and duplicate stored destinations',
@@ -279,6 +362,12 @@ void main() {
       BottomNavigationDestination.calendar,
     ]);
   });
+}
+
+class _UnusedContext implements BuildContext {
+  @override
+  dynamic noSuchMethod(Invocation invocation) =>
+      throw StateError('Empty navigation must not read the shell context.');
 }
 
 ProviderContainer _container(_Preferences repository) => ProviderContainer(

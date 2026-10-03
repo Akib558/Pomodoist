@@ -1700,6 +1700,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get renameProject => 'プロジェクト名を変更';
 
   @override
+  String get archiveProject => 'プロジェクトをアーカイブ';
+
+  @override
+  String get restoreProject => 'アーカイブから復元';
+
+  @override
   String get deleteProject => 'プロジェクトを削除';
 
   @override

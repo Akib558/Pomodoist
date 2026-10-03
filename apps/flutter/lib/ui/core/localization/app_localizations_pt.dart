@@ -1763,6 +1763,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get renameProject => 'Renomear projeto';
 
   @override
+  String get archiveProject => 'Arquivar projeto';
+
+  @override
+  String get restoreProject => 'Restaurar do arquivo';
+
+  @override
   String get deleteProject => 'Excluir projeto';
 
   @override

@@ -228,10 +228,12 @@ class _TaskSelectionRegionState extends ConsumerState<TaskSelectionRegion> {
                   : MainAxisSize.max,
               children: [
                 if (_controller.active) _selectionHeader(context),
-                if (widget.shrinkWrap)
-                  widget.child
-                else
-                  Expanded(child: widget.child),
+                KeyedSubtree(
+                  key: const ValueKey('task-selection-content'),
+                  child: widget.shrinkWrap
+                      ? widget.child
+                      : Expanded(child: widget.child),
+                ),
                 if (_controller.active) _selectionBar(context),
               ],
             ),

@@ -69,19 +69,27 @@ class AppBottomNavigation extends StatelessWidget {
         final inactiveWidth = active == null
             ? contentWidth / destinations.length
             : 44.0;
+        final widths = [
+          for (final destination in destinations)
+            !soft
+                ? contentWidth / destinations.length
+                : destination == active
+                ? contentWidth - inactiveWidth * (destinations.length - 1)
+                : inactiveWidth,
+        ];
+        final activeIndex = active == null ? -1 : destinations.indexOf(active);
+        final hasAccent = soft && activeIndex >= 0;
         final target = BottomNavigationFrame(
-          widths: [
-            for (final destination in destinations)
-              !soft
-                  ? contentWidth / destinations.length
-                  : destination == active
-                  ? contentWidth - inactiveWidth * (destinations.length - 1)
-                  : inactiveWidth,
-          ],
+          widths: widths,
           labels: [
             for (final destination in destinations)
               !soft || destination == active ? 1.0 : 0.0,
           ],
+          accentStart: hasAccent
+              ? widths.take(activeIndex).fold(0.0, (sum, width) => sum + width)
+              : 0,
+          accentWidth: hasAccent ? widths[activeIndex] : 0,
+          accentOpacity: hasAccent ? 1 : 0,
         );
         final reduceMotion = MediaQuery.disableAnimationsOf(context);
         return TweenAnimationBuilder<BottomNavigationFrame>(
@@ -105,49 +113,84 @@ class AppBottomNavigation extends StatelessWidget {
                   padding: const EdgeInsets.all(5),
                   child: SizedBox(
                     height: height,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                    child: Stack(
                       children: [
-                        for (
-                          var index = 0;
-                          index < destinations.length;
-                          index++
-                        )
-                          SizedBox(
-                            width: frame.widths[index],
-                            child:
-                                !preview &&
-                                    (destinations[index] ==
-                                            BottomNavigationDestination.focus ||
-                                        destinations[index] ==
-                                            BottomNavigationDestination
-                                                .projects)
-                                ? LearningTourAnchor(
-                                    id:
-                                        destinations[index] ==
-                                            BottomNavigationDestination.focus
-                                        ? LearningTourAnchorId.focusMobile
-                                        : LearningTourAnchorId.projectsMobile,
-                                    child: _DestinationButton(
-                                      destination: destinations[index],
-                                      selected: destinations[index] == active,
-                                      labelProgress: frame.labels[index],
-                                      labelsBelow: layout.labelsBelow,
-                                      textStyle: textStyle,
-                                      onTap: () =>
-                                          onSelected(destinations[index]),
+                        if (soft)
+                          PositionedDirectional(
+                            start: frame.accentStart,
+                            width: frame.accentWidth,
+                            top: 0,
+                            bottom: 0,
+                            child: IgnorePointer(
+                              child: ExcludeSemantics(
+                                child: Opacity(
+                                  opacity: frame.accentOpacity.clamp(0.0, 1.0),
+                                  child: AnimatedContainer(
+                                    duration: AppMotion.duration(
+                                      context,
+                                      AppMotion.state,
                                     ),
-                                  )
-                                : _DestinationButton(
-                                    destination: destinations[index],
-                                    selected: destinations[index] == active,
-                                    labelProgress: frame.labels[index],
-                                    labelsBelow: layout.labelsBelow,
-                                    textStyle: textStyle,
-                                    onTap: () =>
-                                        onSelected(destinations[index]),
+                                    curve: AppMotion.curve,
+                                    decoration: BoxDecoration(
+                                      color: context.appColors.accentTint,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
                                   ),
+                                ),
+                              ),
+                            ),
                           ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            for (
+                              var index = 0;
+                              index < destinations.length;
+                              index++
+                            )
+                              SizedBox(
+                                width: frame.widths[index],
+                                child:
+                                    !preview &&
+                                        (destinations[index] ==
+                                                BottomNavigationDestination
+                                                    .focus ||
+                                            destinations[index] ==
+                                                BottomNavigationDestination
+                                                    .projects)
+                                    ? LearningTourAnchor(
+                                        id:
+                                            destinations[index] ==
+                                                BottomNavigationDestination
+                                                    .focus
+                                            ? LearningTourAnchorId.focusMobile
+                                            : LearningTourAnchorId
+                                                  .projectsMobile,
+                                        child: _DestinationButton(
+                                          destination: destinations[index],
+                                          selected:
+                                              destinations[index] == active,
+                                          showBackground: !soft,
+                                          labelProgress: frame.labels[index],
+                                          labelsBelow: layout.labelsBelow,
+                                          textStyle: textStyle,
+                                          onTap: () =>
+                                              onSelected(destinations[index]),
+                                        ),
+                                      )
+                                    : _DestinationButton(
+                                        destination: destinations[index],
+                                        selected: destinations[index] == active,
+                                        showBackground: !soft,
+                                        labelProgress: frame.labels[index],
+                                        labelsBelow: layout.labelsBelow,
+                                        textStyle: textStyle,
+                                        onTap: () =>
+                                            onSelected(destinations[index]),
+                                      ),
+                              ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
@@ -174,6 +217,7 @@ class _DestinationButton extends StatelessWidget {
   const _DestinationButton({
     required this.destination,
     required this.selected,
+    required this.showBackground,
     required this.labelProgress,
     required this.labelsBelow,
     required this.textStyle,
@@ -182,6 +226,7 @@ class _DestinationButton extends StatelessWidget {
 
   final BottomNavigationDestination destination;
   final bool selected;
+  final bool showBackground;
   final double labelProgress;
   final bool labelsBelow;
   final TextStyle textStyle;
@@ -211,7 +256,9 @@ class _DestinationButton extends StatelessWidget {
           duration: AppMotion.duration(context, AppMotion.state),
           curve: AppMotion.curve,
           decoration: BoxDecoration(
-            color: selected ? colors.accentTint : Colors.transparent,
+            color: selected && showBackground
+                ? colors.accentTint
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Material(

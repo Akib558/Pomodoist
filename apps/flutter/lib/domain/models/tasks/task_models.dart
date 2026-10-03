@@ -793,13 +793,20 @@ class UpdateTaskPatch {
 }
 
 class UpdateProjectPatch {
-  const UpdateProjectPatch({this.name, this.color, this.icon, this.isFavorite});
+  const UpdateProjectPatch({
+    this.name,
+    this.color,
+    this.icon,
+    this.isFavorite,
+    this.isArchived,
+  });
 
   final String? icon;
 
   final String? name;
   final String? color;
   final bool? isFavorite;
+  final bool? isArchived;
 }
 
 class RemoteCalendarTaskInput {

@@ -1745,6 +1745,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get renameProject => 'إعادة تسمية المشروع';
 
   @override
+  String get archiveProject => 'أرشفة المشروع';
+
+  @override
+  String get restoreProject => 'استعادة من الأرشيف';
+
+  @override
   String get deleteProject => 'حذف المشروع';
 
   @override

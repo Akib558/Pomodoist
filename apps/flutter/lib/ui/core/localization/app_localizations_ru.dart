@@ -1771,6 +1771,12 @@ class AppLocalizationsRu extends AppLocalizations {
   String get renameProject => 'Переименовать проект';
 
   @override
+  String get archiveProject => 'Архивировать проект';
+
+  @override
+  String get restoreProject => 'Восстановить из архива';
+
+  @override
   String get deleteProject => 'Удалить проект';
 
   @override

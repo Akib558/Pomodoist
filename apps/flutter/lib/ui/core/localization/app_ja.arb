@@ -808,6 +808,8 @@
     }
   },
   "renameProject": "プロジェクト名を変更",
+  "archiveProject": "プロジェクトをアーカイブ",
+  "restoreProject": "アーカイブから復元",
   "deleteProject": "プロジェクトを削除",
   "deleteLabel": "ラベルを削除",
   "deleteProjectConfirmation": "「{name}」を削除しますか？このプロジェクトのタスクは受信トレイに移動します。",

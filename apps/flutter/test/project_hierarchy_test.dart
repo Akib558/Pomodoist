@@ -1,5 +1,6 @@
 import 'package:pomodoist/data/repositories/projects/project_repository_impl.dart';
 import 'dart:io';
+import 'dart:convert';
 import 'package:app_account/app_account.dart';
 import 'package:uuid/uuid.dart';
 import 'support/account_sync_engine.dart';
@@ -24,6 +25,49 @@ void main() {
     projects = DriftProjectRepository(db, DriftOutboxService(db));
   });
   tearDown(() => db.close());
+
+  test(
+    'archive and restore preserve project contents and queue sync',
+    () async {
+      final parent = (await projects.createProject('Parent')).getOrThrow();
+      final child = (await projects.createProject(
+        'Child',
+        parentId: parent,
+      )).getOrThrow();
+      final tasks = DriftTaskRepository(db, DriftOutboxService(db));
+      final taskId = (await tasks.createTask(
+        CreateTaskInput(content: 'Keep me', projectId: parent),
+      )).getOrThrow();
+      await db.delete(db.syncCommands).go();
+      for (final archived in [true, false]) {
+        (await projects.updateProject(
+          parent,
+          UpdateProjectPatch(isArchived: archived),
+        )).getOrThrow();
+        final rows = await projects.watchProjects().first;
+        expect(rows.singleWhere((p) => p.id == parent).isArchived, archived);
+        expect(rows.singleWhere((p) => p.id == child).parentId, parent);
+        expect(rows.singleWhere((p) => p.id == child).isArchived, isFalse);
+        final task = (await tasks.watchTask(taskId).first)!;
+        expect(task.projectId, parent);
+        expect(task.isDeleted, isFalse);
+        final commands = await db.select(db.syncCommands).get();
+        expect(commands.last.type, 'project.update');
+        expect(jsonDecode(commands.last.payloadJson)['isArchived'], archived);
+        await db.delete(db.syncCommands).go();
+      }
+      await expectLater(
+        projects
+            .updateProject(
+              inboxProjectId,
+              const UpdateProjectPatch(isArchived: true),
+            )
+            .then((result) => result.getOrThrow()),
+        throwsArgumentError,
+      );
+      expect(await db.select(db.syncCommands).get(), isEmpty);
+    },
+  );
 
   test('cycles and missing parents cannot hide projects', () {
     final rows = projectRows([
@@ -306,6 +350,10 @@ void main() {
       await projects
           .moveProject(child, parentId: null, beforeProjectId: root)
           .then((result) => result.getOrThrow());
+      (await projects.updateProject(
+        child,
+        const UpdateProjectPatch(isArchived: true),
+      )).getOrThrow();
       await engine.pushPending();
       await testSyncEngine(
         db: target,
@@ -321,6 +369,7 @@ void main() {
         );
         final rows = await remote.watchProjects().first;
         expect(rows.singleWhere((p) => p.id == child).parentId, isNull);
+        expect(rows.singleWhere((p) => p.id == child).isArchived, isTrue);
         expect(
           projectRows(
             rows.where((p) => p.id != inboxProjectId).toList(),

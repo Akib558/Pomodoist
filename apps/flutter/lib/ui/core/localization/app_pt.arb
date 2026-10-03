@@ -808,6 +808,8 @@
     }
   },
   "renameProject": "Renomear projeto",
+  "archiveProject": "Arquivar projeto",
+  "restoreProject": "Restaurar do arquivo",
   "deleteProject": "Excluir projeto",
   "deleteLabel": "Excluir etiqueta",
   "deleteProjectConfirmation": "Excluir \"{name}\"? As tarefas deste projeto serão movidas para a Entrada.",

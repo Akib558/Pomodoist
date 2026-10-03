@@ -1706,6 +1706,12 @@ class AppLocalizationsKo extends AppLocalizations {
   String get renameProject => '프로젝트 이름 변경';
 
   @override
+  String get archiveProject => '프로젝트 보관';
+
+  @override
+  String get restoreProject => '보관함에서 복원';
+
+  @override
   String get deleteProject => '프로젝트 삭제';
 
   @override

@@ -585,6 +585,8 @@
   "noLabels": "Aucune étiquette",
   "labelsCount": "{count, plural, =1{1 étiquette} other{{count} étiquettes}}",
   "renameProject": "Renommer le projet",
+  "archiveProject": "Archiver le projet",
+  "restoreProject": "Restaurer depuis les archives",
   "deleteProject": "Supprimer le projet",
   "deleteLabel": "Supprimer l'étiquette",
   "deleteProjectConfirmation": "Supprimer \"{name}\" ? Les tâches de ce projet seront déplacées vers Inbox.",

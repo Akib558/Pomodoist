@@ -245,7 +245,10 @@ class DriftProjectRepository implements ProjectRepository {
     String id,
     UpdateProjectPatch patch,
   ) => Result.capture<void>(() async {
-    if (patch.name != null || patch.color != null || patch.icon != null) {
+    if (patch.name != null ||
+        patch.color != null ||
+        patch.icon != null ||
+        patch.isArchived != null) {
       await _access.project(id);
     }
     if (id == inboxProjectId) {
@@ -293,7 +296,8 @@ class DriftProjectRepository implements ProjectRepository {
     if (normalizedName == null &&
         patch.icon == null &&
         normalizedColor == null &&
-        patch.isFavorite == null) {
+        patch.isFavorite == null &&
+        patch.isArchived == null) {
       return;
     }
     final now = DateTime.now().toUtc();
@@ -311,6 +315,9 @@ class DriftProjectRepository implements ProjectRepository {
           isFavorite: patch.isFavorite == null
               ? const Value.absent()
               : Value(patch.isFavorite!),
+          isArchived: patch.isArchived == null
+              ? const Value.absent()
+              : Value(patch.isArchived!),
           updatedAt: Value(now),
         ),
       );
@@ -322,6 +329,7 @@ class DriftProjectRepository implements ProjectRepository {
           'name': ?normalizedName,
           'color': ?normalizedColor,
           'isFavorite': ?patch.isFavorite,
+          'isArchived': ?patch.isArchived,
           'icon': ?patch.icon,
         },
       );

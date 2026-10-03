@@ -585,6 +585,8 @@
   "noLabels": "Нет меток",
   "labelsCount": "{count, plural, =1{1 метка} few{{count} метки} many{{count} меток} other{{count} метки}}",
   "renameProject": "Переименовать проект",
+  "archiveProject": "Архивировать проект",
+  "restoreProject": "Восстановить из архива",
   "deleteProject": "Удалить проект",
   "deleteLabel": "Удалить метку",
   "deleteProjectConfirmation": "Удалить \"{name}\"? Задачи из этого проекта будут перенесены во Входящие.",

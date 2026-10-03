@@ -67,6 +67,22 @@ void main() {
   });
   tearDown(() => db.close());
 
+  test('observer cannot archive shared project content', () async {
+    await expectLater(
+      projects
+          .updateProject(projectId, const UpdateProjectPatch(isArchived: true))
+          .then((result) => result.getOrThrow()),
+      throwsA(isA<CollaborationException>()),
+    );
+    expect(
+      (await projects.watchProjects().first)
+          .singleWhere((p) => p.id == projectId)
+          .isArchived,
+      isFalse,
+    );
+    expect(await db.select(db.syncCommands).get(), isEmpty);
+  });
+
   test('observer writes fail before local content or queue changes', () async {
     await expectLater(
       tasks

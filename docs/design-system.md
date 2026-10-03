@@ -348,6 +348,11 @@ including when navigation is hidden.
 Do not add a second safe-area inset or a full-width background behind panels.
 Honor both themes, shared state transitions and Reduce Motion.
 
+Keep task content mounted when selection panels appear or disappear. Give the
+content a stable local key directly in the selection region's layout, covering
+both expanded and shrink-wrapped content, so selection and task actions retain
+scroll position and local state.
+
 Desktop retains its existing flat surfaces. Modal selection panels opt out with
 `TaskSelectionRegion.floatingToolbar: false`, including Calendar's Unscheduled
 sheet; their existing toolbar, safe area and elevation remain unchanged.
@@ -385,10 +390,15 @@ both style and destinations. Store one local record, without account sync.
 Preserve an explicitly empty list, ignore unknown or duplicate stored IDs and
 cap restored selections at five. Preview uses the current theme; changing the
 navigation style does not change the application theme. Switching destinations
-uses a coordinated 320 ms smooth reveal with `AppMotion.navigationCurve`
+uses a coordinated 360 ms smooth reveal with `AppMotion.navigationCurve`
 (`cubic-bezier(0.22, 1, 0.36, 1)`). Animate every button width, the surface width
 and the outgoing/incoming label reveals together; the surface always equals
-the current sum of button widths plus its insets. Keep outgoing labels mounted
+the current sum of button widths plus its insets. Soft accent uses one decorative
+`accentTint` background that slides and resizes on the same animation frame,
+instead of fading independent button backgrounds. Position it from the logical
+start edge for RTL, below the buttons, without intercepting gestures or adding
+semantics. Fade it out when the current route is not pinned. With labels retains
+its individual selected-button background. Keep outgoing labels mounted
 until they have faded and collapsed. Rapid selections retarget the visible
 frame, without restarting from the previous destination's final geometry.
 Retain the shared 180 ms color transition. Configuration changes and enabling
@@ -468,7 +478,12 @@ sidebar rather than other scrollable views.
 
 Project rows share their context menu between the sidebar and Projects screen.
 Secondary click, touch long press, and the Context Menu / Shift+F10 keys expose
-renaming, icon and color selection, favorites, and confirmed deletion. Sidebar
+renaming, icon and color selection, favorites, archiving/restoration for editors,
+and confirmed deletion. The open project header exposes the same menu through
+an accessible ellipsis button. Archive preserves tasks, files and hierarchy;
+it applies to the selected project, leaving subprojects unchanged. Archived
+projects can be opened and restored from the existing archive filter. Inbox
+cannot be archived. Sidebar
 rows show no menu button; the Projects screen keeps its ellipsis button for
 keyboard and touch access. Project icons are synchronized project data;
 existing projects retain the hash icon until changed. The shared-project badge

@@ -1659,6 +1659,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get renameProject => '重命名项目';
 
   @override
+  String get archiveProject => '归档项目';
+
+  @override
+  String get restoreProject => '从归档恢复';
+
+  @override
   String get deleteProject => '删除项目';
 
   @override

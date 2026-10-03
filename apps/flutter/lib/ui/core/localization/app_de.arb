@@ -585,6 +585,8 @@
   "noLabels": "Keine Labels",
   "labelsCount": "{count, plural, =1{1 Label} other{{count} Labels}}",
   "renameProject": "Projekt umbenennen",
+  "archiveProject": "Projekt archivieren",
+  "restoreProject": "Aus dem Archiv wiederherstellen",
   "deleteProject": "Projekt löschen",
   "deleteLabel": "Label löschen",
   "deleteProjectConfirmation": "\"{name}\" löschen? Aufgaben in diesem Projekt werden in den Eingang verschoben.",

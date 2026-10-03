@@ -150,6 +150,24 @@ class _ProjectContextMenuState extends ConsumerState<ProjectContextMenu> {
                   : l10n.addProjectToFavorites,
             ),
           ),
+          if (project.canEdit && project.id != inboxProjectId)
+            ShadContextMenuItem(
+              leading: Icon(
+                project.isArchived
+                    ? LucideIcons.archiveRestore
+                    : LucideIcons.archive,
+                size: 16,
+              ),
+              onPressed: () => _updateProject(
+                context,
+                ref,
+                project.id,
+                UpdateProjectPatch(isArchived: !project.isArchived),
+              ),
+              child: Text(
+                project.isArchived ? l10n.restoreProject : l10n.archiveProject,
+              ),
+            ),
           ShadContextMenuItem(
             leading: Icon(
               LucideIcons.trash2,

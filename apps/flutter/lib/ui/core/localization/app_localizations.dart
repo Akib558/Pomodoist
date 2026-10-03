@@ -3169,6 +3169,18 @@ abstract class AppLocalizations {
   /// **'Rename project'**
   String get renameProject;
 
+  /// No description provided for @archiveProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive project'**
+  String get archiveProject;
+
+  /// No description provided for @restoreProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore from archive'**
+  String get restoreProject;
+
   /// No description provided for @deleteProject.
   ///
   /// In en, this message translates to:

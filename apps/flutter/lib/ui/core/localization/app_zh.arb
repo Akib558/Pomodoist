@@ -585,6 +585,8 @@
   "noLabels": "没有标签",
   "labelsCount": "{count, plural, other{{count} 个标签}}",
   "renameProject": "重命名项目",
+  "archiveProject": "归档项目",
+  "restoreProject": "从归档恢复",
   "deleteProject": "删除项目",
   "deleteLabel": "删除标签",
   "deleteProjectConfirmation": "删除 \"{name}\"？此项目中的任务将移至 Inbox。",

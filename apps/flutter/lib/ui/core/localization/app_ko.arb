@@ -808,6 +808,8 @@
     }
   },
   "renameProject": "프로젝트 이름 변경",
+  "archiveProject": "프로젝트 보관",
+  "restoreProject": "보관함에서 복원",
   "deleteProject": "프로젝트 삭제",
   "deleteLabel": "라벨 삭제",
   "deleteProjectConfirmation": "\"{name}\"을(를) 삭제할까요? 이 프로젝트의 작업은 받은 편지함으로 이동합니다.",
