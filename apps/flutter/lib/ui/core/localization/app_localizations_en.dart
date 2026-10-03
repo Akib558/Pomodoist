@@ -4089,4 +4089,54 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsPreviewCompletedTask => 'Review notes';
+
+  @override
+  String get accountAvatar => 'Avatar';
+
+  @override
+  String get accountChangeAvatar => 'Change avatar';
+
+  @override
+  String get accountAvatarInput => 'Enter or paste an emoji';
+
+  @override
+  String get accountAvatarHint =>
+      'Choose an emoji below or paste one from your keyboard.';
+
+  @override
+  String get accountAvatarInvalid => 'Enter one emoji.';
+
+  @override
+  String get accountAvatarSaveError =>
+      'Could not save your avatar. Please try again.';
+
+  @override
+  String get accountAvatarReset => 'Reset avatar';
+
+  @override
+  String get accountAvatarSkinTone => 'Skin tone';
+
+  @override
+  String get accountAvatarSmileys => 'Smileys and people';
+
+  @override
+  String get accountAvatarAnimals => 'Animals and nature';
+
+  @override
+  String get accountAvatarFood => 'Food and drink';
+
+  @override
+  String get accountAvatarActivities => 'Activities';
+
+  @override
+  String get accountAvatarTravel => 'Travel and places';
+
+  @override
+  String get accountAvatarObjects => 'Objects';
+
+  @override
+  String get accountAvatarSymbols => 'Symbols';
+
+  @override
+  String get accountAvatarFlags => 'Flags';
 }

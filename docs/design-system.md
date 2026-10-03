@@ -1088,6 +1088,29 @@ import previews, integration warnings, revoke confirmations and shortcut conflic
 handling. Persistence errors show existing feedback without resetting session
 values. Standalone login and registration retain their own layouts.
 
+### Emoji avatars
+
+Account settings offer an emoji avatar beside nickname editing. The editor uses
+`emoji_picker_flutter 4.5.4` only in presentation, with localized category tabs,
+skin tone choices and unrestricted keyboard input validated as one complete
+Unicode emoji sequence. Preserve flags, modifiers, variation selectors and ZWJ
+sequences; never truncate input to one code unit. The local generated sequence
+set records its Unicode version and license independently of the picker catalog.
+
+Preview is a local draft. Save persists `profiles.avatar_emoji`; Reset clears the
+draft and persists null only on Save. Cancel discards edits. Retain failed drafts,
+block duplicate submissions and bind saving to the account that opened the
+editor. Show the saved emoji in the sidebar, mobile drawer and account panel;
+null retains each surface's existing default avatar. OAuth avatar URLs and other
+members' collaboration avatars remain separate.
+
+Use a dialog up to 560 px wide, fullscreen below 600 px, with pinned heading and
+wrapping Save/Cancel/Reset actions around scrolling content. Emoji cells and
+controls have at least 48 px targets, keyboard focus and accessible labels.
+Category navigation respects Reduce Motion. Both themes use shared palette roles.
+Verification is static analysis, selected unit tests and SQL permission/RPC tests;
+visual checks and app builds retain their existing separate scope.
+
 ### First-run onboarding
 
 Use the compact slide-card direction from variant 02 in
@@ -1268,7 +1291,8 @@ and comments. Center it within the Browse content width.
 ## Components and independence
 
 - Current direct dependencies: **`shadcn_ui 0.56.3`** and
-  **`flutter_animate 4.5.2`**. Versions are pinned in `pubspec.yaml` during
+  **`flutter_animate 4.5.2`**, plus **`emoji_picker_flutter 4.5.4`** for the
+  account avatar catalog. Versions are pinned in `pubspec.yaml` during
   adoption. `google_fonts`, `FlexColorScheme`, and `wolt_modal_sheet` are outside
   this phase.
 - Use `shadcn_ui` for standard buttons, inputs, switches, selects, menus,

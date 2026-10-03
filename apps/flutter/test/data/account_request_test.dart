@@ -65,7 +65,7 @@ void main() {
 
   test('overview rejection signs out the revoked account', () async {
     await expectLater(
-      AccountOverviewService(account).load(),
+      AccountOverviewService(account, client: client).load(),
       throwsA(isA<PostgrestException>()),
     );
     expect(client.auth.currentSession, isNull);

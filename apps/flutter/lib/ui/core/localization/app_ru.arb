@@ -1301,5 +1301,21 @@
   "settingsAppearancePreview": "Пример",
   "settingsPreviewProject": "Личное",
   "settingsPreviewLongTask": "Подготовить материалы и спланировать следующие шаги",
-  "settingsPreviewCompletedTask": "Проверить заметки"
+  "settingsPreviewCompletedTask": "Проверить заметки",
+  "accountAvatar": "Аватар",
+  "accountChangeAvatar": "Изменить аватар",
+  "accountAvatarInput": "Введите или вставьте эмодзи",
+  "accountAvatarHint": "Выберите эмодзи ниже или вставьте его с клавиатуры.",
+  "accountAvatarInvalid": "Введите один эмодзи.",
+  "accountAvatarSaveError": "Не удалось сохранить аватар. Попробуйте ещё раз.",
+  "accountAvatarReset": "Сбросить аватар",
+  "accountAvatarSkinTone": "Оттенок кожи",
+  "accountAvatarSmileys": "Смайлики и люди",
+  "accountAvatarAnimals": "Животные и природа",
+  "accountAvatarFood": "Еда и напитки",
+  "accountAvatarActivities": "Занятия",
+  "accountAvatarTravel": "Путешествия и места",
+  "accountAvatarObjects": "Предметы",
+  "accountAvatarSymbols": "Символы",
+  "accountAvatarFlags": "Флаги"
 }

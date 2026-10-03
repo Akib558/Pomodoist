@@ -16,6 +16,7 @@ import 'dart:async';
 import 'package:app_account/app_account.dart' hide AccountSession;
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show Supabase;
 import 'package:uuid/uuid.dart';
 
 import 'package:pomodoist/data/services/sync/account_sync_engine.dart';
@@ -321,7 +322,7 @@ final accountOverviewRepositoryProvider = Provider<AccountOverviewRepository?>((
       (authState?.signedIn ?? false) || account?.currentUserId != null;
   return account == null || !signedIn
       ? null
-      : AccountOverviewRepository(account);
+      : AccountOverviewRepository(account, client: Supabase.instance.client);
 });
 
 final accountOverviewProvider = FutureProvider<PomodoistAccountOverview?>((

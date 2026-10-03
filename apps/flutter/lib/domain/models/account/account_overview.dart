@@ -5,12 +5,14 @@ final class PomodoistAccountProfile {
     required this.id,
     this.email,
     this.displayName,
+    this.avatarEmoji,
     this.isPro = false,
   });
 
   final String id;
   final String? email;
   final String? displayName;
+  final String? avatarEmoji;
   final bool isPro;
 }
 

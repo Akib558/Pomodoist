@@ -3953,4 +3953,52 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get settingsPreviewCompletedTask => 'メモを確認する';
+
+  @override
+  String get accountAvatar => 'アバター';
+
+  @override
+  String get accountChangeAvatar => 'アバターを変更';
+
+  @override
+  String get accountAvatarInput => '絵文字を入力または貼り付け';
+
+  @override
+  String get accountAvatarHint => '下から絵文字を選ぶか、キーボードから貼り付けてください。';
+
+  @override
+  String get accountAvatarInvalid => '絵文字を1つ入力してください。';
+
+  @override
+  String get accountAvatarSaveError => 'アバターを保存できませんでした。もう一度お試しください。';
+
+  @override
+  String get accountAvatarReset => 'アバターをリセット';
+
+  @override
+  String get accountAvatarSkinTone => '肌の色';
+
+  @override
+  String get accountAvatarSmileys => '顔と人';
+
+  @override
+  String get accountAvatarAnimals => '動物と自然';
+
+  @override
+  String get accountAvatarFood => '食べ物と飲み物';
+
+  @override
+  String get accountAvatarActivities => 'アクティビティ';
+
+  @override
+  String get accountAvatarTravel => '旅行と場所';
+
+  @override
+  String get accountAvatarObjects => '物';
+
+  @override
+  String get accountAvatarSymbols => '記号';
+
+  @override
+  String get accountAvatarFlags => '旗';
 }

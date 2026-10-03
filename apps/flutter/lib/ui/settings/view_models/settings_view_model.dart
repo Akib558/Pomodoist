@@ -24,6 +24,7 @@ final class SettingsViewState {
     this.overviewError,
     this.userId,
     this.displayName,
+    this.avatarEmoji,
     this.email,
   });
 
@@ -40,6 +41,7 @@ final class SettingsViewState {
   final Object? overviewError;
   final String? userId;
   final String? displayName;
+  final String? avatarEmoji;
   final String? email;
 }
 
@@ -73,6 +75,7 @@ class SettingsViewModel extends Notifier<SettingsViewState> {
       overviewError: overview.error,
       userId: userId,
       displayName: profile?.displayName,
+      avatarEmoji: profile?.avatarEmoji,
       email: profile?.email,
     );
   }
@@ -117,6 +120,19 @@ class SettingsViewModel extends Notifier<SettingsViewState> {
     }
     (await repository.updateNickname(name)).getOrThrow();
     if (ref.mounted) ref.invalidate(accountOverviewProvider);
+  }
+
+  Future<void> saveAvatarEmoji(String userId, String? emoji) async {
+    final repository = ref.read(accountManagementRepositoryProvider);
+    if (repository == null ||
+        !repository.isCurrent ||
+        repository.userId != userId) {
+      throw StateError('The account session has changed.');
+    }
+    (await repository.updateAvatarEmoji(emoji)).getOrThrow();
+    if (ref.mounted && repository.isCurrent) {
+      ref.invalidate(accountOverviewProvider);
+    }
   }
 
   Future<void> signOut() async {

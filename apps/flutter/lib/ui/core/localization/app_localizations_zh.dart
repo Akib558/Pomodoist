@@ -3867,4 +3867,52 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settingsPreviewCompletedTask => '检查笔记';
+
+  @override
+  String get accountAvatar => '头像';
+
+  @override
+  String get accountChangeAvatar => '更改头像';
+
+  @override
+  String get accountAvatarInput => '输入或粘贴表情符号';
+
+  @override
+  String get accountAvatarHint => '在下方选择表情符号，或从键盘粘贴。';
+
+  @override
+  String get accountAvatarInvalid => '请输入一个表情符号。';
+
+  @override
+  String get accountAvatarSaveError => '无法保存头像，请重试。';
+
+  @override
+  String get accountAvatarReset => '重置头像';
+
+  @override
+  String get accountAvatarSkinTone => '肤色';
+
+  @override
+  String get accountAvatarSmileys => '笑脸和人物';
+
+  @override
+  String get accountAvatarAnimals => '动物和自然';
+
+  @override
+  String get accountAvatarFood => '食物和饮料';
+
+  @override
+  String get accountAvatarActivities => '活动';
+
+  @override
+  String get accountAvatarTravel => '旅行和地点';
+
+  @override
+  String get accountAvatarObjects => '物品';
+
+  @override
+  String get accountAvatarSymbols => '符号';
+
+  @override
+  String get accountAvatarFlags => '旗帜';
 }

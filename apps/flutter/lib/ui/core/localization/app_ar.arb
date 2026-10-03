@@ -1301,5 +1301,21 @@
   "settingsAppearancePreview": "معاينة",
   "settingsPreviewProject": "شخصي",
   "settingsPreviewLongTask": "إعداد المواد والتخطيط للخطوات التالية",
-  "settingsPreviewCompletedTask": "مراجعة الملاحظات"
+  "settingsPreviewCompletedTask": "مراجعة الملاحظات",
+  "accountAvatar": "الصورة الرمزية",
+  "accountChangeAvatar": "تغيير الصورة الرمزية",
+  "accountAvatarInput": "أدخل رمزًا تعبيريًا أو الصقه",
+  "accountAvatarHint": "اختر رمزًا تعبيريًا أدناه أو الصقه من لوحة المفاتيح.",
+  "accountAvatarInvalid": "أدخل رمزًا تعبيريًا واحدًا.",
+  "accountAvatarSaveError": "تعذر حفظ الصورة الرمزية. حاول مرة أخرى.",
+  "accountAvatarReset": "إعادة تعيين الصورة الرمزية",
+  "accountAvatarSkinTone": "لون البشرة",
+  "accountAvatarSmileys": "الوجوه والأشخاص",
+  "accountAvatarAnimals": "الحيوانات والطبيعة",
+  "accountAvatarFood": "الطعام والشراب",
+  "accountAvatarActivities": "الأنشطة",
+  "accountAvatarTravel": "السفر والأماكن",
+  "accountAvatarObjects": "الأشياء",
+  "accountAvatarSymbols": "الرموز",
+  "accountAvatarFlags": "الأعلام"
 }

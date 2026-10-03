@@ -4095,4 +4095,54 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get settingsPreviewCompletedTask => 'Проверить заметки';
+
+  @override
+  String get accountAvatar => 'Аватар';
+
+  @override
+  String get accountChangeAvatar => 'Изменить аватар';
+
+  @override
+  String get accountAvatarInput => 'Введите или вставьте эмодзи';
+
+  @override
+  String get accountAvatarHint =>
+      'Выберите эмодзи ниже или вставьте его с клавиатуры.';
+
+  @override
+  String get accountAvatarInvalid => 'Введите один эмодзи.';
+
+  @override
+  String get accountAvatarSaveError =>
+      'Не удалось сохранить аватар. Попробуйте ещё раз.';
+
+  @override
+  String get accountAvatarReset => 'Сбросить аватар';
+
+  @override
+  String get accountAvatarSkinTone => 'Оттенок кожи';
+
+  @override
+  String get accountAvatarSmileys => 'Смайлики и люди';
+
+  @override
+  String get accountAvatarAnimals => 'Животные и природа';
+
+  @override
+  String get accountAvatarFood => 'Еда и напитки';
+
+  @override
+  String get accountAvatarActivities => 'Занятия';
+
+  @override
+  String get accountAvatarTravel => 'Путешествия и места';
+
+  @override
+  String get accountAvatarObjects => 'Предметы';
+
+  @override
+  String get accountAvatarSymbols => 'Символы';
+
+  @override
+  String get accountAvatarFlags => 'Флаги';
 }

@@ -1036,6 +1036,7 @@ class _TodoistSidebarState extends ConsumerState<_TodoistSidebar> {
               children: [
                 _SidebarProfileHeader(
                   displayName: displayName,
+                  avatarEmoji: sidebar.avatarEmoji,
                   onProfileTap: () =>
                       widget.onDestinationSelected('/settings?section=account'),
                 ),
@@ -1207,9 +1208,11 @@ class _SidebarProfileHeader extends StatelessWidget {
   const _SidebarProfileHeader({
     required this.displayName,
     required this.onProfileTap,
+    this.avatarEmoji,
   });
 
   final String displayName;
+  final String? avatarEmoji;
   final VoidCallback onProfileTap;
 
   @override
@@ -1235,8 +1238,9 @@ class _SidebarProfileHeader extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    initial,
+                    avatarEmoji ?? initial,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontSize: avatarEmoji == null ? null : 24,
                       color: colors.primaryText,
                       fontWeight: FontWeight.w600,
                     ),

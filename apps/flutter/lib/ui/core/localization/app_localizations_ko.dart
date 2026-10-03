@@ -3961,4 +3961,52 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get settingsPreviewCompletedTask => '메모 검토하기';
+
+  @override
+  String get accountAvatar => '아바타';
+
+  @override
+  String get accountChangeAvatar => '아바타 변경';
+
+  @override
+  String get accountAvatarInput => '이모지 입력 또는 붙여넣기';
+
+  @override
+  String get accountAvatarHint => '아래에서 이모지를 선택하거나 키보드에서 붙여넣으세요.';
+
+  @override
+  String get accountAvatarInvalid => '이모지 하나를 입력하세요.';
+
+  @override
+  String get accountAvatarSaveError => '아바타를 저장하지 못했습니다. 다시 시도하세요.';
+
+  @override
+  String get accountAvatarReset => '아바타 초기화';
+
+  @override
+  String get accountAvatarSkinTone => '피부색';
+
+  @override
+  String get accountAvatarSmileys => '표정과 사람';
+
+  @override
+  String get accountAvatarAnimals => '동물과 자연';
+
+  @override
+  String get accountAvatarFood => '음식과 음료';
+
+  @override
+  String get accountAvatarActivities => '활동';
+
+  @override
+  String get accountAvatarTravel => '여행과 장소';
+
+  @override
+  String get accountAvatarObjects => '사물';
+
+  @override
+  String get accountAvatarSymbols => '기호';
+
+  @override
+  String get accountAvatarFlags => '깃발';
 }

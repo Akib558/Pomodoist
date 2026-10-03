@@ -1912,5 +1912,21 @@
   "settingsAppearancePreview": "미리보기",
   "settingsPreviewProject": "개인",
   "settingsPreviewLongTask": "자료를 준비하고 다음 단계를 계획하기",
-  "settingsPreviewCompletedTask": "메모 검토하기"
+  "settingsPreviewCompletedTask": "메모 검토하기",
+  "accountAvatar": "아바타",
+  "accountChangeAvatar": "아바타 변경",
+  "accountAvatarInput": "이모지 입력 또는 붙여넣기",
+  "accountAvatarHint": "아래에서 이모지를 선택하거나 키보드에서 붙여넣으세요.",
+  "accountAvatarInvalid": "이모지 하나를 입력하세요.",
+  "accountAvatarSaveError": "아바타를 저장하지 못했습니다. 다시 시도하세요.",
+  "accountAvatarReset": "아바타 초기화",
+  "accountAvatarSkinTone": "피부색",
+  "accountAvatarSmileys": "표정과 사람",
+  "accountAvatarAnimals": "동물과 자연",
+  "accountAvatarFood": "음식과 음료",
+  "accountAvatarActivities": "활동",
+  "accountAvatarTravel": "여행과 장소",
+  "accountAvatarObjects": "사물",
+  "accountAvatarSymbols": "기호",
+  "accountAvatarFlags": "깃발"
 }

@@ -1912,5 +1912,21 @@
   "settingsAppearancePreview": "プレビュー",
   "settingsPreviewProject": "個人",
   "settingsPreviewLongTask": "資料を準備し、次のステップを計画する",
-  "settingsPreviewCompletedTask": "メモを確認する"
+  "settingsPreviewCompletedTask": "メモを確認する",
+  "accountAvatar": "アバター",
+  "accountChangeAvatar": "アバターを変更",
+  "accountAvatarInput": "絵文字を入力または貼り付け",
+  "accountAvatarHint": "下から絵文字を選ぶか、キーボードから貼り付けてください。",
+  "accountAvatarInvalid": "絵文字を1つ入力してください。",
+  "accountAvatarSaveError": "アバターを保存できませんでした。もう一度お試しください。",
+  "accountAvatarReset": "アバターをリセット",
+  "accountAvatarSkinTone": "肌の色",
+  "accountAvatarSmileys": "顔と人",
+  "accountAvatarAnimals": "動物と自然",
+  "accountAvatarFood": "食べ物と飲み物",
+  "accountAvatarActivities": "アクティビティ",
+  "accountAvatarTravel": "旅行と場所",
+  "accountAvatarObjects": "物",
+  "accountAvatarSymbols": "記号",
+  "accountAvatarFlags": "旗"
 }

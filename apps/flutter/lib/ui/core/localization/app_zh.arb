@@ -1301,5 +1301,21 @@
   "settingsAppearancePreview": "预览",
   "settingsPreviewProject": "个人",
   "settingsPreviewLongTask": "准备资料并规划下一步",
-  "settingsPreviewCompletedTask": "检查笔记"
+  "settingsPreviewCompletedTask": "检查笔记",
+  "accountAvatar": "头像",
+  "accountChangeAvatar": "更改头像",
+  "accountAvatarInput": "输入或粘贴表情符号",
+  "accountAvatarHint": "在下方选择表情符号，或从键盘粘贴。",
+  "accountAvatarInvalid": "请输入一个表情符号。",
+  "accountAvatarSaveError": "无法保存头像，请重试。",
+  "accountAvatarReset": "重置头像",
+  "accountAvatarSkinTone": "肤色",
+  "accountAvatarSmileys": "笑脸和人物",
+  "accountAvatarAnimals": "动物和自然",
+  "accountAvatarFood": "食物和饮料",
+  "accountAvatarActivities": "活动",
+  "accountAvatarTravel": "旅行和地点",
+  "accountAvatarObjects": "物品",
+  "accountAvatarSymbols": "符号",
+  "accountAvatarFlags": "旗帜"
 }

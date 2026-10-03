@@ -7048,6 +7048,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Review notes'**
   String get settingsPreviewCompletedTask;
+
+  /// No description provided for @accountAvatar.
+  ///
+  /// In en, this message translates to:
+  /// **'Avatar'**
+  String get accountAvatar;
+
+  /// No description provided for @accountChangeAvatar.
+  ///
+  /// In en, this message translates to:
+  /// **'Change avatar'**
+  String get accountChangeAvatar;
+
+  /// No description provided for @accountAvatarInput.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter or paste an emoji'**
+  String get accountAvatarInput;
+
+  /// No description provided for @accountAvatarHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose an emoji below or paste one from your keyboard.'**
+  String get accountAvatarHint;
+
+  /// No description provided for @accountAvatarInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter one emoji.'**
+  String get accountAvatarInvalid;
+
+  /// No description provided for @accountAvatarSaveError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save your avatar. Please try again.'**
+  String get accountAvatarSaveError;
+
+  /// No description provided for @accountAvatarReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset avatar'**
+  String get accountAvatarReset;
+
+  /// No description provided for @accountAvatarSkinTone.
+  ///
+  /// In en, this message translates to:
+  /// **'Skin tone'**
+  String get accountAvatarSkinTone;
+
+  /// No description provided for @accountAvatarSmileys.
+  ///
+  /// In en, this message translates to:
+  /// **'Smileys and people'**
+  String get accountAvatarSmileys;
+
+  /// No description provided for @accountAvatarAnimals.
+  ///
+  /// In en, this message translates to:
+  /// **'Animals and nature'**
+  String get accountAvatarAnimals;
+
+  /// No description provided for @accountAvatarFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Food and drink'**
+  String get accountAvatarFood;
+
+  /// No description provided for @accountAvatarActivities.
+  ///
+  /// In en, this message translates to:
+  /// **'Activities'**
+  String get accountAvatarActivities;
+
+  /// No description provided for @accountAvatarTravel.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel and places'**
+  String get accountAvatarTravel;
+
+  /// No description provided for @accountAvatarObjects.
+  ///
+  /// In en, this message translates to:
+  /// **'Objects'**
+  String get accountAvatarObjects;
+
+  /// No description provided for @accountAvatarSymbols.
+  ///
+  /// In en, this message translates to:
+  /// **'Symbols'**
+  String get accountAvatarSymbols;
+
+  /// No description provided for @accountAvatarFlags.
+  ///
+  /// In en, this message translates to:
+  /// **'Flags'**
+  String get accountAvatarFlags;
 }
 
 class _AppLocalizationsDelegate

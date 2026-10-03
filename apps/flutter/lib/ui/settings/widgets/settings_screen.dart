@@ -19,6 +19,7 @@ import 'package:pomodoist/ui/collaboration/widgets/collaboration_inbox_dialog.da
 import 'package:pomodoist/ui/settings/widgets/settings_subscription.dart';
 import 'package:pomodoist/ui/settings/widgets/account_sign_out_button.dart';
 import 'package:pomodoist/ui/settings/widgets/account_nickname_dialog.dart';
+import 'package:pomodoist/ui/settings/widgets/account_avatar_dialog.dart';
 import 'package:pomodoist/ui/settings/widgets/app_info_card.dart';
 import 'package:pomodoist/ui/settings/widgets/csv_task_import_card.dart';
 import 'package:pomodoist/ui/settings/widgets/theme_settings_card.dart';
@@ -483,6 +484,54 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
               onSignedIn: () => context.go(returnTo),
             ),
           ],
+          if (state.signedIn && state.userId != null)
+            SettingsRow(
+              title: l10n.accountAvatar,
+              control: Wrap(
+                spacing: 12,
+                runSpacing: 8,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  CircleAvatar(
+                    child: state.avatarEmoji == null
+                        ? const Icon(Icons.person_outline)
+                        : Text(
+                            state.avatarEmoji!,
+                            style: const TextStyle(fontSize: 24),
+                          ),
+                  ),
+                  ShadButton.outline(
+                    key: const Key('account-change-avatar'),
+                    height: 48,
+                    enabled: !state.accountLoading,
+                    onPressed: () {
+                      final userId = state.userId!;
+                      showDialog<void>(
+                        context: context,
+                        barrierDismissible: false,
+                        animationStyle: AnimationStyle(
+                          duration: AppMotion.duration(
+                            context,
+                            AppMotion.popup,
+                          ),
+                          reverseDuration: AppMotion.duration(
+                            context,
+                            AppMotion.popup,
+                          ),
+                          curve: AppMotion.curve,
+                        ),
+                        builder: (_) => AccountAvatarDialog(
+                          emoji: state.avatarEmoji,
+                          onSave: (emoji) =>
+                              viewModel.saveAvatarEmoji(userId, emoji),
+                        ),
+                      );
+                    },
+                    child: Text(l10n.accountChangeAvatar),
+                  ),
+                ],
+              ),
+            ),
           if (state.signedIn &&
               (state.displayName != null || state.email != null))
             SettingsRow(

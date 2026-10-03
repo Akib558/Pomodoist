@@ -1301,5 +1301,21 @@
   "settingsAppearancePreview": "Vista previa",
   "settingsPreviewProject": "Personal",
   "settingsPreviewLongTask": "Preparar materiales y planificar los próximos pasos",
-  "settingsPreviewCompletedTask": "Revisar notas"
+  "settingsPreviewCompletedTask": "Revisar notas",
+  "accountAvatar": "Avatar",
+  "accountChangeAvatar": "Cambiar avatar",
+  "accountAvatarInput": "Introduce o pega un emoji",
+  "accountAvatarHint": "Elige un emoji abajo o pégalo desde el teclado.",
+  "accountAvatarInvalid": "Introduce un solo emoji.",
+  "accountAvatarSaveError": "No se pudo guardar tu avatar. Inténtalo de nuevo.",
+  "accountAvatarReset": "Restablecer avatar",
+  "accountAvatarSkinTone": "Tono de piel",
+  "accountAvatarSmileys": "Caras y personas",
+  "accountAvatarAnimals": "Animales y naturaleza",
+  "accountAvatarFood": "Comida y bebida",
+  "accountAvatarActivities": "Actividades",
+  "accountAvatarTravel": "Viajes y lugares",
+  "accountAvatarObjects": "Objetos",
+  "accountAvatarSymbols": "Símbolos",
+  "accountAvatarFlags": "Banderas"
 }

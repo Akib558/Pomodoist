@@ -163,7 +163,14 @@ class PomodoistAccountOverviewPanel extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            const CircleAvatar(child: Icon(Icons.person_outline)),
+            CircleAvatar(
+              child: profile.avatarEmoji == null
+                  ? const Icon(Icons.person_outline)
+                  : Text(
+                      profile.avatarEmoji!,
+                      style: const TextStyle(fontSize: 24),
+                    ),
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(

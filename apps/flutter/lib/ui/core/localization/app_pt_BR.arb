@@ -179,5 +179,21 @@
   "settingsAppearancePreview": "Prévia",
   "settingsPreviewProject": "Pessoal",
   "settingsPreviewLongTask": "Preparar materiais e planejar os próximos passos",
-  "settingsPreviewCompletedTask": "Revisar anotações"
+  "settingsPreviewCompletedTask": "Revisar anotações",
+  "accountAvatar": "Avatar",
+  "accountChangeAvatar": "Alterar avatar",
+  "accountAvatarInput": "Digite ou cole um emoji",
+  "accountAvatarHint": "Escolha um emoji abaixo ou cole um pelo teclado.",
+  "accountAvatarInvalid": "Digite apenas um emoji.",
+  "accountAvatarSaveError": "Não foi possível salvar seu avatar. Tente novamente.",
+  "accountAvatarReset": "Redefinir avatar",
+  "accountAvatarSkinTone": "Tom de pele",
+  "accountAvatarSmileys": "Rostos e pessoas",
+  "accountAvatarAnimals": "Animais e natureza",
+  "accountAvatarFood": "Comida e bebida",
+  "accountAvatarActivities": "Atividades",
+  "accountAvatarTravel": "Viagens e lugares",
+  "accountAvatarObjects": "Objetos",
+  "accountAvatarSymbols": "Símbolos",
+  "accountAvatarFlags": "Bandeiras"
 }

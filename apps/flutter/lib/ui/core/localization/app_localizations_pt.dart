@@ -4114,6 +4114,56 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get settingsPreviewCompletedTask => 'Revisar anotações';
+
+  @override
+  String get accountAvatar => 'Avatar';
+
+  @override
+  String get accountChangeAvatar => 'Alterar avatar';
+
+  @override
+  String get accountAvatarInput => 'Introduza ou cole um emoji';
+
+  @override
+  String get accountAvatarHint =>
+      'Escolha um emoji abaixo ou cole um a partir do teclado.';
+
+  @override
+  String get accountAvatarInvalid => 'Introduza apenas um emoji.';
+
+  @override
+  String get accountAvatarSaveError =>
+      'Não foi possível guardar o avatar. Tente novamente.';
+
+  @override
+  String get accountAvatarReset => 'Repor avatar';
+
+  @override
+  String get accountAvatarSkinTone => 'Tom de pele';
+
+  @override
+  String get accountAvatarSmileys => 'Caras e pessoas';
+
+  @override
+  String get accountAvatarAnimals => 'Animais e natureza';
+
+  @override
+  String get accountAvatarFood => 'Comida e bebida';
+
+  @override
+  String get accountAvatarActivities => 'Atividades';
+
+  @override
+  String get accountAvatarTravel => 'Viagens e lugares';
+
+  @override
+  String get accountAvatarObjects => 'Objetos';
+
+  @override
+  String get accountAvatarSymbols => 'Símbolos';
+
+  @override
+  String get accountAvatarFlags => 'Bandeiras';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
@@ -4636,4 +4686,54 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get settingsPreviewCompletedTask => 'Revisar anotações';
+
+  @override
+  String get accountAvatar => 'Avatar';
+
+  @override
+  String get accountChangeAvatar => 'Alterar avatar';
+
+  @override
+  String get accountAvatarInput => 'Digite ou cole um emoji';
+
+  @override
+  String get accountAvatarHint =>
+      'Escolha um emoji abaixo ou cole um pelo teclado.';
+
+  @override
+  String get accountAvatarInvalid => 'Digite apenas um emoji.';
+
+  @override
+  String get accountAvatarSaveError =>
+      'Não foi possível salvar seu avatar. Tente novamente.';
+
+  @override
+  String get accountAvatarReset => 'Redefinir avatar';
+
+  @override
+  String get accountAvatarSkinTone => 'Tom de pele';
+
+  @override
+  String get accountAvatarSmileys => 'Rostos e pessoas';
+
+  @override
+  String get accountAvatarAnimals => 'Animais e natureza';
+
+  @override
+  String get accountAvatarFood => 'Comida e bebida';
+
+  @override
+  String get accountAvatarActivities => 'Atividades';
+
+  @override
+  String get accountAvatarTravel => 'Viagens e lugares';
+
+  @override
+  String get accountAvatarObjects => 'Objetos';
+
+  @override
+  String get accountAvatarSymbols => 'Símbolos';
+
+  @override
+  String get accountAvatarFlags => 'Bandeiras';
 }

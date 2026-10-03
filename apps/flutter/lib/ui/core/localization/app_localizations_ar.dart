@@ -4011,4 +4011,54 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get settingsPreviewCompletedTask => 'مراجعة الملاحظات';
+
+  @override
+  String get accountAvatar => 'الصورة الرمزية';
+
+  @override
+  String get accountChangeAvatar => 'تغيير الصورة الرمزية';
+
+  @override
+  String get accountAvatarInput => 'أدخل رمزًا تعبيريًا أو الصقه';
+
+  @override
+  String get accountAvatarHint =>
+      'اختر رمزًا تعبيريًا أدناه أو الصقه من لوحة المفاتيح.';
+
+  @override
+  String get accountAvatarInvalid => 'أدخل رمزًا تعبيريًا واحدًا.';
+
+  @override
+  String get accountAvatarSaveError =>
+      'تعذر حفظ الصورة الرمزية. حاول مرة أخرى.';
+
+  @override
+  String get accountAvatarReset => 'إعادة تعيين الصورة الرمزية';
+
+  @override
+  String get accountAvatarSkinTone => 'لون البشرة';
+
+  @override
+  String get accountAvatarSmileys => 'الوجوه والأشخاص';
+
+  @override
+  String get accountAvatarAnimals => 'الحيوانات والطبيعة';
+
+  @override
+  String get accountAvatarFood => 'الطعام والشراب';
+
+  @override
+  String get accountAvatarActivities => 'الأنشطة';
+
+  @override
+  String get accountAvatarTravel => 'السفر والأماكن';
+
+  @override
+  String get accountAvatarObjects => 'الأشياء';
+
+  @override
+  String get accountAvatarSymbols => 'الرموز';
+
+  @override
+  String get accountAvatarFlags => 'الأعلام';
 }

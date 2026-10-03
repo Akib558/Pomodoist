@@ -2053,5 +2053,21 @@
   },
   "@settingsPreviewCompletedTask": {
     "description": "Read-only example in Appearance settings."
-  }
+  },
+  "accountAvatar": "Avatar",
+  "accountChangeAvatar": "Change avatar",
+  "accountAvatarInput": "Enter or paste an emoji",
+  "accountAvatarHint": "Choose an emoji below or paste one from your keyboard.",
+  "accountAvatarInvalid": "Enter one emoji.",
+  "accountAvatarSaveError": "Could not save your avatar. Please try again.",
+  "accountAvatarReset": "Reset avatar",
+  "accountAvatarSkinTone": "Skin tone",
+  "accountAvatarSmileys": "Smileys and people",
+  "accountAvatarAnimals": "Animals and nature",
+  "accountAvatarFood": "Food and drink",
+  "accountAvatarActivities": "Activities",
+  "accountAvatarTravel": "Travel and places",
+  "accountAvatarObjects": "Objects",
+  "accountAvatarSymbols": "Symbols",
+  "accountAvatarFlags": "Flags"
 }

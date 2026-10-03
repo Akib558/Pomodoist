@@ -84,4 +84,17 @@ class SdkAccountManagementRepository implements AccountManagementRepository {
     (await profile.updateNickname(_userId!, value).timeout(_timeout))
         .getOrThrow();
   });
+
+  @override
+  Future<Result<void>> updateAvatarEmoji(String? emoji) =>
+      Result.capture(() async {
+        _requireCurrent();
+        final profile = _profile();
+        if (profile == null) {
+          throw StateError('The profile service is unavailable.');
+        }
+        (await profile.updateAvatarEmoji(_userId!, emoji).timeout(_timeout))
+            .getOrThrow();
+        _requireCurrent();
+      });
 }

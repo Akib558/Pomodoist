@@ -45,6 +45,7 @@ final shellTaskForDetailsProvider = FutureProvider.autoDispose
 final class ShellSidebarState {
   const ShellSidebarState({
     required this.displayName,
+    this.avatarEmoji,
     required this.inboxCount,
     required this.todayCount,
     required this.upcomingCount,
@@ -53,6 +54,7 @@ final class ShellSidebarState {
   });
 
   final String? displayName;
+  final String? avatarEmoji;
   final int inboxCount;
   final int todayCount;
   final int upcomingCount;
@@ -74,6 +76,7 @@ final shellSidebarViewModelProvider = Provider<ShellSidebarState>((ref) {
   final all = ref.watch(tasksByQueryProvider(const TaskQuery.all()));
   return ShellSidebarState(
     displayName: profile?.displayName ?? profile?.email,
+    avatarEmoji: profile?.avatarEmoji,
     inboxCount: _openTaskCount(inbox),
     todayCount: _openTaskCount(todayTasks),
     upcomingCount: _openTaskCount(upcoming),

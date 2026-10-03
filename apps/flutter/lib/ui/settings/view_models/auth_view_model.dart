@@ -12,10 +12,15 @@ import 'package:pomodoist/domain/models/account/social_provider.dart';
 export 'package:pomodoist/domain/models/account/social_provider.dart';
 
 final class AccountProfileState {
-  const AccountProfileState({required this.displayName, required this.email});
+  const AccountProfileState({
+    required this.displayName,
+    required this.email,
+    this.avatarEmoji,
+  });
 
   final String? displayName;
   final String? email;
+  final String? avatarEmoji;
 }
 
 final class PasswordRecoveryUiState {
@@ -104,6 +109,7 @@ final class AuthViewModel extends Notifier<AuthUiState> {
           : AccountProfileState(
               displayName: profile.displayName,
               email: profile.email,
+              avatarEmoji: profile.avatarEmoji,
             ),
       profileLoading: overview.isLoading,
       profileError: overview.error,

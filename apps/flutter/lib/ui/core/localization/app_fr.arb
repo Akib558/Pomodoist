@@ -1301,5 +1301,21 @@
   "settingsAppearancePreview": "Aperçu",
   "settingsPreviewProject": "Personnel",
   "settingsPreviewLongTask": "Préparer les documents et planifier les prochaines étapes",
-  "settingsPreviewCompletedTask": "Relire les notes"
+  "settingsPreviewCompletedTask": "Relire les notes",
+  "accountAvatar": "Avatar",
+  "accountChangeAvatar": "Modifier l’avatar",
+  "accountAvatarInput": "Saisissez ou collez un emoji",
+  "accountAvatarHint": "Choisissez un emoji ci-dessous ou collez-en un avec le clavier.",
+  "accountAvatarInvalid": "Saisissez un seul emoji.",
+  "accountAvatarSaveError": "Impossible d’enregistrer votre avatar. Réessayez.",
+  "accountAvatarReset": "Réinitialiser l’avatar",
+  "accountAvatarSkinTone": "Teinte de peau",
+  "accountAvatarSmileys": "Visages et personnes",
+  "accountAvatarAnimals": "Animaux et nature",
+  "accountAvatarFood": "Nourriture et boissons",
+  "accountAvatarActivities": "Activités",
+  "accountAvatarTravel": "Voyages et lieux",
+  "accountAvatarObjects": "Objets",
+  "accountAvatarSymbols": "Symboles",
+  "accountAvatarFlags": "Drapeaux"
 }

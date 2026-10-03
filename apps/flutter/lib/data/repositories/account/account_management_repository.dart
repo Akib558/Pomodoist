@@ -13,4 +13,5 @@ abstract interface class AccountManagementRepository {
   Future<Result<void>> deleteRemoteAccount();
   Future<Result<void>> signOut();
   Future<Result<void>> updateNickname(String name);
+  Future<Result<void>> updateAvatarEmoji(String? emoji);
 }
