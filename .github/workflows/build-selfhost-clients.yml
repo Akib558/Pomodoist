@@ -114,7 +114,9 @@ jobs:
           SUPABASE_ANON_KEY: ${{ vars.POMODOIST_ANON_KEY }}
         run: |
           set -euo pipefail
+          # arm64 only: covers current phones, keeps the APK near 35 MB
           flutter build apk --release --flavor production --target lib/main.dart \
+            --target-platform android-arm64 \
             --dart-define=POMODOIST_ENVIRONMENT=selfhosted \
             --dart-define=POMODOIST_RELEASE="$POMODOIST_RELEASE" \
             --dart-define=WEB_APP_URL="$WEB_APP_URL" \
