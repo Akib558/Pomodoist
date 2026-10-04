@@ -1,5 +1,6 @@
 name: Build self-host clients
 
+# Run from the homelab branch with: git tag clients-N && git push origin clients-N
 on:
   workflow_dispatch:
     inputs:
@@ -15,6 +16,9 @@ on:
         description: Build the Windows release bundle
         type: boolean
         default: true
+  push:
+    tags:
+      - 'clients-*'
 
 permissions:
   contents: read
@@ -50,7 +54,7 @@ jobs:
 
   android:
     needs: check-config
-    if: inputs.build_android
+    if: github.event_name != 'workflow_dispatch' || inputs.build_android
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
@@ -129,7 +133,7 @@ jobs:
 
   linux:
     needs: check-config
-    if: inputs.build_linux
+    if: github.event_name != 'workflow_dispatch' || inputs.build_linux
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     steps:
@@ -177,7 +181,7 @@ jobs:
 
   windows:
     needs: check-config
-    if: inputs.build_windows
+    if: github.event_name != 'workflow_dispatch' || inputs.build_windows
     runs-on: windows-latest
     timeout-minutes: 45
     defaults:
