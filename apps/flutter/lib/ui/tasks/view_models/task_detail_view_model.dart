@@ -19,6 +19,7 @@ import 'package:pomodoist/domain/models/tasks/task_time.dart';
 typedef TaskDetailState = ({
   TaskDetailLayout layout,
   String? projectName,
+  List<ProjectItem> projects,
   int? fileCount,
   int commentCount,
   AsyncValue<TaskItem?> task,
@@ -132,6 +133,11 @@ class TaskDetailViewModel extends Notifier<TaskDetailState> {
               .value;
     return (
       projectName: projectName,
+      projects: List.unmodifiable(
+        (ref.watch(projectsProvider).value ?? const <ProjectItem>[]).where(
+          (project) => _canSelectProject(task.value, project),
+        ),
+      ),
       fileCount: ref.watch(taskDetailFileCountProvider(taskId)).value,
       commentCount: comments?.length ?? 0,
       task: task,
@@ -159,6 +165,31 @@ class TaskDetailViewModel extends Notifier<TaskDetailState> {
       return null;
     }
   }
+
+  Future<void> setProject(String projectId) async {
+    final task = await current();
+    if (task == null || task.isDeleted || !task.canEdit) return;
+    if (task.projectId == projectId) return;
+    final projects = ref.read(projectsProvider).value ?? const <ProjectItem>[];
+    if (!projects.any(
+      (project) => project.id == projectId && _canSelectProject(task, project),
+    )) {
+      throw StateError('Project unavailable');
+    }
+    (await _tasks.moveTask(
+      taskId,
+      projectId: projectId,
+      clearSectionId: true,
+      clearParentId: task.parentId != null,
+    )).getOrThrow();
+  }
+
+  bool _canSelectProject(TaskItem? task, ProjectItem project) =>
+      task != null &&
+      project.canEdit &&
+      !project.isDeleted &&
+      !project.isArchived &&
+      project.scopeId == task.scopeId;
 
   Future<TaskItem?> complete() async {
     (await _tasks.completeTask(taskId)).getOrThrow();

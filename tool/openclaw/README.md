@@ -38,7 +38,7 @@ node tool/openclaw/configure.mjs "$POMODOIST_MCP_RESOURCE_URL"
 # Save the named pomodoist server, sign in in the browser, and verify it.
 node tool/openclaw/configure.mjs "$POMODOIST_MCP_RESOURCE_URL" --apply
 
-# Explicitly enable guarded task/project/label writes and Focus controls.
+# Explicitly enable guarded task/habit/project/label writes and Focus controls.
 node tool/openclaw/configure.mjs "$POMODOIST_MCP_RESOURCE_URL" --write --apply
 ```
 
@@ -115,9 +115,18 @@ Removing the local server definition or skill alone is also not revocation.
 | Tasks | Guarded create, update, complete, restore, delete; project, priority, labels, description, parent, focus estimate and schedule/recurrence use the existing MCP schemas. |
 | Scheduling | `openclaw_update_task` with `arguments.schedule`; date-only and timed schedules remain distinct. Timed schedules require start, end and IANA time zone. |
 | Deadlines | `openclaw_set_task_details` edits the separate `deadline_date` and `duration_seconds`; `null` clears either. `openclaw_get_task` reads both. A deadline does not reschedule a task. |
+| Habits | `list_habits` / `get_habit`; guarded create, update, add/undo check-in, complete a daily goal, finish/reopen a schedule and delete. Explicit `time_zone`, historical dates, per-period goals including night. |
 | Projects and labels | Guarded project create/update/delete and label create/delete, preserving existing MCP restrictions on system anchors. |
 | Focus | `openclaw_get_focus`, then `openclaw_focus`: start a single 25-minute work session (optionally linked to a task), pause, resume, complete after its timer elapses, or stop with confirmation. Uses the shared Watch/Telegram Focus runtime, events and task totals. Custom session lengths/preset editing are not exposed in this version. |
 | Reports | Existing Focus history, productivity and achievements read tools. |
+
+Habits use `period_targets` for independent morning, afternoon, evening and night
+goals; their sum is the daily target. For example, `{"morning":2,"night":5}`
+means seven repetitions. A single check-in on a multi-period habit requires the
+chosen `period`. `complete_habit` fills missing check-ins; `finish_habit` ends the
+schedule on an inclusive `end_date`, defaulting to today. Past dates remain
+correctable and future dates are read-only. Night always belongs to the selected
+calendar date. One reminder time does not create one notification per repetition.
 
 Each guarded mutation has a UUID `request_id` and a nested `arguments` object:
 
@@ -164,6 +173,11 @@ receive it through the supported upgrade procedure. For hosted releases, verify
 that the historical OpenClaw migration is already applied before deploying the
 updated `pomodoist-mcp` function (including its imported Watch/shared files).
 Do not replay files from `server/supabase/legacy` on an initialized database.
+Habit tools additionally require
+`server/supabase/migrations/20261003140901_pomodoist_habit_day_period.sql` before
+rolling out the updated function/client. All new habit server changes are in
+that single migration. Existing saved OpenClaw filters must be deliberately
+reapplied with `--write` to expose the new guarded habit actions.
 No new endpoint, secret, or Supabase project is needed. Existing non-OpenClaw MCP
 tools remain available.
 OAuth issuer, resource audience, dynamic client registration, allowed origins and

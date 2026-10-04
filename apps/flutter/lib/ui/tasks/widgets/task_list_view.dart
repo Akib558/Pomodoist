@@ -55,7 +55,13 @@ class TaskListView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final viewState = ref.watch(taskListViewModelProvider(query));
+    final viewState = taskFilter == null
+        ? ref
+              .watch(
+                taskListViewModelProvider(query).select(TaskListLayout.new),
+              )
+              .state
+        : ref.watch(taskListViewModelProvider(query));
     final tasks = viewState.tasks;
     final branchScope = taskBranchScopeKey(query);
     final expansion = ref.watch(taskBranchViewModelProvider(branchScope));
@@ -114,10 +120,20 @@ class TaskListView extends ConsumerWidget {
         };
         return SafeArea(
           bottom: false,
-          child: TaskSelectionRegion(
-            isActive: isActive,
-            visibleTasks: selectable,
-            scopeKey: query,
+          child: Consumer(
+            builder: (context, ref, child) {
+              final latest = ref.watch(
+                taskListViewModelProvider(query).select((state) => state.byId),
+              );
+              return TaskSelectionRegion(
+                isActive: isActive,
+                scopeKey: query,
+                visibleTasks: [
+                  for (final task in selectable) latest[task.id] ?? task,
+                ],
+                child: child!,
+              );
+            },
             child: CustomScrollView(
               slivers: [
                 if (showHeader)
@@ -242,21 +258,24 @@ class TaskListView extends ConsumerWidget {
                               ),
                             );
                     }
-                    final allItems = [...viewState.allTasks, ...visibleItems];
-                    final progressById = taskSubtaskProgressById(allItems);
+                    final progressById = motion.retainedTasks.isEmpty
+                        ? ref.read(taskHierarchyViewModelProvider).progress
+                        : taskSubtaskProgressById([
+                            ...viewState.allTasks,
+                            ...visibleItems,
+                          ]);
                     return SliverPadding(
                       padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
                       sliver: SliverList.separated(
                         itemCount: rows.length,
                         itemBuilder: (context, index) {
                           final row = rows[index];
-                          return TaskListItem(
-                            key: ValueKey(row.task.id),
-                            task: row.task,
-                            depth: row.displayDepth,
-                            hierarchy: row,
+                          return TaskListRow(
+                            key: ValueKey('task-row-${row.task.id}'),
+                            row: row,
+                            query: query,
                             branchScope: branchScope,
-                            subtaskProgress: progressById[row.task.id],
+                            progress: progressById[row.task.id],
                           );
                         },
                         separatorBuilder: (context, index) {

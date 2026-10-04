@@ -1,3 +1,5 @@
+import 'package:collection/collection.dart';
+import 'task_branch_rows.dart' show taskStructureKey;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pomodoist/config/providers.dart';
 import 'package:pomodoist/domain/models/tasks/task_models.dart';
@@ -24,11 +26,13 @@ class UpcomingViewModel extends Notifier<UpcomingState> {
 
   @override
   UpcomingState build() {
-    final now =
-        (ref.watch(taskTimeTickerProvider).value ??
-                ref.read(clockProvider).now())
-            .toLocal();
-    final today = DateTime(now.year, now.month, now.day);
+    final clock = ref.read(clockProvider);
+    final today = ref.watch(
+      taskTimeTickerProvider.select((tick) {
+        final now = (tick.value ?? clock.now()).toLocal();
+        return _dateOnly(now);
+      }),
+    );
     final open = ref.watch(tasksByQueryProvider(const TaskQuery.all()));
     final completed = ref.watch(
       tasksByQueryProvider(const TaskQuery.completed()),
@@ -118,3 +122,59 @@ List<TaskItem> scheduledTasks(Iterable<TaskItem> tasks) {
 }
 
 DateTime _dateOnly(DateTime date) => DateTime(date.year, date.month, date.day);
+
+class UpcomingLayout {
+  UpcomingLayout(this.state)
+    : structure = [
+        for (final group in state.groups) ...[
+          group.date,
+          for (final row in group.rows)
+            (
+              taskStructureKey(row.task),
+              row.depth,
+              row.visibleParentId,
+              row.expanded,
+              row.hasVisibleChildren,
+              row.ancestorContinuations.join(),
+              row.isLastSibling,
+              row.groupRootId,
+              row.groupRootDepth,
+              row.endsGroup,
+            ),
+        ],
+      ];
+  final UpcomingState state;
+  final List<Object> structure;
+  @override
+  bool operator ==(Object other) =>
+      other is UpcomingLayout &&
+      (
+            state.today,
+            state.selectedDay,
+            state.projects,
+            state.error,
+            state.loading,
+          ) ==
+          (
+            other.state.today,
+            other.state.selectedDay,
+            other.state.projects,
+            other.state.error,
+            other.state.loading,
+          ) &&
+      const MapEquality<DateTime, int>().equals(
+        state.scheduledCounts,
+        other.state.scheduledCounts,
+      ) &&
+      const ListEquality<Object>().equals(structure, other.structure);
+  @override
+  int get hashCode => Object.hash(
+    state.today,
+    state.selectedDay,
+    state.projects,
+    state.error,
+    state.loading,
+    const MapEquality<DateTime, int>().hash(state.scheduledCounts),
+    const ListEquality<Object>().hash(structure),
+  );
+}

@@ -6,7 +6,8 @@ import 'package:pomodoist/ui/core/localization/app_l10n.dart';
 import 'package:pomodoist/ui/core/themes/app_theme.dart';
 import 'package:pomodoist/ui/core/themes/app_motion.dart';
 import 'package:pomodoist/ui/core/widgets/app_action_menu.dart';
-import 'package:pomodoist/ui/core/widgets/resizable_dialog.dart';
+import 'package:go_router/go_router.dart';
+import 'package:pomodoist/routing/habit_detail_navigation.dart';
 import 'package:pomodoist/ui/habits/view_models/habits_view_model.dart';
 import 'package:pomodoist/ui/habits/widgets/habit_editor.dart';
 
@@ -17,36 +18,6 @@ class HabitsScreen extends ConsumerStatefulWidget {
 }
 
 class _HabitsScreenState extends ConsumerState<HabitsScreen> {
-  Habit? _editing;
-  bool _editorOpen = false;
-  void _openEditor(Habit? habit, bool wide) {
-    if (wide) {
-      setState(() {
-        _editing = habit;
-        _editorOpen = true;
-      });
-      return;
-    }
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      animationStyle: AnimationStyle(
-        duration: AppMotion.duration(context, AppMotion.popup),
-        reverseDuration: AppMotion.duration(context, AppMotion.popup),
-        curve: AppMotion.curve,
-      ),
-      builder: (context) => ResizableDialog(
-        initialSize: const Size(480, 760),
-        minSize: const Size(300, 400),
-        actions: const [],
-        content: HabitEditor(
-          habit: habit,
-          onClose: () => Navigator.of(context).pop(),
-        ),
-      ),
-    );
-  }
-
   Future<void> _delete(Habit habit) async {
     final l = context.l10n;
     final confirmed = await showDialog<bool>(
@@ -75,8 +46,10 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
       final success = await ref
           .read(habitsViewModelProvider.notifier)
           .deleteHabit(habit.id);
-      if (success && mounted && _editing?.id == habit.id) {
-        setState(() => _editorOpen = false);
+      if (success &&
+          mounted &&
+          GoRouter.of(context).state.uri.queryParameters['habit'] == habit.id) {
+        closeHabitDetails(context);
       }
     }
   }
@@ -91,235 +64,359 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
       bottom: false,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          final wide = constraints.maxWidth >= 960;
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.all(constraints.maxWidth < 600 ? 16 : 32),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  l.navHabits,
-                                  style: Theme.of(
-                                    context,
-                                  ).textTheme.headlineMedium,
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  l.habitsSubtitle,
-                                  style: Theme.of(context).textTheme.bodyMedium
-                                      ?.copyWith(color: colors.mutedText),
-                                ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          ShadButton(
-                            onPressed: view.saving
-                                ? null
-                                : () => _openEditor(null, wide),
-                            leading: const Icon(LucideIcons.plus, size: 18),
-                            child: Text(l.habitNew),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 28),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              DateFormat.yMMMM(
-                                l.localeName,
-                              ).format(view.selectedDay),
-                              style: Theme.of(context).textTheme.titleMedium,
-                            ),
-                          ),
-                          ShadButton.ghost(
-                            onPressed: vm.selectToday,
-                            child: Text(l.today),
-                          ),
-                          IconButton(
-                            tooltip: l.habitPreviousWeek,
-                            onPressed: () => vm.moveWeek(-1),
-                            icon: const Icon(LucideIcons.chevronLeft, size: 18),
-                          ),
-                          IconButton(
-                            tooltip: l.habitNextWeek,
-                            onPressed: () => vm.moveWeek(1),
-                            icon: const Icon(
-                              LucideIcons.chevronRight,
-                              size: 18,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          for (var i = 0; i < 7; i++)
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 2,
-                                ),
-                                child: _day(
-                                  context,
-                                  DateTime(
-                                    view.weekStart.year,
-                                    view.weekStart.month,
-                                    view.weekStart.day + i,
-                                  ),
-                                  view,
-                                  vm,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-                      Wrap(
-                        spacing: 8,
-                        children: [
-                          ChoiceChip(
-                            label: Text(l.habitsActive),
-                            selected: !view.finished,
-                            onSelected: (_) => vm.showFinished(false),
-                          ),
-                          ChoiceChip(
-                            label: Text(l.habitsFinished),
-                            selected: view.finished,
-                            onSelected: (_) => vm.showFinished(true),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-                      Semantics(
-                        label: l.habitsSummary(view.completed, view.planned),
-                        excludeSemantics: true,
-                        child: Row(
-                          children: [
-                            Text(
-                              '${view.completed} / ${view.planned}',
-                              style: AppTheme.monoTextStyle.copyWith(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(width: 24),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    l.habitsCompletedLabel,
-                                    style: Theme.of(context).textTheme.bodySmall
-                                        ?.copyWith(color: colors.mutedText),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  LinearProgressIndicator(
-                                    value: view.planned == 0
-                                        ? 0
-                                        : view.completed / view.planned,
-                                    minHeight: 4,
-                                    borderRadius: BorderRadius.circular(4),
-                                    backgroundColor: colors.surfaceTint,
-                                    color: colors.accent,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      if (view.futureDay)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: Text(
-                            l.habitsFuture,
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(color: colors.mutedText),
-                          ),
-                        ),
-                      if (view.loading)
-                        const Padding(
-                          padding: EdgeInsets.all(40),
-                          child: Center(child: CircularProgressIndicator()),
-                        )
-                      else if (view.loadError)
-                        Column(
-                          children: [
-                            Text(l.habitLoadError),
-                            ShadButton.ghost(
-                              onPressed: vm.retry,
-                              child: Text(l.commonRetry),
-                            ),
-                          ],
-                        )
-                      else if (view.rows.isEmpty)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 48),
-                          child: Column(
-                            children: [
-                              Icon(
-                                LucideIcons.repeat2,
-                                size: 32,
-                                color: colors.mutedText,
-                              ),
-                              const SizedBox(height: 16),
-                              Text(
-                                view.finished
-                                    ? l.habitsFinishedEmpty
-                                    : l.habitsEmpty,
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
-                          ),
-                        )
-                      else
-                        for (final row in view.rows)
-                          _row(context, row, view, wide),
-                      if (view.actionError)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 16),
-                          child: Text(
-                            l.habitSaveError,
-                            style: TextStyle(color: colors.error),
-                          ),
-                        ),
-                    ],
-                  ),
+          return SingleChildScrollView(
+            padding: EdgeInsets.all(constraints.maxWidth < 600 ? 16 : 32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Wrap(
+                  spacing: 16,
+                  runSpacing: 12,
+                  alignment: WrapAlignment.spaceBetween,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(
+                      l.navHabits,
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
+                    ShadButton(
+                      enabled: !view.saving,
+                      onPressed: () => openHabitDetails(context, null),
+                      leading: const Icon(LucideIcons.plus, size: 18),
+                      child: Text(l.habitNew),
+                    ),
+                  ],
                 ),
-              ),
-              if (wide && _editorOpen)
-                Container(
-                  width: 380,
-                  decoration: BoxDecoration(
-                    border: BorderDirectional(
-                      start: BorderSide(color: colors.border),
+                const SizedBox(height: 20),
+                LayoutBuilder(
+                  builder: (context, space) {
+                    final calendar = _calendar(context, view, vm);
+                    final summary = _summary(context, view);
+                    return space.maxWidth >= 700
+                        ? Row(
+                            children: [
+                              Expanded(child: calendar),
+                              const SizedBox(width: 24),
+                              SizedBox(width: 180, child: summary),
+                            ],
+                          )
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              calendar,
+                              const SizedBox(height: 16),
+                              summary,
+                            ],
+                          );
+                  },
+                ),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 16,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        ChoiceChip(
+                          label: Text(l.habitsActive),
+                          selected: !view.finished,
+                          onSelected: (_) => vm.showFinished(false),
+                        ),
+                        ChoiceChip(
+                          label: Text(l.habitsFinished),
+                          selected: view.finished,
+                          onSelected: (_) => vm.showFinished(true),
+                        ),
+                      ],
+                    ),
+                    if (!view.finished)
+                      ShadTabs<HabitViewMode>(
+                        value: view.viewMode,
+                        scrollable: true,
+                        gap: 0,
+                        onChanged: vm.setViewMode,
+                        tabs: [
+                          ShadTab(
+                            value: HabitViewMode.list,
+                            height: 44,
+                            enabled:
+                                !view.viewSaving && !view.viewSettingsLoading,
+                            child: Text(l.habitsListView),
+                          ),
+                          ShadTab(
+                            value: HabitViewMode.rhythm,
+                            height: 44,
+                            enabled:
+                                !view.viewSaving && !view.viewSettingsLoading,
+                            child: Text(l.habitsRhythmView),
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+                if (view.viewError)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 8,
+                      children: [
+                        Text(
+                          l.habitsViewPreferenceError,
+                          style: TextStyle(color: colors.error),
+                        ),
+                        ShadButton.ghost(
+                          onPressed: view.viewSaving ? null : vm.retryViewMode,
+                          child: Text(l.commonRetry),
+                        ),
+                      ],
                     ),
                   ),
-                  child: HabitEditor(
-                    key: ValueKey(_editing?.id ?? 'new'),
-                    habit: _editing,
-                    onClose: () => setState(() => _editorOpen = false),
+                const SizedBox(height: 8),
+                if (view.futureDay)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Text(
+                      l.habitsFuture,
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: colors.mutedText),
+                    ),
                   ),
-                ),
-            ],
+                if (view.loading)
+                  const Padding(
+                    padding: EdgeInsets.all(40),
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (view.loadError)
+                  Column(
+                    children: [
+                      Text(l.habitLoadError),
+                      ShadButton.ghost(
+                        onPressed: vm.retry,
+                        child: Text(l.commonRetry),
+                      ),
+                    ],
+                  )
+                else if (view.rows.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 48),
+                    child: Column(
+                      children: [
+                        Icon(
+                          LucideIcons.repeat2,
+                          size: 32,
+                          color: colors.mutedText,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          view.finished ? l.habitsFinishedEmpty : l.habitsEmpty,
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  )
+                else if (view.finished)
+                  for (final row in view.rows) _row(context, row, view)
+                else if (view.viewMode == HabitViewMode.list) ...[
+                  if (view.remainingRows.isNotEmpty) ...[
+                    _section(
+                      context,
+                      view.futureDay ? l.habitsPlanned : l.habitsRemaining,
+                      '${view.remainingRows.length}',
+                    ),
+                    for (final row in view.remainingRows)
+                      _row(context, row, view),
+                  ],
+                  if (view.completedRows.isNotEmpty) ...[
+                    _section(
+                      context,
+                      l.habitsDone,
+                      '${view.completedRows.length}',
+                    ),
+                    for (final row in view.completedRows)
+                      _row(context, row, view),
+                  ],
+                ] else
+                  for (final group in view.rhythmGroups)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16),
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          border: BorderDirectional(
+                            start: BorderSide(color: colors.border),
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsetsDirectional.only(start: 16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              _section(
+                                context,
+                                habitDayPeriodLabel(context, group.period),
+                                '${group.rows.where((r) => r.complete).length} / ${group.rows.length}',
+                              ),
+                              for (final row in group.rows)
+                                _row(context, row, view),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                if (view.actionError)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: Text(
+                      l.habitSaveError,
+                      style: TextStyle(color: colors.error),
+                    ),
+                  ),
+              ],
+            ),
           );
         },
       ),
     );
   }
+
+  Widget _calendar(
+    BuildContext context,
+    HabitsViewState view,
+    HabitsViewModel vm,
+  ) {
+    final l = context.l10n;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          alignment: WrapAlignment.spaceBetween,
+          children: [
+            Text(
+              DateFormat.yMMMM(l.localeName).format(view.selectedDay),
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ShadButton.ghost(
+                  onPressed: vm.selectToday,
+                  child: Text(l.today),
+                ),
+                IconButton(
+                  tooltip: l.habitPreviousWeek,
+                  onPressed: () => vm.moveWeek(-1),
+                  icon: const Icon(LucideIcons.chevronLeft, size: 18),
+                ),
+                IconButton(
+                  tooltip: l.habitNextWeek,
+                  onPressed: () => vm.moveWeek(1),
+                  icon: const Icon(LucideIcons.chevronRight, size: 18),
+                ),
+              ],
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        LayoutBuilder(
+          builder: (context, space) {
+            final minimumWidth =
+                MediaQuery.textScalerOf(
+                  context,
+                ).scale(44).clamp(44, double.infinity).toDouble() *
+                7;
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: SizedBox(
+                width: space.maxWidth < minimumWidth
+                    ? minimumWidth
+                    : space.maxWidth,
+                child: Row(
+                  children: [
+                    for (var i = 0; i < 7; i++)
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 2),
+                          child: _day(
+                            context,
+                            DateTime(
+                              view.weekStart.year,
+                              view.weekStart.month,
+                              view.weekStart.day + i,
+                            ),
+                            view,
+                            vm,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _summary(BuildContext context, HabitsViewState view) {
+    final colors = context.appColors, l = context.l10n;
+    return Semantics(
+      label: l.habitsSummary(view.completed, view.planned),
+      excludeSemantics: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${view.completed} / ${view.planned}',
+            style: AppTheme.monoTextStyle.copyWith(
+              fontSize: 24,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          Text(
+            l.habitsCompletedLabel,
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: colors.mutedText),
+          ),
+          const SizedBox(height: 8),
+          LinearProgressIndicator(
+            value: view.planned == 0 ? 0 : view.completed / view.planned,
+            minHeight: 4,
+            borderRadius: BorderRadius.circular(4),
+            color: colors.accent,
+            backgroundColor: colors.surfaceTint,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _section(BuildContext context, String title, String count) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 12),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(title, style: Theme.of(context).textTheme.titleSmall),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          count,
+          style: AppTheme.monoTextStyle.copyWith(
+            fontSize: 12,
+            color: context.appColors.mutedText,
+          ),
+        ),
+      ],
+    ),
+  );
 
   Widget _day(
     BuildContext context,
@@ -376,18 +473,16 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
     );
   }
 
-  Widget _row(
-    BuildContext context,
-    HabitDayRow row,
-    HabitsViewState view,
-    bool wide,
-  ) {
+  Widget _row(BuildContext context, HabitDayRow row, HabitsViewState view) {
     final vm = ref.read(habitsViewModelProvider.notifier), l = context.l10n;
     final colors = context.appColors;
-    final complete = row.count >= row.target;
+    final complete = row.complete;
     final schedule = row.habit.scheduleFor(view.selectedDay);
     final metadata = <String>[
       if (row.project != null) row.project!.name,
+      if (row.actionPeriod == null && row.targets.length > 1)
+        for (final e in row.targets.entries)
+          '${habitDayPeriodLabel(context, e.key)} ${row.periodCounts[e.key] ?? 0}/${e.value}',
       if (schedule != null)
         schedule.weekdays.length == 7
             ? l.habitDaily
@@ -409,7 +504,8 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
         )}',
     ];
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      key: ValueKey((row.habit.id, row.actionPeriod)),
+      padding: EdgeInsets.symmetric(vertical: complete ? 12 : 16),
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: colors.border)),
       ),
@@ -445,21 +541,23 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
                       ).textTheme.bodySmall?.copyWith(color: colors.mutedText),
                     ),
                   ),
-                const SizedBox(height: 8),
-                Semantics(
-                  label: l.habitHistory,
-                  child: Row(
-                    children: [
-                      for (final day in row.history)
-                        Flexible(
-                          child: Padding(
-                            padding: const EdgeInsetsDirectional.only(end: 4),
-                            child: _historyDay(context, day, view.today),
+                if (!complete) ...[
+                  const SizedBox(height: 8),
+                  Semantics(
+                    label: l.habitHistory,
+                    child: Row(
+                      children: [
+                        for (final day in row.history)
+                          Flexible(
+                            child: Padding(
+                              padding: const EdgeInsetsDirectional.only(end: 4),
+                              child: _historyDay(context, day, view.today),
+                            ),
                           ),
-                        ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
@@ -476,7 +574,7 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
                     color: complete ? colors.accent : colors.mutedText,
                   ),
                 ),
-                if (row.target > 1) ...[
+                if (row.target > 1 && !complete) ...[
                   const SizedBox(height: 8),
                   LinearProgressIndicator(
                     value: row.count / row.target,
@@ -490,28 +588,52 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
             ),
           ),
           const SizedBox(width: 4),
-          IconButton(
-            tooltip: l.habitAddCheckIn,
-            onPressed: row.canAdd && !view.saving
-                ? () => vm.addCheckIn(row.habit.id)
-                : null,
-            icon: Icon(
-              complete ? LucideIcons.circleCheck : LucideIcons.circlePlus,
-              color: complete ? colors.accent : colors.mutedText,
-              size: 24,
+          if (row.actionPeriod == null && row.targets.length > 1)
+            PopupMenuButton<HabitDayPeriod>(
+              tooltip: l.habitAddCheckIn,
+              enabled: row.canAdd && !view.saving,
+              icon: Icon(
+                complete ? LucideIcons.circleCheck : LucideIcons.circlePlus,
+                color: complete ? colors.accent : colors.mutedText,
+                size: 24,
+              ),
+              onSelected: (period) =>
+                  vm.addCheckIn(row.habit.id, period: period),
+              itemBuilder: (context) => [
+                for (final e in row.targets.entries)
+                  PopupMenuItem(
+                    value: e.key,
+                    enabled: (row.periodCounts[e.key] ?? 0) < e.value,
+                    child: Text(
+                      '${habitDayPeriodLabel(context, e.key)} · ${row.periodCounts[e.key] ?? 0} / ${e.value}',
+                    ),
+                  ),
+              ],
+            )
+          else
+            IconButton(
+              tooltip: l.habitAddCheckIn,
+              onPressed: row.canAdd && !view.saving
+                  ? () => vm.addCheckIn(row.habit.id, period: row.actionPeriod)
+                  : null,
+              icon: Icon(
+                complete ? LucideIcons.circleCheck : LucideIcons.circlePlus,
+                color: complete ? colors.accent : colors.mutedText,
+                size: 24,
+              ),
             ),
-          ),
           AppActionMenu(
             tooltip: l.habitEdit,
             enabled: !view.saving,
             items: [
               ShadContextMenuItem(
                 enabled: row.canUndo,
-                onPressed: () => vm.undoCheckIn(row.habit.id),
+                onPressed: () =>
+                    vm.undoCheckIn(row.habit.id, period: row.actionPeriod),
                 child: Text(l.habitUndoCheckIn),
               ),
               ShadContextMenuItem(
-                onPressed: () => _openEditor(row.habit, wide),
+                onPressed: () => openHabitDetails(context, row.habit.id),
                 child: Text(l.habitEdit),
               ),
               ShadContextMenuItem(
@@ -547,26 +669,39 @@ class _HabitsScreenState extends ConsumerState<HabitsScreen> {
       child: Semantics(
         label: label,
         child: SizedBox(
-          width: 16,
-          height: 20,
-          child: Center(
-            child: Container(
-              width: 16,
-              height: 6,
-              decoration: BoxDecoration(
-                color: future || day.target == null
-                    ? Colors.transparent
-                    : complete
-                    ? colors.accent
-                    : partial
-                    ? colors.accentTint
-                    : colors.border,
-                borderRadius: BorderRadius.circular(2),
-                border: future || day.target == null || partial
-                    ? Border.all(color: partial ? colors.accent : colors.border)
-                    : null,
+          width: 32,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 16,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: future || day.target == null
+                      ? Colors.transparent
+                      : complete
+                      ? colors.accent
+                      : partial
+                      ? colors.accentTint
+                      : colors.border,
+                  borderRadius: BorderRadius.circular(2),
+                  border: future || day.target == null || partial
+                      ? Border.all(
+                          color: partial ? colors.accent : colors.border,
+                        )
+                      : null,
+                ),
               ),
-            ),
+              const SizedBox(height: 4),
+              ExcludeSemantics(
+                child: Text(
+                  DateFormat.E(l.localeName).format(day.day),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelSmall?.copyWith(color: colors.mutedText),
+                ),
+              ),
+            ],
           ),
         ),
       ),

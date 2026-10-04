@@ -8,6 +8,7 @@ import { registerPomodoistTools, type PomodoistToolDependencies } from './tools.
 import { ActionError, captureMutation, type JsonMap, type Plan, runGuardedAction } from './openclaw_actions.ts';
 
 const mutations = ['create_task', 'update_task', 'complete_task', 'restore_task', 'delete_task',
+  'create_habit', 'update_habit', 'add_habit_check_in', 'complete_habit', 'undo_habit_check_in', 'finish_habit', 'reopen_habit', 'delete_habit',
   'create_project', 'update_project', 'delete_project', 'create_label', 'delete_label'] as const;
 const entityId = z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$/);
 const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine(value => {
@@ -30,13 +31,13 @@ const focusArgs = z.object({ action: z.enum(['start', 'pause', 'resume', 'comple
   }
 });
 
-type Captured = { schema: z.ZodType; run: (args: JsonMap) => Promise<unknown> };
+type Captured = { description?: string; schema: z.ZodType; run: (args: JsonMap) => Promise<unknown> };
 // Capture existing registration callbacks, not private SDK fields. This keeps
 // task validation, recurrence, kanban updates and sync payloads in one runtime.
 function capture(auth: PomodoistMcpAuth, dependencies: PomodoistToolDependencies) {
   const tools = new Map<string, Captured>();
-  const registrar = { registerTool(name: string, config: { inputSchema: z.ZodType }, run: Captured['run']) {
-    tools.set(name, { schema: config.inputSchema, run });
+  const registrar = { registerTool(name: string, config: { description?: string; inputSchema: z.ZodType }, run: Captured['run']) {
+    tools.set(name, { description: config.description, schema: config.inputSchema, run });
   } };
   registerPomodoistTools(registrar as unknown as McpServer, auth, dependencies);
   return tools;
@@ -74,13 +75,13 @@ export function registerOpenClawTools(server: McpServer, auth: PomodoistMcpAuth,
     }
     return { state: pomodoistState(value.entities), now: new Date(value.serverNow) };
   }
-  function guarded(name: string, schema: z.ZodType, build: (args: JsonMap, requestId: string) => Promise<Plan>) {
+  function guarded(name: string, schema: z.ZodType, build: (args: JsonMap, requestId: string) => Promise<Plan>, description?: string) {
     const destructive = name.startsWith('delete_');
     const input = z.object({ request_id: z.string().uuid(), arguments: schema,
       ...(destructive ? { confirmed: z.literal(true) } : {}),
     }).strict();
     server.registerTool(`openclaw_${name}`, {
-      description: `Pomodoist ${name}. Reuse request_id and identical arguments after a timeout; never repeat with a new ID. ${destructive ? 'Ask for explicit confirmation first.' : ''}`,
+      description: `${description ?? `Pomodoist ${name}.`} Reuse request_id and identical arguments after a timeout; never repeat with a new ID. ${destructive ? 'Ask for explicit confirmation first.' : ''}`,
       inputSchema: input,
       annotations: { readOnlyHint: false, idempotentHint: true, destructiveHint: destructive || name === 'focus', openWorldHint: false },
     }, async value => {
@@ -99,7 +100,7 @@ export function registerOpenClawTools(server: McpServer, auth: PomodoistMcpAuth,
     guarded(name, tool.schema, args => captureMutation(dependencies.config.supabaseUrl, fetcher, buffered => {
       const delegate = capture(auth, { ...dependencies, fetch: buffered }).get(name)!;
       return delegate.run(delegate.schema.parse(args) as JsonMap);
-    }));
+    }), tool.description);
   }
   guarded('set_task_details', details, async args => {
     const current = await state(String(args.task_id));

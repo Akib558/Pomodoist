@@ -37,6 +37,9 @@ HabitCheckIn habitCheckInFromRow(HabitCheckInRow row) => HabitCheckIn(
   createdAt: row.createdAt,
   updatedAt: row.updatedAt,
   isDeleted: row.isDeleted,
+  dayPeriod: row.dayPeriod == null
+      ? null
+      : HabitDayPeriod.values.byName(row.dayPeriod!),
 );
 HabitCheckInsCompanion habitCheckInToRow(HabitCheckIn checkIn) =>
     HabitCheckInsCompanion.insert(
@@ -47,4 +50,5 @@ HabitCheckInsCompanion habitCheckInToRow(HabitCheckIn checkIn) =>
       createdAt: checkIn.createdAt,
       updatedAt: checkIn.updatedAt,
       isDeleted: Value(checkIn.isDeleted),
+      dayPeriod: Value(checkIn.dayPeriod?.name),
     );

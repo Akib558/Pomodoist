@@ -313,7 +313,8 @@ class AppLocalizationsKo extends AppLocalizations {
   String get oauthConsentCapabilitiesTitle => '이 에이전트가 할 수 있는 일';
 
   @override
-  String get oauthConsentManagePlanning => '작업, 프로젝트, 사용자 라벨, 칸반을 읽고 관리합니다.';
+  String get oauthConsentManagePlanning =>
+      '작업, 습관, 프로젝트, 사용자 라벨, 칸반을 읽고 관리합니다.';
 
   @override
   String get oauthConsentReadInsights => '완료된 집중 기록, 생산성 보고서, 업적을 읽습니다.';
@@ -3961,6 +3962,57 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get settingsPreviewCompletedTask => '메모 검토하기';
+
+  @override
+  String get habitsListView => '목록';
+
+  @override
+  String get habitsRhythmView => '하루 리듬';
+
+  @override
+  String get habitsRemaining => '남은 습관';
+
+  @override
+  String get habitsDone => '완료';
+
+  @override
+  String get habitsPlanned => '예정';
+
+  @override
+  String get habitDayPeriod => '시간대';
+
+  @override
+  String get habitPeriodAutomatic => '자동';
+
+  @override
+  String get habitPeriodAnytime => '하루 전체';
+
+  @override
+  String get habitPeriodNight => '밤';
+
+  @override
+  String get habitPeriodMultipleReason => '목표에 하루 동안의 여러 반복이 포함됩니다.';
+
+  @override
+  String get habitPeriodNoTimeReason => '알림 시간이 설정되지 않았습니다.';
+
+  @override
+  String get habitPeriodReminderReason => '알림 시간을 기준으로 합니다.';
+
+  @override
+  String get habitsViewPreferenceError => '선택한 보기를 저장하거나 불러오지 못했습니다.';
+
+  @override
+  String habitPeriodExplanation(String period, String reason) {
+    return '$period: $reason';
+  }
+
+  @override
+  String get habitPeriodCustom => '시간대별';
+
+  @override
+  String get habitPeriodTargetsHint =>
+      '시간대를 하나 이상 선택하고 각각의 목표를 설정하세요. 하루 총합: 1–99.';
 
   @override
   String get accountAvatar => '아바타';

@@ -94,6 +94,11 @@ class DriftHabitRepository implements HabitRepository {
           current.startDate == candidate.startDate &&
           current.endDate == candidate.endDate &&
           current.targetPerDay == candidate.targetPerDay &&
+          current.dayPeriod == candidate.dayPeriod &&
+          current.periodTargets.length == candidate.periodTargets.length &&
+          current.periodTargets.entries.every(
+            (e) => candidate.periodTargets[e.key] == e.value,
+          ) &&
           current.weekdays.toSet().containsAll(candidate.weekdays) &&
           current.weekdays.length == candidate.weekdays.length;
       final history = same
@@ -145,6 +150,7 @@ class DriftHabitRepository implements HabitRepository {
     String id,
     DateTime day, {
     required DateTime now,
+    HabitDayPeriod? period,
   }) => Result.capture(
     () => _db.transaction(() async {
       final habit = await _find(id);
@@ -161,13 +167,27 @@ class DriftHabitRepository implements HabitRepository {
                     c.isDeleted.not(),
               ))
               .get();
-      if (existing.length >= habit.scheduleFor(date)!.targetPerDay) {
-        throw StateError('Daily goal already reached');
+      final targets = habit
+          .scheduleFor(date)!
+          .targetsFor(habit.reminderMinutes);
+      final selected =
+          period ?? (targets.length == 1 ? targets.keys.single : null);
+      if (selected == null || !targets.containsKey(selected)) {
+        throw ArgumentError('Select a scheduled period');
+      }
+      final counts = habitPeriodCounts(
+        habit,
+        date,
+        existing.map(habitCheckInFromRow),
+      );
+      if (counts[selected]! >= targets[selected]!) {
+        throw StateError('Period goal already reached');
       }
       final checkIn = HabitCheckIn(
         id: _uuid.v4(),
         userId: localUserId,
         habitId: id,
+        dayPeriod: selected,
         day: date,
         createdAt: now.toUtc(),
         updatedAt: now.toUtc(),
@@ -187,13 +207,14 @@ class DriftHabitRepository implements HabitRepository {
     String id,
     DateTime day, {
     required DateTime now,
+    HabitDayPeriod? period,
   }) => Result.capture(
     () => _db.transaction(() async {
-      await _find(id);
+      final habit = await _find(id);
       if (habitDate(day).isAfter(habitDate(now.toLocal()))) {
         throw ArgumentError('Day is not editable');
       }
-      final row =
+      final rows =
           await (_db.select(_db.habitCheckIns)
                 ..where(
                   (c) =>
@@ -204,14 +225,22 @@ class DriftHabitRepository implements HabitRepository {
                 ..orderBy([
                   (c) => OrderingTerm.desc(c.createdAt),
                   (c) => OrderingTerm.desc(c.id),
-                ])
-                ..limit(1))
-              .getSingleOrNull();
+                ]))
+              .get();
+      final assigned = habitCheckInPeriods(
+        habit,
+        day,
+        rows.map(habitCheckInFromRow),
+      );
+      final row = rows
+          .where((r) => period == null || assigned[r.id] == period)
+          .firstOrNull;
       if (row == null) return;
       final checkIn = HabitCheckIn(
         id: row.id,
         userId: row.userId,
         habitId: id,
+        dayPeriod: habitCheckInFromRow(row).dayPeriod,
         day: day,
         createdAt: row.createdAt,
         updatedAt: now.toUtc(),

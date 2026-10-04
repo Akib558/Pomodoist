@@ -1,3 +1,4 @@
+import { habitMutations } from "./habit_tools.ts";
 import { kanbanMutations } from "./kanban_mutations.ts";
 import { labelMutations } from "./label_mutations.ts";
 import type { DefineMutation, MutationDefinition } from "./mutation_helpers.ts";
@@ -35,6 +36,7 @@ export function pomodoistMutationPlans(auth: PomodoistMcpAuth, dependencies: Pom
     },
   };
   taskMutations(scope);
+  habitMutations(scope);
   projectMutations(scope);
   labelMutations(scope);
   kanbanMutations(scope);

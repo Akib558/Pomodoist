@@ -26,6 +26,40 @@ void main() {
   Future<String> create() async =>
       (await repo.createHabit(draft(), now: today)).getOrThrow();
   test(
+    'period changes persist in existing JSON and preserve older schedules',
+    () async {
+      final id = await create();
+      (await repo.addCheckIn(
+        id,
+        DateTime(2026, 9, 29),
+        now: today,
+      )).getOrThrow();
+      (await repo.updateHabit(
+        id,
+        HabitDraft(
+          title: 'Read',
+          startDate: DateTime(2026, 9, 28),
+          targetPerDay: 2,
+          dayPeriod: HabitDayPeriod.morning,
+        ),
+        now: today,
+      )).getOrThrow();
+      final habit = (await repo.watchHabits().first).single;
+      expect(
+        habit.scheduleFor(DateTime(2026, 9, 29))!.dayPeriod,
+        HabitDayPeriod.automatic,
+      );
+      expect(habit.scheduleFor(today)!.dayPeriod, HabitDayPeriod.morning);
+      expect(await repo.watchCheckIns().first, hasLength(1));
+      final commands = await db.select(db.syncCommands).get();
+      final payload = jsonDecode(
+        commands.singleWhere((c) => c.type == 'habit.update').payloadJson,
+      );
+      expect(payload['scheduleHistory'].last['dayPeriod'], 'morning');
+      expect(db.schemaVersion, 10);
+    },
+  );
+  test(
     'offline create stores domain data and captured outbox atomically',
     () async {
       final id = await create();
@@ -139,6 +173,74 @@ void main() {
       expect(await db.select(db.syncCommands).get(), hasLength(2));
     },
   );
+  for (final legacyVersion in [8, 9]) {
+    test(
+      'version $legacyVersion upgrade preserves legacy marks and stores period attribution',
+      () async {
+        final directory = await Directory.systemTemp.createTemp(
+          'habit-period-migration-',
+        );
+        addTearDown(() => directory.delete(recursive: true));
+        final file = File('${directory.path}/habits.sqlite');
+        var disk = AppDatabase(NativeDatabase(file));
+        try {
+          var saved = DriftHabitRepository(disk, DriftOutboxService(disk));
+          final id = (await saved.createHabit(
+            draft(),
+            now: today,
+          )).getOrThrow();
+          (await saved.addCheckIn(id, today, now: today)).getOrThrow();
+          final original = (await saved.watchCheckIns().first).single;
+          await disk.customStatement(
+            'ALTER TABLE habit_check_ins DROP COLUMN day_period',
+          );
+          await disk.customStatement('PRAGMA user_version = $legacyVersion');
+          await disk.close();
+          disk = AppDatabase(NativeDatabase(file));
+          saved = DriftHabitRepository(disk, DriftOutboxService(disk));
+          final legacy = (await saved.watchCheckIns().first).single;
+          expect(legacy.id, original.id);
+          expect(legacy.dayPeriod, isNull);
+          expect(legacy.createdAt, original.createdAt);
+          expect(await disk.select(disk.syncCommands).get(), hasLength(2));
+          (await saved.updateHabit(
+            id,
+            HabitDraft(
+              title: 'Read',
+              startDate: DateTime(2026, 9, 28),
+              periodTargets: {HabitDayPeriod.night: 2},
+            ),
+            now: today,
+          )).getOrThrow();
+          (await saved.addCheckIn(
+            id,
+            today,
+            period: HabitDayPeriod.night,
+            now: today,
+          )).getOrThrow();
+          await disk.close();
+          disk = AppDatabase(NativeDatabase(file));
+          saved = DriftHabitRepository(disk, DriftOutboxService(disk));
+          final marks = await saved.watchCheckIns().first;
+          expect(marks, hasLength(2));
+          expect(
+            marks.where((c) => c.dayPeriod == HabitDayPeriod.night),
+            hasLength(1),
+          );
+          expect(
+            (await saved.watchHabits().first)
+                .single
+                .scheduleHistory
+                .last
+                .periodTargets,
+            {HabitDayPeriod.night: 2},
+          );
+        } finally {
+          await disk.close();
+        }
+      },
+    );
+  }
   test(
     'version 8 upgrade preserves old data and new data survives restart',
     () async {
@@ -160,7 +262,7 @@ void main() {
         expect(
           (await disk.customSelect('PRAGMA user_version').getSingle())
               .read<int>('user_version'),
-          9,
+          10,
         );
         expect(
           await disk

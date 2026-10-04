@@ -25,7 +25,10 @@ List<UpcomingDayGroup> buildUpcomingDayGroups(
   final currentTasks = {
     for (final task in tasks) task.id: task,
   }.values.toList();
-  final metadata = [...?allItems, ...currentTasks];
+  final metadata = {
+    for (final task in allItems ?? const <TaskItem>[]) task.id: task,
+    for (final task in currentTasks) task.id: task,
+  };
   final tasksByDate = <DateTime, List<TaskItem>>{};
   final firstVisibleDay = visibleFromDate == null
       ? null
@@ -56,8 +59,9 @@ List<UpcomingDayGroup> buildUpcomingDayGroups(
       return UpcomingDayGroup(
         date: date,
         rows: visibleTaskRows(
-          metadata,
+          const [],
           dayTasks,
+          allById: metadata,
           expansion: expansion,
           compare: _compareTaskOrder,
           compareRoots: _compareRootOrder,

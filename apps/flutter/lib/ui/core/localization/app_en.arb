@@ -143,7 +143,7 @@
   },
   "oauthConsentRedirectOrigin": "Return address",
   "oauthConsentCapabilitiesTitle": "This agent can",
-  "oauthConsentManagePlanning": "Read and manage tasks, projects, user labels, and Kanban.",
+  "oauthConsentManagePlanning": "Read and manage tasks, habits, projects, user labels, and Kanban.",
   "oauthConsentReadInsights": "Read completed focus history, productivity reports, and achievements.",
   "oauthConsentUnavailableTitle": "This agent cannot",
   "oauthConsentUnavailable": "Access your account or billing, Google Calendar, or the live focus timer.",
@@ -2054,6 +2054,33 @@
   "@settingsPreviewCompletedTask": {
     "description": "Read-only example in Appearance settings."
   },
+  "habitsListView": "List",
+  "habitsRhythmView": "Day rhythm",
+  "habitsRemaining": "Remaining",
+  "habitsDone": "Done",
+  "habitsPlanned": "Planned",
+  "habitDayPeriod": "Part of day",
+  "habitPeriodAutomatic": "Automatic",
+  "habitPeriodAnytime": "Throughout the day",
+  "habitPeriodNight": "Night",
+  "habitPeriodMultipleReason": "The goal has multiple repetitions across the day.",
+  "habitPeriodNoTimeReason": "No reminder time is set.",
+  "habitPeriodReminderReason": "Based on the reminder time.",
+  "habitsViewPreferenceError": "Could not save or load the view preference.",
+  "habitPeriodExplanation": "{period}: {reason}",
+  "@habitPeriodExplanation": {
+    "description": "Resolved automatic habit group and the reason for choosing it.",
+    "placeholders": {
+      "period": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "habitPeriodCustom": "By parts of day",
+  "habitPeriodTargetsHint": "Choose one or more parts of day and set a goal for each. Daily total: 1–99.",
   "accountAvatar": "Avatar",
   "accountChangeAvatar": "Change avatar",
   "accountAvatarInput": "Enter or paste an emoji",

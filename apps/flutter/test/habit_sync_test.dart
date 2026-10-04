@@ -21,6 +21,123 @@ void main() {
   });
   tearDown(() => db.close());
   test(
+    'period quotas and night check-ins survive push, pull and snapshot',
+    () async {
+      final id = (await repo.createHabit(
+        HabitDraft(
+          title: 'Water',
+          startDate: now,
+          periodTargets: {HabitDayPeriod.morning: 2, HabitDayPeriod.night: 1},
+        ),
+        now: now,
+      )).getOrThrow();
+      (await repo.addCheckIn(
+        id,
+        now,
+        period: HabitDayPeriod.night,
+        now: now,
+      )).getOrThrow();
+      final engine = testSyncEngine(
+        db: db,
+        account: account,
+        uuid: const Uuid(),
+      );
+      await engine.pushPending();
+      final habit = account.pushed.singleWhere((o) => o.entityType == 'habit');
+      final check = account.pushed.singleWhere(
+        (o) => o.entityType == 'habit_check_in',
+      );
+      expect(
+        (habit.payload['scheduleHistory'] as List).single['periodTargets'],
+        {'morning': 2, 'night': 1},
+      );
+      expect(check.payload['dayPeriod'], 'night');
+      final remoteDb = AppDatabase(NativeDatabase.memory());
+      addTearDown(remoteDb.close);
+      final remote = _Account()
+        ..changes = [
+          AccountSyncEntity(
+            entityType: 'habit',
+            entityId: id,
+            serverRevision: 1,
+            data: habit.payload,
+          ),
+          AccountSyncEntity(
+            entityType: 'habit_check_in',
+            entityId: check.entityId,
+            serverRevision: 1,
+            data: check.payload,
+          ),
+        ];
+      final receiver = testSyncEngine(
+        db: remoteDb,
+        account: remote,
+        uuid: const Uuid(),
+      );
+      await receiver.pullLatest();
+      final received = DriftHabitRepository(
+        remoteDb,
+        DriftOutboxService(remoteDb),
+      );
+      expect(
+        (await received.watchCheckIns().first).single.dayPeriod,
+        HabitDayPeriod.night,
+      );
+      expect(
+        (await received.watchHabits().first)
+            .single
+            .scheduleHistory
+            .last
+            .periodTargets,
+        {HabitDayPeriod.morning: 2, HabitDayPeriod.night: 1},
+      );
+      await receiver.importLocalSnapshotIfNeeded();
+      expect(
+        remote.pushed
+            .singleWhere((o) => o.entityType == 'habit_check_in')
+            .payload['dayPeriod'],
+        'night',
+      );
+    },
+  );
+  test('remote manual period survives pull, local edit and outbox', () async {
+    final id = (await repo.createHabit(
+      HabitDraft(title: 'Read', startDate: now),
+      now: now,
+    )).getOrThrow();
+    final local = (await repo.watchHabits().first).single;
+    final payload = local.toJson();
+    (payload['scheduleHistory'] as List).single['dayPeriod'] = 'evening';
+    account.changes = [
+      AccountSyncEntity(
+        entityType: 'habit',
+        entityId: id,
+        serverRevision: 5,
+        data: payload,
+      ),
+    ];
+    final engine = testSyncEngine(db: db, account: account, uuid: const Uuid());
+    await engine.pullLatest();
+    expect(
+      (await repo.watchHabits().first).single.scheduleHistory.last.dayPeriod,
+      HabitDayPeriod.evening,
+    );
+    (await repo.updateHabit(
+      id,
+      HabitDraft(
+        title: 'Read edited',
+        startDate: now,
+        dayPeriod: HabitDayPeriod.evening,
+      ),
+      now: now.add(const Duration(minutes: 1)),
+    )).getOrThrow();
+    await engine.pushPending();
+    final pushed = account.pushed
+        .lastWhere((o) => o.entityType == 'habit')
+        .payload;
+    expect((pushed['scheduleHistory'] as List).last['dayPeriod'], 'evening');
+  });
+  test(
     'outbox and snapshot use public calendar format and import tombstones',
     () async {
       final id = (await repo.createHabit(

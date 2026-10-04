@@ -14534,6 +14534,17 @@ class $HabitCheckInsTable extends HabitCheckIns
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   $HabitCheckInsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _dayPeriodMeta = const VerificationMeta(
+    'dayPeriod',
+  );
+  @override
+  late final GeneratedColumn<String> dayPeriod = GeneratedColumn<String>(
+    'day_period',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -14611,6 +14622,7 @@ class $HabitCheckInsTable extends HabitCheckIns
   );
   @override
   List<GeneratedColumn> get $columns => [
+    dayPeriod,
     id,
     userId,
     habitId,
@@ -14631,6 +14643,12 @@ class $HabitCheckInsTable extends HabitCheckIns
   }) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
+    if (data.containsKey('day_period')) {
+      context.handle(
+        _dayPeriodMeta,
+        dayPeriod.isAcceptableOrUnknown(data['day_period']!, _dayPeriodMeta),
+      );
+    }
     if (data.containsKey('id')) {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     } else if (isInserting) {
@@ -14691,6 +14709,10 @@ class $HabitCheckInsTable extends HabitCheckIns
   HabitCheckInRow map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return HabitCheckInRow(
+      dayPeriod: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}day_period'],
+      ),
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -14729,6 +14751,7 @@ class $HabitCheckInsTable extends HabitCheckIns
 }
 
 class HabitCheckInRow extends DataClass implements Insertable<HabitCheckInRow> {
+  final String? dayPeriod;
   final String id;
   final String userId;
   final String habitId;
@@ -14737,6 +14760,7 @@ class HabitCheckInRow extends DataClass implements Insertable<HabitCheckInRow> {
   final DateTime updatedAt;
   final bool isDeleted;
   const HabitCheckInRow({
+    this.dayPeriod,
     required this.id,
     required this.userId,
     required this.habitId,
@@ -14748,6 +14772,9 @@ class HabitCheckInRow extends DataClass implements Insertable<HabitCheckInRow> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (!nullToAbsent || dayPeriod != null) {
+      map['day_period'] = Variable<String>(dayPeriod);
+    }
     map['id'] = Variable<String>(id);
     map['user_id'] = Variable<String>(userId);
     map['habit_id'] = Variable<String>(habitId);
@@ -14760,6 +14787,9 @@ class HabitCheckInRow extends DataClass implements Insertable<HabitCheckInRow> {
 
   HabitCheckInsCompanion toCompanion(bool nullToAbsent) {
     return HabitCheckInsCompanion(
+      dayPeriod: dayPeriod == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dayPeriod),
       id: Value(id),
       userId: Value(userId),
       habitId: Value(habitId),
@@ -14776,6 +14806,7 @@ class HabitCheckInRow extends DataClass implements Insertable<HabitCheckInRow> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return HabitCheckInRow(
+      dayPeriod: serializer.fromJson<String?>(json['dayPeriod']),
       id: serializer.fromJson<String>(json['id']),
       userId: serializer.fromJson<String>(json['userId']),
       habitId: serializer.fromJson<String>(json['habitId']),
@@ -14789,6 +14820,7 @@ class HabitCheckInRow extends DataClass implements Insertable<HabitCheckInRow> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
+      'dayPeriod': serializer.toJson<String?>(dayPeriod),
       'id': serializer.toJson<String>(id),
       'userId': serializer.toJson<String>(userId),
       'habitId': serializer.toJson<String>(habitId),
@@ -14800,6 +14832,7 @@ class HabitCheckInRow extends DataClass implements Insertable<HabitCheckInRow> {
   }
 
   HabitCheckInRow copyWith({
+    Value<String?> dayPeriod = const Value.absent(),
     String? id,
     String? userId,
     String? habitId,
@@ -14808,6 +14841,7 @@ class HabitCheckInRow extends DataClass implements Insertable<HabitCheckInRow> {
     DateTime? updatedAt,
     bool? isDeleted,
   }) => HabitCheckInRow(
+    dayPeriod: dayPeriod.present ? dayPeriod.value : this.dayPeriod,
     id: id ?? this.id,
     userId: userId ?? this.userId,
     habitId: habitId ?? this.habitId,
@@ -14818,6 +14852,7 @@ class HabitCheckInRow extends DataClass implements Insertable<HabitCheckInRow> {
   );
   HabitCheckInRow copyWithCompanion(HabitCheckInsCompanion data) {
     return HabitCheckInRow(
+      dayPeriod: data.dayPeriod.present ? data.dayPeriod.value : this.dayPeriod,
       id: data.id.present ? data.id.value : this.id,
       userId: data.userId.present ? data.userId.value : this.userId,
       habitId: data.habitId.present ? data.habitId.value : this.habitId,
@@ -14831,6 +14866,7 @@ class HabitCheckInRow extends DataClass implements Insertable<HabitCheckInRow> {
   @override
   String toString() {
     return (StringBuffer('HabitCheckInRow(')
+          ..write('dayPeriod: $dayPeriod, ')
           ..write('id: $id, ')
           ..write('userId: $userId, ')
           ..write('habitId: $habitId, ')
@@ -14843,12 +14879,21 @@ class HabitCheckInRow extends DataClass implements Insertable<HabitCheckInRow> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, userId, habitId, day, createdAt, updatedAt, isDeleted);
+  int get hashCode => Object.hash(
+    dayPeriod,
+    id,
+    userId,
+    habitId,
+    day,
+    createdAt,
+    updatedAt,
+    isDeleted,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is HabitCheckInRow &&
+          other.dayPeriod == this.dayPeriod &&
           other.id == this.id &&
           other.userId == this.userId &&
           other.habitId == this.habitId &&
@@ -14859,6 +14904,7 @@ class HabitCheckInRow extends DataClass implements Insertable<HabitCheckInRow> {
 }
 
 class HabitCheckInsCompanion extends UpdateCompanion<HabitCheckInRow> {
+  final Value<String?> dayPeriod;
   final Value<String> id;
   final Value<String> userId;
   final Value<String> habitId;
@@ -14868,6 +14914,7 @@ class HabitCheckInsCompanion extends UpdateCompanion<HabitCheckInRow> {
   final Value<bool> isDeleted;
   final Value<int> rowid;
   const HabitCheckInsCompanion({
+    this.dayPeriod = const Value.absent(),
     this.id = const Value.absent(),
     this.userId = const Value.absent(),
     this.habitId = const Value.absent(),
@@ -14878,6 +14925,7 @@ class HabitCheckInsCompanion extends UpdateCompanion<HabitCheckInRow> {
     this.rowid = const Value.absent(),
   });
   HabitCheckInsCompanion.insert({
+    this.dayPeriod = const Value.absent(),
     required String id,
     required String userId,
     required String habitId,
@@ -14893,6 +14941,7 @@ class HabitCheckInsCompanion extends UpdateCompanion<HabitCheckInRow> {
        createdAt = Value(createdAt),
        updatedAt = Value(updatedAt);
   static Insertable<HabitCheckInRow> custom({
+    Expression<String>? dayPeriod,
     Expression<String>? id,
     Expression<String>? userId,
     Expression<String>? habitId,
@@ -14903,6 +14952,7 @@ class HabitCheckInsCompanion extends UpdateCompanion<HabitCheckInRow> {
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
+      if (dayPeriod != null) 'day_period': dayPeriod,
       if (id != null) 'id': id,
       if (userId != null) 'user_id': userId,
       if (habitId != null) 'habit_id': habitId,
@@ -14915,6 +14965,7 @@ class HabitCheckInsCompanion extends UpdateCompanion<HabitCheckInRow> {
   }
 
   HabitCheckInsCompanion copyWith({
+    Value<String?>? dayPeriod,
     Value<String>? id,
     Value<String>? userId,
     Value<String>? habitId,
@@ -14925,6 +14976,7 @@ class HabitCheckInsCompanion extends UpdateCompanion<HabitCheckInRow> {
     Value<int>? rowid,
   }) {
     return HabitCheckInsCompanion(
+      dayPeriod: dayPeriod ?? this.dayPeriod,
       id: id ?? this.id,
       userId: userId ?? this.userId,
       habitId: habitId ?? this.habitId,
@@ -14939,6 +14991,9 @@ class HabitCheckInsCompanion extends UpdateCompanion<HabitCheckInRow> {
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
+    if (dayPeriod.present) {
+      map['day_period'] = Variable<String>(dayPeriod.value);
+    }
     if (id.present) {
       map['id'] = Variable<String>(id.value);
     }
@@ -14969,6 +15024,7 @@ class HabitCheckInsCompanion extends UpdateCompanion<HabitCheckInRow> {
   @override
   String toString() {
     return (StringBuffer('HabitCheckInsCompanion(')
+          ..write('dayPeriod: $dayPeriod, ')
           ..write('id: $id, ')
           ..write('userId: $userId, ')
           ..write('habitId: $habitId, ')
@@ -22169,6 +22225,7 @@ typedef $$HabitsTableProcessedTableManager =
     >;
 typedef $$HabitCheckInsTableCreateCompanionBuilder =
     HabitCheckInsCompanion Function({
+      Value<String?> dayPeriod,
       required String id,
       required String userId,
       required String habitId,
@@ -22180,6 +22237,7 @@ typedef $$HabitCheckInsTableCreateCompanionBuilder =
     });
 typedef $$HabitCheckInsTableUpdateCompanionBuilder =
     HabitCheckInsCompanion Function({
+      Value<String?> dayPeriod,
       Value<String> id,
       Value<String> userId,
       Value<String> habitId,
@@ -22199,6 +22257,11 @@ class $$HabitCheckInsTableFilterComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnFilters<String> get dayPeriod => $composableBuilder(
+    column: $table.dayPeriod,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<String> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnFilters(column),
@@ -22244,6 +22307,11 @@ class $$HabitCheckInsTableOrderingComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  ColumnOrderings<String> get dayPeriod => $composableBuilder(
+    column: $table.dayPeriod,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get id => $composableBuilder(
     column: $table.id,
     builder: (column) => ColumnOrderings(column),
@@ -22289,6 +22357,9 @@ class $$HabitCheckInsTableAnnotationComposer
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
+  GeneratedColumn<String> get dayPeriod =>
+      $composableBuilder(column: $table.dayPeriod, builder: (column) => column);
+
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
 
@@ -22342,6 +22413,7 @@ class $$HabitCheckInsTableTableManager
               $$HabitCheckInsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
+                Value<String?> dayPeriod = const Value.absent(),
                 Value<String> id = const Value.absent(),
                 Value<String> userId = const Value.absent(),
                 Value<String> habitId = const Value.absent(),
@@ -22351,6 +22423,7 @@ class $$HabitCheckInsTableTableManager
                 Value<bool> isDeleted = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => HabitCheckInsCompanion(
+                dayPeriod: dayPeriod,
                 id: id,
                 userId: userId,
                 habitId: habitId,
@@ -22362,6 +22435,7 @@ class $$HabitCheckInsTableTableManager
               ),
           createCompanionCallback:
               ({
+                Value<String?> dayPeriod = const Value.absent(),
                 required String id,
                 required String userId,
                 required String habitId,
@@ -22371,6 +22445,7 @@ class $$HabitCheckInsTableTableManager
                 Value<bool> isDeleted = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => HabitCheckInsCompanion.insert(
+                dayPeriod: dayPeriod,
                 id: id,
                 userId: userId,
                 habitId: habitId,

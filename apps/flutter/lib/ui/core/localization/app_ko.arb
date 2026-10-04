@@ -142,7 +142,7 @@
   },
   "oauthConsentRedirectOrigin": "반환 주소",
   "oauthConsentCapabilitiesTitle": "이 에이전트가 할 수 있는 일",
-  "oauthConsentManagePlanning": "작업, 프로젝트, 사용자 라벨, 칸반을 읽고 관리합니다.",
+  "oauthConsentManagePlanning": "작업, 습관, 프로젝트, 사용자 라벨, 칸반을 읽고 관리합니다.",
   "oauthConsentReadInsights": "완료된 집중 기록, 생산성 보고서, 업적을 읽습니다.",
   "oauthConsentUnavailableTitle": "이 에이전트가 할 수 없는 일",
   "oauthConsentUnavailable": "계정이나 결제, Google Calendar, 실행 중인 집중 타이머에 접근합니다.",
@@ -1913,6 +1913,33 @@
   "settingsPreviewProject": "개인",
   "settingsPreviewLongTask": "자료를 준비하고 다음 단계를 계획하기",
   "settingsPreviewCompletedTask": "메모 검토하기",
+  "habitsListView": "목록",
+  "habitsRhythmView": "하루 리듬",
+  "habitsRemaining": "남은 습관",
+  "habitsDone": "완료",
+  "habitsPlanned": "예정",
+  "habitDayPeriod": "시간대",
+  "habitPeriodAutomatic": "자동",
+  "habitPeriodAnytime": "하루 전체",
+  "habitPeriodNight": "밤",
+  "habitPeriodMultipleReason": "목표에 하루 동안의 여러 반복이 포함됩니다.",
+  "habitPeriodNoTimeReason": "알림 시간이 설정되지 않았습니다.",
+  "habitPeriodReminderReason": "알림 시간을 기준으로 합니다.",
+  "habitsViewPreferenceError": "선택한 보기를 저장하거나 불러오지 못했습니다.",
+  "habitPeriodExplanation": "{period}: {reason}",
+  "@habitPeriodExplanation": {
+    "description": "Resolved automatic habit group and the reason for choosing it.",
+    "placeholders": {
+      "period": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "habitPeriodCustom": "시간대별",
+  "habitPeriodTargetsHint": "시간대를 하나 이상 선택하고 각각의 목표를 설정하세요. 하루 총합: 1–99.",
   "accountAvatar": "아바타",
   "accountChangeAvatar": "아바타 변경",
   "accountAvatarInput": "이모지 입력 또는 붙여넣기",

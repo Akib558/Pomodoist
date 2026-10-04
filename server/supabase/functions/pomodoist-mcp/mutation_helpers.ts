@@ -33,13 +33,13 @@ import {
 export type MutationPlan = { operations: Operation[]; result: RecordValue };
 export type MutationDefinition = {
   name: string;
-  config: { inputSchema: z.ZodType; outputSchema: z.ZodType; annotations: { openWorldHint: boolean; destructiveHint?: boolean } };
+  config: { description?: string; inputSchema: z.ZodType; outputSchema: z.ZodType; annotations: { openWorldHint: boolean; destructiveHint?: boolean } };
   plan: (arguments_: unknown) => Promise<MutationPlan>;
 };
 
 export type DefineMutation = <Schema extends z.ZodType>(
   name: string,
-  config: { inputSchema: Schema; outputSchema: z.ZodType; annotations: { openWorldHint: boolean; destructiveHint?: boolean } },
+  config: { description?: string; inputSchema: Schema; outputSchema: z.ZodType; annotations: { openWorldHint: boolean; destructiveHint?: boolean } },
   plan: (arguments_: z.output<Schema>) => Promise<MutationPlan>,
 ) => void;
 

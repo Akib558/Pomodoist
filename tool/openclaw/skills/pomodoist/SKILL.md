@@ -1,6 +1,6 @@
 ---
 name: pomodoist
-description: Manage the user's Pomodoist tasks, projects, deadlines and synchronized Focus sessions through the configured Pomodoist MCP connection.
+description: Manage the user's Pomodoist tasks, habits, projects, deadlines and synchronized Focus sessions through the configured Pomodoist MCP connection.
 version: 1.0.0
 license: MIT-0
 metadata:
@@ -12,7 +12,7 @@ metadata:
 
 # Pomodoist
 
-Use this skill when the user asks about their Pomodoist lists, tasks, projects,
+Use this skill when the user asks about their Pomodoist lists, tasks, habits, projects,
 priorities, scheduling, deadlines, productivity or Pomodoro/Focus sessions.
 Use only the configured Pomodoist MCP tools. Native OpenClaw may prefix their
 names with the configured server name; select tools by their original names and
@@ -72,7 +72,7 @@ do not change tool filters, credentials or permissions yourself.
 Generate one UUID request_id per intended action. Every guarded tool takes
 `request_id` and nested `arguments`, which must match that tool's discovered
 schema. Explicit user requests authorize the requested ordinary change; do not
-invent additional edits. Before deleting a task/project/label, describe the
+invent additional edits. Before deleting a task/habit/project/label, describe the
 exact target and relevant recurrence/subtask effects and obtain confirmation.
 Only then send top-level `confirmed: true`. Do not batch destructive actions
 under a vague approval. User must confirm stopping Focus too.
@@ -83,6 +83,25 @@ Date-only tasks use all_day; never create an arbitrary midnight timestamp.
 Use `openclaw_set_task_details` for a separate deadline_date or duration_seconds;
 read them with `openclaw_get_task`. A deadline is not the scheduled work date.
 Priority is 1 (highest) through 4 (lowest); do not infer urgency from task text.
+
+## Habits
+
+Resolve names with `list_habits` / `get_habit` and the user's IANA `time_zone`.
+Use `openclaw_create_habit`, `openclaw_update_habit`, `openclaw_add_habit_check_in`,
+`openclaw_complete_habit`, `openclaw_undo_habit_check_in`, `openclaw_finish_habit`,
+`openclaw_reopen_habit` and `openclaw_delete_habit` for changes.
+
+`complete_habit` fills the selected date's remaining daily goal (or only the
+specified `period`); `finish_habit` ends its schedule with an inclusive end date
+and keeps past marks. Do not confuse these actions. Future dates are read-only.
+A single check-in requires `period` when the habit has multiple period goals.
+Use `period_targets` such as `{"morning":2,"afternoon":2,"evening":2,"night":1}`
+for seven repetitions; the daily target is their sum. A `night` mark belongs to
+the selected calendar date, irrespective of the time of the command. Undo removes
+the latest mark, optionally within one period. Schedule edits take effect today,
+retaining earlier versions. A reminder remains one daily time, not one per quota.
+After upgrading this skill, deliberately reapply `--write` if the saved tool
+filter needs the new guarded habit actions.
 
 ## Focus
 

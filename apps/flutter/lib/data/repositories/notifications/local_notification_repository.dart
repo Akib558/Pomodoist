@@ -25,6 +25,9 @@ class LocalNotificationRepository implements NotificationRepository {
   final NotificationScheduler _scheduler;
   final NotificationCopy Function() _copy;
   Future<void> _habitUpdate = Future<void>.value();
+  Future<void> _taskUpdate = Future<void>.value();
+  final _taskSignatures =
+      <String, ({DateTime start, String title, String body})>{};
   int _habitRevision = 0;
   ({List<Habit> habits, List<HabitCheckIn> checkIns})? _habitRequest;
 
@@ -150,7 +153,15 @@ class LocalNotificationRepository implements NotificationRepository {
   Future<void> syncTaskStartNotifications({
     required List<TaskItem> tasks,
     required DateTime now,
-  }) async {
+  }) {
+    final update = _taskUpdate
+        .catchError((Object _) {})
+        .then((_) => _syncTaskStarts(tasks, now));
+    _taskUpdate = update;
+    return update;
+  }
+
+  Future<void> _syncTaskStarts(List<TaskItem> tasks, DateTime now) async {
     try {
       final desired = <String, TaskItem>{};
       for (final task in tasks) {
@@ -168,20 +179,36 @@ class LocalNotificationRepository implements NotificationRepository {
       final pending = await _scheduler.pendingTaskStartTaskIds();
       for (final taskId in pending.difference(desired.keys.toSet())) {
         await _scheduler.cancelTaskStart(taskId);
+        _taskSignatures.remove(taskId);
       }
+      _taskSignatures.removeWhere((id, _) => !desired.containsKey(id));
       if (desired.isEmpty) {
         return;
       }
 
-      await _scheduler.requestNotificationPermissions();
       final title = _copy().taskStarting;
+      var requested = false;
       for (final task in desired.values) {
+        final signature = (
+          start: task.schedule!.start!,
+          title: title,
+          body: task.content,
+        );
+        if (pending.contains(task.id) &&
+            _taskSignatures[task.id] == signature) {
+          continue;
+        }
+        if (!requested) {
+          await _scheduler.requestNotificationPermissions();
+          requested = true;
+        }
         await _scheduler.scheduleTaskStart(
           taskId: task.id,
           startAt: task.schedule!.start!,
           title: title,
           body: task.content,
         );
+        _taskSignatures[task.id] = signature;
       }
     } finally {
       await _refreshHabitCapacity();

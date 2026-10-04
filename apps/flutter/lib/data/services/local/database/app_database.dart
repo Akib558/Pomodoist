@@ -489,6 +489,7 @@ class Habits extends Table {
 @TableIndex(name: 'habit_check_ins_by_day', columns: {#habitId, #day})
 @DataClassName('HabitCheckInRow')
 class HabitCheckIns extends Table {
+  TextColumn get dayPeriod => text().nullable()();
   TextColumn get id => text()();
   TextColumn get userId => text()();
   TextColumn get habitId => text()();
@@ -547,7 +548,7 @@ class AppDatabase extends _$AppDatabase {
       );
 
   @override
-  int get schemaVersion => 9;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -565,6 +566,12 @@ class AppDatabase extends _$AppDatabase {
         await _runResumableMigrationStep(
           () => m.createIndex(habitCheckInsByDay),
           alreadyAppliedMessage: 'already exists',
+        );
+      }
+      if (from < 10) {
+        await _runResumableMigrationStep(
+          () => m.addColumn(habitCheckIns, habitCheckIns.dayPeriod),
+          alreadyAppliedMessage: 'duplicate column name: day_period',
         );
       }
       if (from < 8) {

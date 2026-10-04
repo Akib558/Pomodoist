@@ -227,6 +227,10 @@ creation field expands on demand. Focus history expands from a quiet text row.
 Description first keeps description, attachments and subtasks in the reading
 flow, with properties initially collapsed. Both layouts share these components.
 
+The Project value opens a checked menu of active, editable projects within the
+task's collaboration scope. Description starts at one line and grows with its
+content without reserving a second empty line.
+
 Task attachments use small image previews (two columns when space and text scale
 allow), compact document rows and overflow actions. These task-only treatments do
 not change the project's file toolbar, list or gallery. Comments use initials,
@@ -542,11 +546,30 @@ selection, using the local completion day.
 
 ### Upcoming
 
+Render the agenda as one lazy sliver list across all days, with variable row
+heights and stable task keys. Day headings retain the narrow stacked and wide
+date-column layouts. Selection uses the complete logical projection, including
+rows outside the viewport; collapsed descendants remain excluded. Keep Quick
+Add state mounted through ordinary updates. A selected date scrolls after
+layout using the measured header, without repeating on task refreshes. Observe
+row structure in list parents and current task, progress and ancestor snapshots
+in individual cards; content-only updates must not rebuild unrelated cards.
+
 Use a flat agenda without enclosing day cards. At 760 px of available agenda
 width, put the date in a 112 px leading column with a 24 px gap; below that
 threshold, place it above the day's tasks. Keep the calendar rail, local-day
 grouping, Quick Add, route selection and scrolling anchors. A task remains in its
 own scheduled day even when its parent belongs to another day.
+
+For calendar rails below 760 px, a period spanning two months uses localized
+abbreviations with one shared year, such as `Sep–Oct 2026`. A year boundary
+keeps both years, such as `Dec 2026–Jan 2027`; preserve the locale's year
+placement and month markers. Omit the calendar icon in all narrow headers,
+including single-month periods; compact ranges use 4 px horizontal button
+padding. Keep normal text sizing and a minimum 48 px target; let longer labels
+wrap and the header grow. Accessibility
+announces the full month names. Single-month headers keep their existing
+labels, and wide headers retain their labels and calendar icon.
 
 ### Browse
 
@@ -1441,19 +1464,74 @@ habits; rows retain partial progress and clamp displayed counts to the daily
 goal. Future days are read-only. Ended habits remain available in Finished
 so earlier dates can still be corrected.
 
-Habit rows are flat with bottom dividers, a neutral repeat icon, muted completed
-titles, and trailing check-in and overflow actions. Show project, schedule and
-optional reminder time below the title. A compact five-day strip ends on the
-selected date and uses each day's historical schedule and goal: solid accent
-means complete, accent outline means partial, neutral fill means no check-ins,
-and neutral outline means unscheduled or future. Every mark exposes its date
-and count or availability through a tooltip and semantics. Multi-check-in goals
-also show a small progress bar beside the numeric count. The week strip uses
-transparent unselected surfaces; the summary pairs its count with a progress bar.
+The default List view uses a compact header, with the Monday-first week strip
+and completed-habit summary beside each other when at least 700 px of content
+width is available, stacked otherwise. Calendar controls retain 44 px targets;
+the strip scrolls horizontally when text scaling needs more room. Preserve the
+selected date, editor draft and action state when switching List / Day rhythm.
+The selected view is a device-local preference; failed writes retain the previous
+view and expose retry feedback. Finished remains an ordinary historical list.
 
-At 960 px of content width, the editor occupies a 380 px right panel. Narrower
-layouts use the shared adaptive dialog. Forms retain failed drafts and expose
-saving, loading, empty and error states. Use calendar date pickers, weekday
+Active List rows are divided into Remaining and Done, with counts. Partial goals
+stay in Remaining; completing or undoing a check-in moves the row between groups.
+Rows use flat dividers, a neutral repeat icon and trailing check-in/overflow
+controls. Show project, schedule and optional reminder below the title. Remaining
+rows show five historical days with localized weekday labels, tooltips and date /
+count semantics: solid accent is complete, accent outline is partial, neutral fill
+has no check-ins, and neutral outline is unscheduled or future. Multi-check-in
+goals also have a compact progress bar. Done rows use muted titles, less vertical
+padding and omit the history and progress bar. The summary counts each habit once.
+
+Day rhythm groups habits into Throughout the day, Morning, Afternoon, Evening
+and Night, in that order, hiding empty groups. Each heading counts completed
+period goals / planned period goals, with incomplete rows before complete rows.
+Automatic and Throughout the day retain a single shared goal. The By parts of
+day mode selects one or more of Morning, Afternoon, Evening and Night, with an
+integer goal for each. The daily goal is their sum, from 1 to 99. Each selected
+period shows the habit with its own count, progress and five-day history. List
+and Finished retain one row per habit; the summary counts each habit once and
+completion requires every period goal. In List, adding to a multi-period habit
+opens a period menu with counts; in Day rhythm, the row determines the period.
+Undo removes the most recent mark in that row's period, or the most recent mark
+overall in List. Check-in wall-clock time never determines its period. Night
+belongs to the selected calendar date. Reminders remain one optional time and
+do not multiply with periods or targets.
+
+Automatic puts goals above one, or habits without a reminder, in Throughout the
+day. Single-goal reminders resolve in local wall-clock minutes: Night [00:00,
+05:00), Morning [05:00, 12:00), Afternoon [12:00, 18:00), Evening [18:00, 24:00).
+Show the resolved automatic group and its reason as the draft changes.
+
+Schedule JSON retains optional `dayPeriod` for older single-period rules and
+adds optional `periodTargets` for explicit quotas. Missing fields mean Automatic;
+Automatic serialization omits `dayPeriod`. Quota changes follow the selected
+date's schedule revision and take effect today without rewriting past rules.
+Each check-in stores its optional `dayPeriod` in one nullable local column,
+introduced by the single Drift 9-to-10 migration. Both quota and check-in fields
+synchronize through the existing account protocol. All new server validation
+changes are consolidated into one migration, which must precede client release.
+Older payloads remain valid. Older clients may drop new metadata when rewriting
+schedules or marks; check-in identities, dates and counts remain intact.
+
+Legacy marks without a period, and marks whose period is no longer selected,
+fill available quotas in the fixed period order after explicit marks are counted.
+Sort legacy marks by creation timestamp and ID only to make this fallback stable;
+never infer a day period from those timestamps. This projection preserves stored
+marks and supports period-scoped undo. Excess marks within a period are capped
+for display and never complete another period's goal.
+
+Create and edit use the shared contextual details panel, spanning the full main
+area height, including the space occupied by the shell header and mini Focus
+player. At 960 px of content width it is a 440 px right panel; narrower layouts
+keep the Habits screen mounted behind the editor. Below the 820 px shell
+breakpoint, the editor fills the
+viewport and replaces the shell header, bottom navigation and floating Add task
+button. Preserve system safe areas, keep Close and Save pinned, and scroll the
+form between them. The `habit` query parameter controls selection and closing;
+Escape and Back close the panel except while saving. Resizing preserves drafts
+and the background's selected date and scroll position.
+Forms retain failed drafts and expose saving, loading, empty and error states.
+Use calendar date pickers, weekday
 choices, a 1–99 daily goal, inclusive duration presets and an optional active
 personal project. Unsupported reminders and denied permissions are explained
 in the editor. Schedule frequency uses the shared scrollable segmented tabs;

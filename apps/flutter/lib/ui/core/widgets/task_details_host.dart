@@ -6,26 +6,54 @@ import 'package:pomodoist/routing/task_detail_navigation.dart';
 import 'package:pomodoist/ui/core/themes/app_motion.dart';
 import 'package:pomodoist/ui/core/themes/app_theme.dart';
 
-/// Keeps the background mounted across task selection and responsive changes.
-class TaskDetailsHost extends StatefulWidget {
+/// Keeps the task route mounted while the shared panel opens and resizes.
+class TaskDetailsHost extends StatelessWidget {
   const TaskDetailsHost({required this.taskId, required this.child, super.key});
 
   final String? taskId;
   final Widget child;
 
   @override
-  State<TaskDetailsHost> createState() => _TaskDetailsHostState();
+  Widget build(BuildContext context) => DetailsPanelHost(
+    onClose: () => closeTaskDetails(context),
+    panel: taskId == null
+        ? null
+        : TaskDetailScreen(
+            key: ValueKey(taskId),
+            taskId: taskId!,
+            isPanel: true,
+            onClose: () => closeTaskDetails(context),
+          ),
+    child: child,
+  );
 }
 
-class _TaskDetailsHostState extends State<TaskDetailsHost> {
+/// Full-height contextual panels share layout, motion and focus restoration.
+class DetailsPanelHost extends StatefulWidget {
+  const DetailsPanelHost({
+    required this.panel,
+    required this.onClose,
+    required this.child,
+    super.key,
+  });
+
+  final Widget? panel;
+  final VoidCallback onClose;
+  final Widget child;
+
+  @override
+  State<DetailsPanelHost> createState() => _DetailsPanelHostState();
+}
+
+class _DetailsPanelHostState extends State<DetailsPanelHost> {
   FocusNode? _returnFocus;
 
   @override
-  void didUpdateWidget(covariant TaskDetailsHost oldWidget) {
+  void didUpdateWidget(covariant DetailsPanelHost oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.taskId == null && widget.taskId != null) {
+    if (oldWidget.panel == null && widget.panel != null) {
       _returnFocus = FocusManager.instance.primaryFocus;
-    } else if (oldWidget.taskId != null && widget.taskId == null) {
+    } else if (oldWidget.panel != null && widget.panel == null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && _returnFocus?.context != null) {
           _returnFocus?.requestFocus();
@@ -37,15 +65,14 @@ class _TaskDetailsHostState extends State<TaskDetailsHost> {
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
-      final taskId = widget.taskId;
-      final open = taskId != null;
+      final open = widget.panel != null;
       final sideBySide = constraints.maxWidth >= 960;
       final panelWidth = sideBySide ? 440.0 : constraints.maxWidth;
       final duration = AppMotion.duration(context, AppMotion.panel);
       return BackButtonListener(
         onBackButtonPressed: () async {
           if (!open) return false;
-          closeTaskDetails(context);
+          widget.onClose();
           return true;
         },
         child: Focus(
@@ -54,7 +81,7 @@ class _TaskDetailsHostState extends State<TaskDetailsHost> {
             if (open &&
                 event is KeyDownEvent &&
                 event.logicalKey == LogicalKeyboardKey.escape) {
-              closeTaskDetails(context);
+              widget.onClose();
               return KeyEventResult.handled;
             }
             return KeyEventResult.ignored;
@@ -95,12 +122,7 @@ class _TaskDetailsHostState extends State<TaskDetailsHost> {
                           ),
                           child: FocusScope(
                             autofocus: true,
-                            child: TaskDetailScreen(
-                              key: ValueKey(taskId),
-                              taskId: taskId,
-                              isPanel: true,
-                              onClose: () => closeTaskDetails(context),
-                            ),
+                            child: widget.panel!,
                           ),
                         ),
                       )

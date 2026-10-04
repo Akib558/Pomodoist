@@ -461,7 +461,8 @@ class TaskItem {
     return schedule?.displayDate;
   }
 
-  TaskSchedule? get schedule => TaskSchedule.fromJsonString(dueJson);
+  late final TaskSchedule? _schedule = TaskSchedule.fromJsonString(dueJson);
+  TaskSchedule? get schedule => _schedule;
 
   int get remainingFocusIntervals {
     final estimate = estimatedFocusIntervals;

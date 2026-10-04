@@ -17,6 +17,7 @@ function fixture(entities: unknown[] = [], replay?: unknown) {
     const args = JSON.parse(String(init?.body)); calls.push({ name, args });
     if (name === 'pomodoist_openclaw_action') return Response.json(args.p_operations ? { ...args.p_result, server_revision: '2' } : { revision: '1', ...(replay ? { result: replay } : {}) });
     if (name === 'read_pomodoist_openclaw_state') return Response.json({ entities, serverNow: '2026-09-07T12:00:00Z' });
+    if (name === 'read_pomodoist_mcp' && args.p_operation === 'habit_snapshot') return Response.json({ habits: [], checkIns: [], projects: [], serverNow: '2026-10-03T12:00:00Z' });
     if (name === 'read_pomodoist_mcp') return Response.json({ tasks: [], projects: [], labels: [], taskLabels: [], assignments: [], completions: [], settings: {} });
     if (name === 'send_pomodoist_mcp_sync_hint') return Response.json(null);
     throw new Error(`Unexpected RPC ${name}`);
@@ -108,4 +109,24 @@ Deno.test('missing task validation survives guarded planning without a commit', 
   });
   assertEquals((response.structuredContent as { error: { code: string } }).error.code, 'not_found');
   assert(!calls.some(call => call.args.p_operations));
+});
+
+Deno.test('guarded habit create includes night quotas and uses the existing atomic receipt path', async () => {
+  const { invoke, calls, tools } = fixture();
+  const response = await invoke('openclaw_create_habit', { request_id: uuid, arguments: { title: 'Water', time_zone: 'UTC', period_targets: { morning: 2, night: 5 } } });
+  assertEquals((response.structuredContent as { ok: boolean }).ok, true);
+  const commit = calls.find(call => Array.isArray(call.args.p_operations))!;
+  assertEquals(commit.args.p_action, 'create_habit');
+  const ops = commit.args.p_operations as { entityType: string; payload: Record<string, unknown> }[];
+  assertEquals(ops[0].entityType, 'habit');
+  assertEquals((ops[0].payload.scheduleHistory as Record<string, unknown>[])[0].periodTargets, { morning: 2, night: 5 });
+  assert(!calls.some(call => call.name === 'push_pomodoist_mcp_changes'));
+  for (const action of ['update_habit', 'complete_habit', 'add_habit_check_in', 'undo_habit_check_in', 'finish_habit', 'reopen_habit', 'delete_habit']) assert(tools.has(`openclaw_${action}`));
+  assert(!tools.get('openclaw_delete_habit')!.schema.safeParse({ request_id: uuid, arguments: { habit_id: uuid } }).success);
+});
+Deno.test('guarded habit retry returns its receipt without generating another habit or mark', async () => {
+  const { invoke, calls } = fixture([], { id: uuid, server_revision: '7' });
+  const response = await invoke('openclaw_complete_habit', { request_id: uuid, arguments: { habit_id: uuid, time_zone: 'UTC', period: 'night' } });
+  assertEquals(response.structuredContent, { ok: true, data: { id: uuid, server_revision: '7' } });
+  assertEquals(calls.map(c => c.name), ['pomodoist_openclaw_action', 'send_pomodoist_mcp_sync_hint']);
 });

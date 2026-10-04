@@ -4,6 +4,7 @@ import 'package:shadcn_ui/shadcn_ui.dart'
 import 'package:flutter/services.dart';
 
 import 'package:pomodoist/ui/core/localization/app_l10n.dart';
+import 'package:pomodoist/ui/core/localization/formatters.dart';
 import 'package:pomodoist/ui/core/themes/app_motion.dart';
 import 'package:pomodoist/ui/core/themes/app_theme.dart';
 
@@ -187,9 +188,13 @@ class _UpcomingCalendarState extends State<UpcomingCalendar> {
     final pageEnd = _addCalendarDays(_pageStart!, pageSize - 1);
     final firstMonth = materialL10n.formatMonthYear(_pageStart!);
     final lastMonth = materialL10n.formatMonthYear(pageEnd);
-    final monthLabel = firstMonth == lastMonth
+    final fullMonthLabel = firstMonth == lastMonth
         ? firstMonth
         : '$firstMonth – $lastMonth';
+    final compactMonthRange = !isWide && firstMonth != lastMonth;
+    final monthLabel = compactMonthRange
+        ? formatCompactMonthRange(_pageStart!, pageEnd, context.l10n.localeName)
+        : fullMonthLabel;
     final monthButton = Tooltip(
       message: context.l10n.upcomingOpenDatePicker,
       child: ShadButton.ghost(
@@ -205,13 +210,28 @@ class _UpcomingCalendarState extends State<UpcomingCalendar> {
               }
             : _showMonthSheet,
         foregroundColor: colors.primaryText,
-        height: 48,
+        height: compactMonthRange ? 0 : 48,
         expands: true,
-        leading: const Icon(LucideIcons.calendarDays, size: 20),
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(monthLabel, maxLines: 1),
-        ),
+        padding: compactMonthRange
+            ? const EdgeInsets.symmetric(horizontal: 4)
+            : null,
+        leading: isWide ? const Icon(LucideIcons.calendarDays, size: 20) : null,
+        child: compactMonthRange
+            ? ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 48),
+                child: Align(
+                  heightFactor: 1,
+                  child: Text(
+                    monthLabel,
+                    textAlign: TextAlign.center,
+                    semanticsLabel: fullMonthLabel,
+                  ),
+                ),
+              )
+            : FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(monthLabel, maxLines: 1),
+              ),
       ),
     );
 

@@ -1,4 +1,5 @@
 import 'package:pomodoist/ui/tasks/view_models/task_subtask_progress.dart';
+import 'package:pomodoist/ui/tasks/view_models/task_branch_view_model.dart';
 import 'dart:async';
 import 'package:pomodoist/ui/tasks/widgets/task_branch_widgets.dart';
 
@@ -31,7 +32,7 @@ class UpcomingScreen extends ConsumerStatefulWidget {
 
 class _UpcomingScreenState extends ConsumerState<UpcomingScreen> {
   final ScrollController _scrollController = ScrollController();
-  final Map<String, GlobalKey> _dayAnchors = <String, GlobalKey>{};
+  final GlobalKey _headerKey = GlobalKey();
 
   DateTime? _lastRouteSelection;
   DateTime? _pendingScrollDay;
@@ -53,7 +54,11 @@ class _UpcomingScreenState extends ConsumerState<UpcomingScreen> {
     final selectedDay = routeDay;
     _syncRouteSelection(selectedDay);
     _schedulePendingScroll();
-    final viewState = ref.watch(upcomingViewModelProvider(selectedDay));
+    final viewState = ref
+        .watch(
+          upcomingViewModelProvider(selectedDay).select(UpcomingLayout.new),
+        )
+        .state;
     final today = viewState.today;
     final projects = viewState.projects;
     final loadError = viewState.error;
@@ -75,28 +80,41 @@ class _UpcomingScreenState extends ConsumerState<UpcomingScreen> {
         ];
         return SafeArea(
           bottom: false,
-          child: TaskSelectionRegion(
-            visibleTasks: visibleTasks,
-            scopeKey: selectedDay,
-            child: SingleChildScrollView(
-              key: const ValueKey('upcoming-scroll-view'),
-              controller: _scrollController,
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 1200),
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final horizontalPadding = _responsiveHorizontalPadding(
-                        constraints.maxWidth,
-                      );
-                      return Padding(
-                        padding: EdgeInsets.fromLTRB(
-                          horizontalPadding,
-                          20,
-                          horizontalPadding,
-                          32,
-                        ),
+          child: Consumer(
+            builder: (context, ref, child) {
+              final latest = ref.watch(
+                upcomingViewModelProvider(
+                  selectedDay,
+                ).select((state) => state.tasks),
+              );
+              final byId = {for (final task in latest) task.id: task};
+              return TaskSelectionRegion(
+                scopeKey: selectedDay,
+                visibleTasks: [
+                  for (final task in visibleTasks)
+                    if (byId.containsKey(task.id)) byId[task.id]!,
+                ],
+                child: child!,
+              );
+            },
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final width = constraints.maxWidth.clamp(0.0, 1200.0);
+                final padding =
+                    (constraints.maxWidth - width) / 2 +
+                    _responsiveHorizontalPadding(width);
+                final progress = motion.retainedTasks.isEmpty
+                    ? ref.read(taskHierarchyViewModelProvider).progress
+                    : taskSubtaskProgressById(allItems);
+                return CustomScrollView(
+                  key: const ValueKey('upcoming-scroll-view'),
+                  controller: _scrollController,
+                  slivers: [
+                    SliverPadding(
+                      padding: EdgeInsets.fromLTRB(padding, 20, padding, 0),
+                      sliver: SliverToBoxAdapter(
                         child: Column(
+                          key: _headerKey,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
@@ -118,74 +136,67 @@ class _UpcomingScreenState extends ConsumerState<UpcomingScreen> {
                             const SizedBox(height: 16),
                             QuickAddBar(
                               defaultDate: selectedDay ?? today,
-                              onTaskCreated: (taskIds) {
-                                motion.created(taskIds.toSet());
+                              onTaskCreated: (ids) {
+                                motion.created(ids.toSet());
                                 unawaited(
                                   revealCreatedTaskBranches(
                                     context,
                                     ref,
                                     'upcoming',
-                                    taskIds,
+                                    ids,
                                   ),
                                 );
                                 unawaited(playHaptic(AppHapticCue.light));
                               },
                             ),
                             const SizedBox(height: 20),
-                            if (loadError != null)
-                              _UpcomingMessage(
+                          ],
+                        ),
+                      ),
+                    ),
+                    SliverPadding(
+                      padding: EdgeInsets.fromLTRB(padding, 0, padding, 32),
+                      sliver: loadError != null
+                          ? SliverToBoxAdapter(
+                              child: _UpcomingMessage(
                                 key: const ValueKey('upcoming-error'),
                                 message: context.l10n.failedToLoadTasks(
                                   loadError,
                                 ),
-                              )
-                            else if (loading)
-                              const _UpcomingMessage(
+                              ),
+                            )
+                          : loading
+                          ? const SliverToBoxAdapter(
+                              child: _UpcomingMessage(
                                 key: ValueKey('upcoming-loading'),
                                 child: CircularProgressIndicator(),
-                              )
-                            else
-                              _buildAgenda(
-                                context,
-                                groups: groups,
-                                allItems: allItems,
-                                today: today,
-                                projects:
-                                    projects.value ?? const <ProjectItem>[],
                               ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
+                            )
+                          : groups.isEmpty
+                          ? SliverToBoxAdapter(
+                              child: _UpcomingMessage(
+                                key: const ValueKey('upcoming-empty'),
+                                message: context.l10n.noUpcomingTasks,
+                              ),
+                            )
+                          : UpcomingAgenda(
+                              groups: groups,
+                              today: today,
+                              progressById: progress,
+                              projectsById: {
+                                for (final project
+                                    in projects.value ?? const <ProjectItem>[])
+                                  project.id: project,
+                              },
+                            ),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
         );
       },
-    );
-  }
-
-  Widget _buildAgenda(
-    BuildContext context, {
-    required List<UpcomingDayGroup> groups,
-    required List<TaskItem> allItems,
-    required DateTime today,
-    required List<ProjectItem> projects,
-  }) {
-    if (groups.isEmpty) {
-      return _UpcomingMessage(
-        key: const ValueKey('upcoming-empty'),
-        message: context.l10n.noUpcomingTasks,
-      );
-    }
-    return UpcomingAgenda(
-      groups: groups,
-      today: today,
-      dayAnchorBuilder: _dayAnchor,
-      progressById: taskSubtaskProgressById(allItems),
-      projectsById: {for (final project in projects) project.id: project},
     );
   }
 
@@ -222,14 +233,6 @@ class _UpcomingScreenState extends ConsumerState<UpcomingScreen> {
     _pendingScrollTop = selectedDay == null;
   }
 
-  GlobalKey _dayAnchor(DateTime date) {
-    final key = _routeDate(date);
-    return _dayAnchors.putIfAbsent(
-      key,
-      () => GlobalKey(debugLabel: 'upcoming-day-anchor-$key'),
-    );
-  }
-
   void _schedulePendingScroll() {
     if (_scrollScheduled || (_pendingScrollDay == null && !_pendingScrollTop)) {
       return;
@@ -260,20 +263,30 @@ class _UpcomingScreenState extends ConsumerState<UpcomingScreen> {
         return;
       }
 
-      final day = _pendingScrollDay;
-      final anchorContext = day == null ? null : _dayAnchor(day).currentContext;
-      if (anchorContext == null) {
+      if (!_scrollController.hasClients ||
+          ref.read(upcomingViewModelProvider(widget.selectedDate)).loading) {
         return;
       }
+      final header = _headerKey.currentContext?.findRenderObject();
+      if (header is! RenderBox || !header.hasSize) return;
       _pendingScrollDay = null;
-      unawaited(
-        Scrollable.ensureVisible(
-          anchorContext,
-          alignment: 0,
-          duration: AppMotion.duration(context, AppMotion.panel),
-          curve: AppMotion.curve,
-        ),
+      // The selected day is the first projected day. Measure the header after
+      // layout; the lazy day row need not already be mounted.
+      final offset = (header.size.height + 20).clamp(
+        0.0,
+        _scrollController.position.maxScrollExtent,
       );
+      if (MediaQuery.disableAnimationsOf(context)) {
+        _scrollController.jumpTo(offset);
+      } else {
+        unawaited(
+          _scrollController.animateTo(
+            offset,
+            duration: AppMotion.panel,
+            curve: AppMotion.curve,
+          ),
+        );
+      }
     });
   }
 }
@@ -284,128 +297,135 @@ class UpcomingAgenda extends StatelessWidget {
     required this.today,
     required this.progressById,
     required this.projectsById,
-    this.dayAnchorBuilder,
     super.key,
   });
-
   final List<UpcomingDayGroup> groups;
   final DateTime today;
   final Map<String, TaskSubtaskProgress> progressById;
   final Map<String, ProjectItem> projectsById;
-  final Key Function(DateTime date)? dayAnchorBuilder;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    final entries = [
+      for (var day = 0; day < groups.length; day++)
+        for (
+          var row = 0;
+          row < (groups[day].rows.isEmpty ? 1 : groups[day].rows.length);
+          row++
+        )
+          (day: day, row: row),
+    ];
+    String entryKey(int index) {
+      final entry = entries[index];
+      final group = groups[entry.day];
+      return group.rows.isEmpty
+          ? 'empty-${_routeDate(group.date)}'
+          : group.rows[entry.row].task.id;
+    }
+
+    final indices = {
+      for (var i = 0; i < entries.length; i++)
+        ValueKey('agenda-row-${entryKey(i)}'): i,
+    };
+    return SliverList(
       key: const ValueKey('upcoming-agenda'),
-      children: [
-        for (var index = 0; index < groups.length; index++) ...[
-          if (index > 0) const SizedBox(height: 18),
-          KeyedSubtree(
-            key: ValueKey(
-              'upcoming-day-group-${_routeDate(groups[index].date)}',
-            ),
-            child: KeyedSubtree(
-              key: dayAnchorBuilder?.call(groups[index].date),
-              child: _UpcomingDayCard(
-                group: groups[index],
-                today: today,
-                progressById: progressById,
-                projectsById: projectsById,
-              ),
-            ),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-class _UpcomingDayCard extends StatelessWidget {
-  const _UpcomingDayCard({
-    required this.group,
-    required this.today,
-    required this.progressById,
-    required this.projectsById,
-  });
-
-  final UpcomingDayGroup group;
-  final DateTime today;
-  final Map<String, TaskSubtaskProgress> progressById;
-  final Map<String, ProjectItem> projectsById;
-
-  @override
-  Widget build(BuildContext context) {
-    final heading = Semantics(
-      header: true,
-      child: Text(
-        _upcomingDayHeaderLabel(context, group.date, today),
-        style: Theme.of(
-          context,
-        ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
-      ),
-    );
-    final tasks = Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (group.rows.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          final entry = entries[index];
+          final group = groups[entry.day];
+          final first = entry.row == 0;
+          final row = group.rows.isEmpty ? null : group.rows[entry.row];
+          final heading = Semantics(
+            header: true,
             child: Text(
-              context.l10n.noTasksForDay,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: context.appColors.secondaryText,
-              ),
+              _upcomingDayHeaderLabel(context, group.date, today),
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
             ),
-          ),
-        for (var index = 0; index < group.rows.length; index++) ...[
-          if (index > 0)
-            TaskListDivider(
-              previousDepth: group.rows[index - 1].depth,
-              previousRow: group.rows[index - 1],
-              nextDepth: group.rows[index].depth,
-              nextRow: group.rows[index],
-            ),
-          TaskListItem(
-            key: ValueKey(group.rows[index].task.id),
-            task: group.rows[index].task,
-            depth: group.rows[index].displayDepth,
-            hierarchy: group.rows[index],
-            branchScope: 'upcoming',
-            subtaskProgress: progressById[group.rows[index].task.id],
-            presentation: TaskListItemPresentation.agenda,
-            project: projectsById[group.rows[index].task.projectId],
-          ),
-        ],
-      ],
-    );
-    return LayoutBuilder(
-      key: ValueKey('upcoming-day-card-${_routeDate(group.date)}'),
-      builder: (context, constraints) {
-        if (constraints.maxWidth >= 760) {
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                width: 112,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: heading,
+          );
+          final task = row == null
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Text(
+                    context.l10n.noTasksForDay,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: context.appColors.secondaryText,
+                    ),
+                  ),
+                )
+              : TaskListRow(
+                  key: ValueKey('task-row-${row.task.id}'),
+                  row: row,
+                  branchScope: 'upcoming',
+                  progress: progressById[row.task.id],
+                  presentation: TaskListItemPresentation.agenda,
+                  project: projectsById[row.task.projectId],
+                );
+          return KeyedSubtree(
+            key: ValueKey('agenda-row-${entryKey(index)}'),
+            child: Padding(
+              padding: EdgeInsets.only(top: first && entry.day > 0 ? 18 : 0),
+              child: KeyedSubtree(
+                key: first
+                    ? ValueKey('upcoming-day-group-${_routeDate(group.date)}')
+                    : null,
+                child: LayoutBuilder(
+                  key: first
+                      ? ValueKey('upcoming-day-card-${_routeDate(group.date)}')
+                      : null,
+                  builder: (context, constraints) {
+                    final contents = Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (!first)
+                          TaskListDivider(
+                            previousDepth: group.rows[entry.row - 1].depth,
+                            previousRow: group.rows[entry.row - 1],
+                            nextDepth: row!.depth,
+                            nextRow: row,
+                          ),
+                        task,
+                      ],
+                    );
+                    if (constraints.maxWidth >= 760) {
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(
+                            width: 112,
+                            child: first
+                                ? Padding(
+                                    padding: const EdgeInsets.only(top: 12),
+                                    child: heading,
+                                  )
+                                : null,
+                          ),
+                          const SizedBox(width: 24),
+                          Expanded(child: contents),
+                        ],
+                      );
+                    }
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (first)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: heading,
+                          ),
+                        contents,
+                      ],
+                    );
+                  },
                 ),
               ),
-              const SizedBox(width: 24),
-              Expanded(child: tasks),
-            ],
+            ),
           );
-        }
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(padding: const EdgeInsets.only(bottom: 8), child: heading),
-            tasks,
-          ],
-        );
-      },
+        },
+        childCount: entries.length,
+        findChildIndexCallback: (key) => indices[key],
+      ),
     );
   }
 }

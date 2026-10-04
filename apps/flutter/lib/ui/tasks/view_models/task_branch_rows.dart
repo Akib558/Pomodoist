@@ -1,14 +1,19 @@
+import 'package:collection/collection.dart';
 import 'package:pomodoist/domain/models/tasks/task_models.dart';
 
 List<VisibleTaskRow> visibleTaskRows(
   List<TaskItem> allItems,
   List<TaskItem> visibleItems, {
   Map<String, bool> expansion = const {},
+  Map<String, TaskItem>? allById,
   int Function(TaskItem, TaskItem)? compare,
   int Function(TaskItem, TaskItem)? compareRoots,
 }) {
   final eligible = {for (final task in visibleItems) task.id: task};
-  final byId = {for (final task in allItems) task.id: task, ...eligible};
+  final byId = CombinedMapView([
+    eligible,
+    allById ?? {for (final task in allItems) task.id: task},
+  ]);
   final parentById = {
     for (final task in eligible.values)
       task.id: eligible.containsKey(task.parentId) && task.parentId != task.id
@@ -186,3 +191,25 @@ TaskItem? taskParentForNavigation(
   final parent = byId[task.parentId];
   return parent == null || parent.isDeleted ? null : parent;
 }
+
+Object taskStructureKey(TaskItem task) => (
+  task.id,
+  task.parentId,
+  task.projectId,
+  task.sectionId,
+  task.orderKey,
+  task.dayOrder,
+  task.status,
+  task.dueJson,
+  task.deadlineJson,
+  task.isDeleted,
+  task.priority,
+  task.description,
+  task.durationSeconds,
+  task.estimatedFocusIntervals,
+  task.completedFocusIntervals,
+  task.totalFocusSeconds,
+  task.isCollapsed,
+  task.canEdit,
+  task.assigneeIds.join(','),
+);

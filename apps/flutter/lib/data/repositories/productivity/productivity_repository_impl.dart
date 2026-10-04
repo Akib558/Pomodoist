@@ -21,43 +21,51 @@ class DriftProductivityRepository implements ProductivityRepository {
     StreamSubscription<List<TaskRow>>? taskSubscription;
     StreamSubscription<List<FocusIntervalRow>>? intervalSubscription;
     StreamSubscription<List<TaskCompletionRow>>? completionSubscription;
-    var listening = false;
-    var revision = 0;
+    List<TaskRow>? tasks;
+    List<FocusIntervalRow>? intervals;
+    List<TaskCompletionRow>? completions;
 
-    Future<void> emit() async {
-      final current = ++revision;
+    void emit() {
+      if (tasks == null ||
+          intervals == null ||
+          completions == null ||
+          controller.isClosed) {
+        return;
+      }
       try {
-        final summary = await _calculateSummary(DateTime.now());
-        if (listening && current == revision && !controller.isClosed) {
-          controller.add(summary);
-        }
+        controller.add(
+          evaluateProductivitySummary(
+            reportDate: DateTime.now(),
+            tasks: tasks!,
+            intervals: intervals!,
+            completions: completions!,
+          ),
+        );
       } on Object catch (error, stackTrace) {
-        if (listening && current == revision && !controller.isClosed) {
-          controller.addError(error, stackTrace);
-        }
+        controller.addError(error, stackTrace);
       }
     }
 
     controller = StreamController<ProductivitySummary>(
       onListen: () {
-        listening = true;
-        taskSubscription = _productivity.watchTasks().listen(
-          (_) => unawaited(emit()),
-          onError: controller.addError,
-        );
-        intervalSubscription = _productivity.watchFocusIntervals().listen(
-          (_) => unawaited(emit()),
-          onError: controller.addError,
-        );
-        completionSubscription = _productivity.watchTaskCompletions().listen(
-          (_) => unawaited(emit()),
-          onError: controller.addError,
-        );
-        unawaited(emit());
+        taskSubscription = _productivity.watchTasks().listen((value) {
+          tasks = value;
+          emit();
+        }, onError: controller.addError);
+        intervalSubscription = _productivity.watchFocusIntervals().listen((
+          value,
+        ) {
+          intervals = value;
+          emit();
+        }, onError: controller.addError);
+        completionSubscription = _productivity.watchTaskCompletions().listen((
+          value,
+        ) {
+          completions = value;
+          emit();
+        }, onError: controller.addError);
       },
       onCancel: () async {
-        listening = false;
-        revision++;
         await taskSubscription?.cancel();
         await intervalSubscription?.cancel();
         await completionSubscription?.cancel();

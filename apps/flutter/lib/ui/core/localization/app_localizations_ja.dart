@@ -312,7 +312,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get oauthConsentCapabilitiesTitle => 'このエージェントができること';
 
   @override
-  String get oauthConsentManagePlanning => 'タスク、プロジェクト、ユーザーラベル、カンバンの読み取りと管理。';
+  String get oauthConsentManagePlanning =>
+      'タスク、習慣、プロジェクト、ユーザーラベル、カンバンの読み取りと管理。';
 
   @override
   String get oauthConsentReadInsights => '完了した集中履歴、生産性レポート、実績の読み取り。';
@@ -3953,6 +3954,56 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get settingsPreviewCompletedTask => 'メモを確認する';
+
+  @override
+  String get habitsListView => 'リスト';
+
+  @override
+  String get habitsRhythmView => '一日のリズム';
+
+  @override
+  String get habitsRemaining => '残り';
+
+  @override
+  String get habitsDone => '完了';
+
+  @override
+  String get habitsPlanned => '予定';
+
+  @override
+  String get habitDayPeriod => '時間帯';
+
+  @override
+  String get habitPeriodAutomatic => '自動';
+
+  @override
+  String get habitPeriodAnytime => '一日を通して';
+
+  @override
+  String get habitPeriodNight => '夜間';
+
+  @override
+  String get habitPeriodMultipleReason => '目標には一日に複数回の繰り返しが含まれます。';
+
+  @override
+  String get habitPeriodNoTimeReason => 'リマインダー時刻が設定されていません。';
+
+  @override
+  String get habitPeriodReminderReason => 'リマインダー時刻に基づきます。';
+
+  @override
+  String get habitsViewPreferenceError => '表示設定を保存または読み込めませんでした。';
+
+  @override
+  String habitPeriodExplanation(String period, String reason) {
+    return '$period：$reason';
+  }
+
+  @override
+  String get habitPeriodCustom => '時間帯ごと';
+
+  @override
+  String get habitPeriodTargetsHint => '時間帯を1つ以上選び、それぞれの目標を設定します。1日の合計：1〜99。';
 
   @override
   String get accountAvatar => 'アバター';

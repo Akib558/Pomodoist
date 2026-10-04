@@ -180,6 +180,33 @@
   "settingsPreviewProject": "Pessoal",
   "settingsPreviewLongTask": "Preparar materiais e planejar os próximos passos",
   "settingsPreviewCompletedTask": "Revisar anotações",
+  "habitsListView": "Lista",
+  "habitsRhythmView": "Ritmo do dia",
+  "habitsRemaining": "Restantes",
+  "habitsDone": "Concluídas",
+  "habitsPlanned": "Planejadas",
+  "habitDayPeriod": "Parte do dia",
+  "habitPeriodAutomatic": "Automático",
+  "habitPeriodAnytime": "Ao longo do dia",
+  "habitPeriodNight": "Noite",
+  "habitPeriodMultipleReason": "A meta inclui várias repetições ao longo do dia.",
+  "habitPeriodNoTimeReason": "Nenhum horário de lembrete foi definido.",
+  "habitPeriodReminderReason": "Com base no horário do lembrete.",
+  "habitsViewPreferenceError": "Não foi possível salvar ou carregar a visualização escolhida.",
+  "habitPeriodExplanation": "{period}: {reason}",
+  "@habitPeriodExplanation": {
+    "description": "Resolved automatic habit group and the reason for choosing it.",
+    "placeholders": {
+      "period": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "habitPeriodCustom": "Por períodos do dia",
+  "habitPeriodTargetsHint": "Escolha um ou mais períodos do dia e uma meta para cada um. Total diário: 1–99.",
   "accountAvatar": "Avatar",
   "accountChangeAvatar": "Alterar avatar",
   "accountAvatarInput": "Digite ou cole um emoji",

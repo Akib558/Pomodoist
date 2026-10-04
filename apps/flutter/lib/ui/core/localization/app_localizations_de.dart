@@ -328,7 +328,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get oauthConsentManagePlanning =>
-      'Aufgaben, Projekte, eigene Labels und Kanban lesen und verwalten.';
+      'Aufgaben, Gewohnheiten, Projekte, eigene Labels und Kanban lesen und verwalten.';
 
   @override
   String get oauthConsentReadInsights =>
@@ -4108,6 +4108,59 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsPreviewCompletedTask => 'Notizen prüfen';
+
+  @override
+  String get habitsListView => 'Liste';
+
+  @override
+  String get habitsRhythmView => 'Tagesrhythmus';
+
+  @override
+  String get habitsRemaining => 'Noch offen';
+
+  @override
+  String get habitsDone => 'Erledigt';
+
+  @override
+  String get habitsPlanned => 'Geplant';
+
+  @override
+  String get habitDayPeriod => 'Tageszeit';
+
+  @override
+  String get habitPeriodAutomatic => 'Automatisch';
+
+  @override
+  String get habitPeriodAnytime => 'Über den Tag verteilt';
+
+  @override
+  String get habitPeriodNight => 'Nacht';
+
+  @override
+  String get habitPeriodMultipleReason =>
+      'Das Tagesziel umfasst mehrere Wiederholungen.';
+
+  @override
+  String get habitPeriodNoTimeReason => 'Keine Erinnerungszeit festgelegt.';
+
+  @override
+  String get habitPeriodReminderReason => 'Anhand der Erinnerungszeit.';
+
+  @override
+  String get habitsViewPreferenceError =>
+      'Die Ansichtspräferenz konnte nicht gespeichert oder geladen werden.';
+
+  @override
+  String habitPeriodExplanation(String period, String reason) {
+    return '$period: $reason';
+  }
+
+  @override
+  String get habitPeriodCustom => 'Nach Tagesabschnitten';
+
+  @override
+  String get habitPeriodTargetsHint =>
+      'Wähle einen oder mehrere Tagesabschnitte mit jeweils einem Ziel. Tagessumme: 1–99.';
 
   @override
   String get accountAvatar => 'Avatar';

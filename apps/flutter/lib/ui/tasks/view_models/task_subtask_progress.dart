@@ -7,6 +7,14 @@ class TaskSubtaskProgress {
   final int total;
 
   String get label => '$completed/$total';
+
+  @override
+  bool operator ==(Object other) =>
+      other is TaskSubtaskProgress &&
+      completed == other.completed &&
+      total == other.total;
+  @override
+  int get hashCode => Object.hash(completed, total);
 }
 
 Map<String, TaskSubtaskProgress> taskSubtaskProgressById(
@@ -19,10 +27,43 @@ Map<String, TaskSubtaskProgress> taskSubtaskProgressById(
       children.putIfAbsent(task.parentId!, () => []).add(task.id);
     }
   }
-  // ponytail: repeated traversal is quadratic for deep chains; cache acyclic
-  // subtree totals if large nested collections make this measurable.
   final result = <String, TaskSubtaskProgress>{};
+  final remaining = {for (final id in byId.keys) id: children[id]?.length ?? 0};
+  final totals = <String, int>{};
+  final completedTotals = <String, int>{};
+  final leaves = [
+    for (final entry in remaining.entries)
+      if (entry.value == 0) entry.key,
+  ];
+  final resolved = <String>{};
+  while (leaves.isNotEmpty) {
+    final id = leaves.removeLast();
+    resolved.add(id);
+    final total = totals[id] ?? 0;
+    final completed = completedTotals[id] ?? 0;
+    if (total > 0) {
+      result[id] = TaskSubtaskProgress(completed: completed, total: total);
+    }
+    final parent = byId[id]!.parentId;
+    if (parent == null || !byId.containsKey(parent)) continue;
+    totals.update(
+      parent,
+      (value) => value + total + 1,
+      ifAbsent: () => total + 1,
+    );
+    final count = completed + (byId[id]!.isCompleted ? 1 : 0);
+    completedTotals.update(
+      parent,
+      (value) => value + count,
+      ifAbsent: () => count,
+    );
+    remaining[parent] = remaining[parent]! - 1;
+    if (remaining[parent] == 0) leaves.add(parent);
+  }
+  // ponytail: corrupt cyclic remnants retain the safe quadratic traversal;
+  // acyclic trees use the linear bottom-up pass above.
   for (final id in children.keys) {
+    if (resolved.contains(id)) continue;
     final visited = {id};
     final pending = [...children[id]!];
     var completed = 0;

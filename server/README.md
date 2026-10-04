@@ -105,9 +105,15 @@ URLs expire in 60 seconds. Preview URLs permit only the supported raster formats
 For hosted Supabase, deploy `pomodoist-files` and `pomodoist-files-cleanup`, set the
 Edge secret `POMODOIST_FILES_STORAGE_ENABLED=true`, and provision Vault secrets
 `pomodoist-files-cleanup-url` (full function URL) and `pomodoist-files-cleanup-secret`
-(the service-role bearer key). The migration schedules cleanup automatically when
-`pg_cron`/`pg_net` are available. Requests without the exact configured worker key
-are rejected; failed object removals remain queued for retry. Never delete
+(a random worker secret matching the Edge secret `POMODOIST_FILES_CLEANUP_SECRET`).
+The worker checks `X-Pomodoist-Cleanup-Secret`; it does not compare the bearer JWT
+with the runtime's service-role key. Self-hosted installations may set the same
+worker secret in their environment; the service-role key remains the default.
+The migration schedules dispatch every five minutes and a separate response check
+every minute, since `pg_net` sends requests after the dispatch transaction commits.
+`pomodoist-files-cleanup-response` fails in Cron on an unsuccessful HTTP response
+or a missing response after two minutes. Requests without the exact configured
+worker secret are rejected; failed object removals remain queued for retry. Never delete
 `storage.objects` rows to remove files: the worker calls the Storage API so bytes
 and metadata are removed together.
 
@@ -131,8 +137,15 @@ Personal uploads require the owner's Pro. Shared uploads require an editor role:
 the uploader's Pro is used first, otherwise the shared owner's Pro sponsors the
 upload. A full uploader quota never falls back to the owner. Each file is limited
 to 20,000,000 bytes; successful uploads consume 1,000,000,000 bytes per UTC calendar
-month and 5,000,000,000 stored bytes per completion year. Reservations hold space;
-completion checks current access, the fixed payer's Pro, actual stored size/MIME,
+month and 5,000,000,000 stored bytes per completion year. Every unfinished upload
+holds the bucket maximum of 20,000,000 bytes, regardless of its declared size.
+Expired or deleted uploads keep that hold until Storage deletion is confirmed
+after outstanding upload URLs expire. A deleted finished file also holds a full
+slot during that window. The bucket must enforce a maximum no greater than
+20,000,000 bytes; unbounded or larger bucket limits disable new uploads.
+At least 20,000,000 bytes of quota headroom is required to start an upload;
+successful completion replaces the reservation with the exact stored bytes.
+Completion checks current access, the fixed payer's Pro, actual stored size/MIME,
 and the completion period's limits. Repeated completion never charges again.
 Deleting a file releases that year's storage, but not monthly upload volume.
 
@@ -149,6 +162,35 @@ connection.
 The implementation is checked with source analysis and isolated unit tests.
 These checks do not execute migrations, validate RLS on a deployed database, or
 prove a configured S3 provider works.
+
+## Habits through MCP
+
+The existing `pomodoist-mcp` endpoint exposes `list_habits`, `get_habit`,
+`create_habit`, `update_habit`, `add_habit_check_in`, `complete_habit`,
+`undo_habit_check_in`, `finish_habit`, `reopen_habit` and `delete_habit`.
+Reads and date-sensitive changes require an IANA `time_zone`; an omitted date
+means today in that zone. Progress uses the selected date's schedule version.
+Future dates are read-only. Night belongs to the same selected calendar date.
+
+`period_targets` assigns independent morning, afternoon, evening and night goals;
+the daily target is their sum. Single marks require `period` when multiple groups
+are scheduled. `complete_habit` fills remaining marks for the date or one period.
+`finish_habit` ends the schedule on its inclusive `end_date` (today by default),
+retaining history; `reopen_habit` removes the end date from today. Undo deletes the
+latest mark, optionally in one period. Habit deletion uses existing tombstones.
+Metadata and schedule updates, daily marks and reminders use ordinary account
+sync; one reminder time still means one notification. No check-in time selects
+its period automatically.
+
+OpenClaw receives matching guarded `openclaw_*` actions with durable request
+receipts, existing session checks and account revision protection. Update its
+explicit tool filter to enable the new actions. These tools expose only the
+connected account's personal habits and eligible personal projects.
+
+Apply `supabase/migrations/20261003140901_pomodoist_habit_day_period.sql` before
+releasing the updated Flutter client and `pomodoist-mcp` Edge function. This is
+the single pending migration for period settings, quotas, mark attribution and
+MCP support; the existing Habits baseline migration is unchanged.
 
 ## Backup and restore
 

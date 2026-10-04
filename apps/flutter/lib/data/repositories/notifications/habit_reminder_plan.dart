@@ -15,10 +15,10 @@ List<PlannedHabitReminder> planHabitReminders({
 }) {
   now = now.toLocal();
   final reminders = <PlannedHabitReminder>[];
-  final counts = <(String, String), int>{};
+  final checksByDay = <(String, String), List<HabitCheckIn>>{};
   for (final check in checkIns.where((c) => !c.isDeleted)) {
     final key = (check.habitId, habitDayKey(check.day));
-    counts.update(key, (value) => value + 1, ifAbsent: () => 1);
+    (checksByDay[key] ??= []).add(check);
   }
   // ponytail: queue at most 30 days; app activity refills instead of background jobs.
   for (var offset = 0; offset < 30; offset++) {
@@ -26,8 +26,12 @@ List<PlannedHabitReminder> planHabitReminders({
     for (final habit in habits) {
       final minutes = habit.reminderMinutes;
       if (minutes == null || !habit.isScheduledOn(day)) continue;
-      if ((counts[(habit.id, habitDayKey(day))] ?? 0) >=
-          habit.scheduleFor(day)!.targetPerDay) {
+      final completed = habitPeriodCounts(
+        habit,
+        day,
+        checksByDay[(habit.id, habitDayKey(day))] ?? const [],
+      ).values.fold(0, (a, b) => a + b);
+      if (completed >= habit.scheduleFor(day)!.targetPerDay) {
         continue;
       }
       final at = DateTime(

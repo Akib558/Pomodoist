@@ -325,7 +325,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get oauthConsentManagePlanning =>
-      'Read and manage tasks, projects, user labels, and Kanban.';
+      'Read and manage tasks, habits, projects, user labels, and Kanban.';
 
   @override
   String get oauthConsentReadInsights =>
@@ -4089,6 +4089,59 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsPreviewCompletedTask => 'Review notes';
+
+  @override
+  String get habitsListView => 'List';
+
+  @override
+  String get habitsRhythmView => 'Day rhythm';
+
+  @override
+  String get habitsRemaining => 'Remaining';
+
+  @override
+  String get habitsDone => 'Done';
+
+  @override
+  String get habitsPlanned => 'Planned';
+
+  @override
+  String get habitDayPeriod => 'Part of day';
+
+  @override
+  String get habitPeriodAutomatic => 'Automatic';
+
+  @override
+  String get habitPeriodAnytime => 'Throughout the day';
+
+  @override
+  String get habitPeriodNight => 'Night';
+
+  @override
+  String get habitPeriodMultipleReason =>
+      'The goal has multiple repetitions across the day.';
+
+  @override
+  String get habitPeriodNoTimeReason => 'No reminder time is set.';
+
+  @override
+  String get habitPeriodReminderReason => 'Based on the reminder time.';
+
+  @override
+  String get habitsViewPreferenceError =>
+      'Could not save or load the view preference.';
+
+  @override
+  String habitPeriodExplanation(String period, String reason) {
+    return '$period: $reason';
+  }
+
+  @override
+  String get habitPeriodCustom => 'By parts of day';
+
+  @override
+  String get habitPeriodTargetsHint =>
+      'Choose one or more parts of day and set a goal for each. Daily total: 1–99.';
 
   @override
   String get accountAvatar => 'Avatar';

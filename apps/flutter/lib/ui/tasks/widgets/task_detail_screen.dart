@@ -41,6 +41,7 @@ import 'package:pomodoist/ui/tasks/widgets/quick_add_bar.dart';
 import 'package:pomodoist/ui/tasks/view_models/quick_add_text_controller.dart';
 import 'package:pomodoist/ui/tasks/widgets/task_list_item.dart';
 import 'package:pomodoist/ui/tasks/widgets/task_motion.dart';
+import 'package:pomodoist/ui/tasks/widgets/project_localizations.dart';
 
 enum _TaskDetailTab { details, files, discussion }
 
@@ -330,6 +331,7 @@ class TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
                   child: _TaskProperties(
                     task: item,
                     projectName: viewState.projectName,
+                    projects: viewState.projects,
                     calendarLinked: viewState.calendarLinked,
                   ),
                 ),
@@ -677,6 +679,7 @@ class _DetailDisclosureState extends State<_DetailDisclosure> {
                       Expanded(
                         child: Text(
                           widget.value ?? '',
+                          textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.bodyMedium,
                         ),
                       ),
@@ -703,10 +706,12 @@ class _TaskProperties extends ConsumerWidget {
   const _TaskProperties({
     required this.task,
     required this.projectName,
+    required this.projects,
     required this.calendarLinked,
   });
   final TaskItem task;
   final String? projectName;
+  final List<ProjectItem> projects;
   final bool calendarLinked;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -728,6 +733,7 @@ class _TaskProperties extends ConsumerWidget {
       List<Widget> items, {
       Key? key,
       FocusNode? focusNode,
+      bool enabled = true,
     }) => LayoutBuilder(
       builder: (context, constraints) => ShadMenubar(
         key: key,
@@ -736,7 +742,7 @@ class _TaskProperties extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         items: [
           ShadMenubarItem(
-            enabled: task.canEdit,
+            enabled: task.canEdit && enabled,
             height: 44,
             width: constraints.maxWidth,
             focusNode: focusNode,
@@ -878,12 +884,41 @@ class _TaskProperties extends ConsumerWidget {
         _PropertyRow(
           icon: LucideIcons.folder,
           label: l10n.taskProject,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
-            child: Text(
-              projectName ?? l10n.navInbox,
-              style: Theme.of(context).textTheme.bodyMedium,
+          child: menu(
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    task.projectId == inboxProjectId
+                        ? l10n.navInbox
+                        : projectName ?? l10n.navInbox,
+                  ),
+                ),
+                const Icon(LucideIcons.chevronDown, size: 14),
+              ],
             ),
+            [
+              for (final project in projects)
+                ShadContextMenuItem(
+                  height: 44,
+                  trailing: Icon(
+                    task.projectId == project.id ? LucideIcons.check : null,
+                    size: 16,
+                  ),
+                  onPressed: () => unawaited(() async {
+                    try {
+                      await ref
+                          .read(taskDetailViewModelProvider(task.id).notifier)
+                          .setProject(project.id);
+                    } catch (_) {
+                      if (context.mounted) _showEditFailure(context);
+                    }
+                  }()),
+                  child: Text(project.displayName(l10n)),
+                ),
+            ],
+            key: const Key('task-detail-project-chip'),
+            enabled: projects.isNotEmpty,
           ),
         ),
         if (task.scopeId != null)
@@ -1154,7 +1189,7 @@ class _EditableTaskDescriptionState
       enabled: !_saving,
       readOnly: !widget.task.canEdit,
       focusNode: _focusNode,
-      minLines: 2,
+      minLines: 1,
       maxLines: null,
       style: Theme.of(context).textTheme.bodyMedium?.copyWith(height: 1.7),
       textInputAction: TextInputAction.newline,

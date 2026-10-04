@@ -15,10 +15,12 @@ abstract interface class HabitRepository {
     String id,
     DateTime day, {
     required DateTime now,
+    HabitDayPeriod? period,
   });
   Future<Result<void>> undoCheckIn(
     String id,
     DateTime day, {
     required DateTime now,
+    HabitDayPeriod? period,
   });
 }

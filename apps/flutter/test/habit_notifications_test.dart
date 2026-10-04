@@ -107,6 +107,54 @@ void main() {
     createdAt: now,
     updatedAt: now,
   );
+  test(
+    'period goals retain one reminder until morning and night are both complete',
+    () {
+      final h = Habit(
+        id: 'h',
+        userId: 'local-user',
+        title: 'Water',
+        reminderMinutes: 1200,
+        scheduleHistory: [
+          HabitDraft(
+            title: 'Water',
+            startDate: now,
+            periodTargets: {HabitDayPeriod.morning: 1, HabitDayPeriod.night: 1},
+          ).schedule(now),
+        ],
+        createdAt: now,
+        updatedAt: now,
+      );
+      HabitCheckIn mark(String id, HabitDayPeriod period) => HabitCheckIn(
+        id: id,
+        userId: 'local-user',
+        habitId: 'h',
+        day: now,
+        createdAt: now,
+        updatedAt: now,
+        dayPeriod: period,
+      );
+      final morning = [
+        mark('m1', HabitDayPeriod.morning),
+        mark('m2', HabitDayPeriod.morning),
+      ];
+      final partial = planHabitReminders(
+        habits: [h],
+        checkIns: morning,
+        now: now,
+      );
+      expect(
+        partial.where((r) => habitDate(r.scheduledAt) == habitDate(now)),
+        hasLength(1),
+      );
+      final complete = planHabitReminders(
+        habits: [h],
+        checkIns: [...morning, mark('n', HabitDayPeriod.night)],
+        now: now,
+      );
+      expect(complete.first.scheduledAt, DateTime(2026, 10, 1, 20));
+    },
+  );
   test('partial goal reminds today but complete goal starts tomorrow', () {
     final partial = planHabitReminders(
       habits: [habit()],

@@ -320,7 +320,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get oauthConsentManagePlanning =>
-      'قراءة وإدارة المهام والمشاريع والتسميات الشخصية وكانبان.';
+      'قراءة وإدارة المهام والعادات والمشاريع والتسميات الشخصية وكانبان.';
 
   @override
   String get oauthConsentReadInsights =>
@@ -4011,6 +4011,58 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get settingsPreviewCompletedTask => 'مراجعة الملاحظات';
+
+  @override
+  String get habitsListView => 'القائمة';
+
+  @override
+  String get habitsRhythmView => 'إيقاع اليوم';
+
+  @override
+  String get habitsRemaining => 'المتبقية';
+
+  @override
+  String get habitsDone => 'المكتملة';
+
+  @override
+  String get habitsPlanned => 'المخططة';
+
+  @override
+  String get habitDayPeriod => 'فترة اليوم';
+
+  @override
+  String get habitPeriodAutomatic => 'تلقائي';
+
+  @override
+  String get habitPeriodAnytime => 'على مدار اليوم';
+
+  @override
+  String get habitPeriodNight => 'الليل';
+
+  @override
+  String get habitPeriodMultipleReason =>
+      'يتضمن الهدف عدة تكرارات على مدار اليوم.';
+
+  @override
+  String get habitPeriodNoTimeReason => 'لم يتم تحديد وقت للتذكير.';
+
+  @override
+  String get habitPeriodReminderReason => 'حسب وقت التذكير.';
+
+  @override
+  String get habitsViewPreferenceError => 'تعذر حفظ العرض المختار أو تحميله.';
+
+  @override
+  String habitPeriodExplanation(String period, String reason) {
+    return '$period: $reason';
+  }
+
+  @override
+  String get habitPeriodCustom => 'حسب أوقات اليوم';
+
+  @override
+  String get habitPeriodTargetsHint =>
+      'اختر وقتًا أو أكثر من اليوم وحدد هدفًا لكل وقت. الإجمالي اليومي: 1–99.';
 
   @override
   String get accountAvatar => 'الصورة الرمزية';

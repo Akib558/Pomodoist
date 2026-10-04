@@ -304,7 +304,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get oauthConsentCapabilitiesTitle => '此智能体可以';
 
   @override
-  String get oauthConsentManagePlanning => '读取和管理任务、项目、自定义标签与看板。';
+  String get oauthConsentManagePlanning => '读取和管理任务、习惯、项目、自定义标签与看板。';
 
   @override
   String get oauthConsentReadInsights => '读取已完成的专注历史、效率报告与成就。';
@@ -3867,6 +3867,56 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get settingsPreviewCompletedTask => '检查笔记';
+
+  @override
+  String get habitsListView => '列表';
+
+  @override
+  String get habitsRhythmView => '每日节奏';
+
+  @override
+  String get habitsRemaining => '待完成';
+
+  @override
+  String get habitsDone => '已完成';
+
+  @override
+  String get habitsPlanned => '已计划';
+
+  @override
+  String get habitDayPeriod => '时段';
+
+  @override
+  String get habitPeriodAutomatic => '自动';
+
+  @override
+  String get habitPeriodAnytime => '全天';
+
+  @override
+  String get habitPeriodNight => '深夜';
+
+  @override
+  String get habitPeriodMultipleReason => '目标包含一天中的多次重复。';
+
+  @override
+  String get habitPeriodNoTimeReason => '未设置提醒时间。';
+
+  @override
+  String get habitPeriodReminderReason => '根据提醒时间分组。';
+
+  @override
+  String get habitsViewPreferenceError => '无法保存或加载所选视图。';
+
+  @override
+  String habitPeriodExplanation(String period, String reason) {
+    return '$period：$reason';
+  }
+
+  @override
+  String get habitPeriodCustom => '按时段';
+
+  @override
+  String get habitPeriodTargetsHint => '选择一个或多个时段，并为每个时段设置目标。每日总目标：1–99。';
 
   @override
   String get accountAvatar => '头像';

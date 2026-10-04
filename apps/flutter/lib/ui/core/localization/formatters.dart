@@ -46,6 +46,29 @@ String formatDueDate(BuildContext context, DateTime? date) {
 String formatLocalDate(BuildContext context, DateTime date) =>
     _formatDate(context, date);
 
+String formatCompactMonthRange(DateTime start, DateTime end, String locale) {
+  final monthYear = intl.DateFormat.yMMM(locale);
+  if (start.year != end.year) {
+    return '${monthYear.format(start)}–${monthYear.format(end)}';
+  }
+  if (start.month == end.month) return monthYear.format(start);
+
+  // Replace the month field in the locale's pattern, keeping year placement
+  // and grammatical markers intact, including in numeric-month locales.
+  final pattern = monthYear.pattern!;
+  final monthField = RegExp(r'M+|L+').firstMatch(pattern)!;
+  // A trailing space forces an explicit field pattern: the `M` skeleton in
+  // Japanese expands to `M月`, whose marker already belongs to monthYear.
+  final month = intl.DateFormat('${monthField.group(0)} ', locale);
+  final range =
+      '${month.format(start).trimRight()}–${month.format(end).trimRight()}'
+          .replaceAll("'", "''");
+  return intl.DateFormat(
+    pattern.replaceRange(monthField.start, monthField.end, "'$range'"),
+    locale,
+  ).format(end);
+}
+
 String formatTaskSchedule(
   BuildContext context,
   TaskSchedule? schedule, {

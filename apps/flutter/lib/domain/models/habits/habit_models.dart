@@ -19,6 +19,49 @@ DateTime habitEndAfterDays(DateTime start, int days) {
   return DateTime(start.year, start.month, start.day + days - 1);
 }
 
+enum HabitViewMode { list, rhythm }
+
+enum HabitDayPeriod { automatic, anytime, morning, afternoon, evening, night }
+
+HabitDayPeriod resolveHabitDayPeriod({
+  HabitDayPeriod selection = HabitDayPeriod.automatic,
+  required int target,
+  int? reminderMinutes,
+}) {
+  if (selection != HabitDayPeriod.automatic) return selection;
+  if (target > 1 || reminderMinutes == null) return HabitDayPeriod.anytime;
+  return switch (reminderMinutes) {
+    < 300 => HabitDayPeriod.night,
+    < 720 => HabitDayPeriod.morning,
+    < 1080 => HabitDayPeriod.afternoon,
+    _ => HabitDayPeriod.evening,
+  };
+}
+
+HabitDayPeriod _habitDayPeriodFromJson(Object? value) {
+  return HabitDayPeriod.values.where((p) => p.name == value).firstOrNull ??
+      (throw const FormatException('Invalid habit day period'));
+}
+
+Map<HabitDayPeriod, int> habitPeriodTargetsFromJson(Object? value) {
+  if (value is! Map || value.isEmpty) {
+    throw const FormatException('Invalid habit period targets');
+  }
+  final result = <HabitDayPeriod, int>{};
+  for (final entry in value.entries) {
+    final period = _habitDayPeriodFromJson(entry.key);
+    if (period == HabitDayPeriod.automatic ||
+        period == HabitDayPeriod.anytime ||
+        entry.value is! int ||
+        (entry.value as int) < 1 ||
+        (entry.value as int) > 99) {
+      throw const FormatException('Invalid habit period targets');
+    }
+    result[period] = entry.value as int;
+  }
+  return result;
+}
+
 class HabitSchedule {
   HabitSchedule({
     required DateTime effectiveFrom,
@@ -26,7 +69,10 @@ class HabitSchedule {
     DateTime? endDate,
     required Iterable<int> weekdays,
     required this.targetPerDay,
-  }) : effectiveFrom = habitDate(effectiveFrom),
+    this.dayPeriod = HabitDayPeriod.automatic,
+    Map<HabitDayPeriod, int> periodTargets = const {},
+  }) : periodTargets = Map.unmodifiable(periodTargets),
+       effectiveFrom = habitDate(effectiveFrom),
        startDate = habitDate(startDate),
        endDate = endDate == null ? null : habitDate(endDate),
        weekdays = List.unmodifiable(weekdays) {
@@ -38,11 +84,37 @@ class HabitSchedule {
         this.endDate != null && this.endDate!.isBefore(this.startDate)) {
       throw ArgumentError('Invalid habit schedule');
     }
+    if (this.periodTargets.isNotEmpty &&
+        (dayPeriod != HabitDayPeriod.automatic ||
+            this.periodTargets.keys.any(
+              (p) =>
+                  p == HabitDayPeriod.automatic || p == HabitDayPeriod.anytime,
+            ) ||
+            this.periodTargets.values.any((n) => n < 1 || n > 99) ||
+            this.periodTargets.values.fold(0, (a, b) => a + b) !=
+                targetPerDay)) {
+      throw ArgumentError('Invalid habit period targets');
+    }
   }
   final DateTime effectiveFrom, startDate;
   final DateTime? endDate;
   final List<int> weekdays;
   final int targetPerDay;
+  final HabitDayPeriod dayPeriod;
+  final Map<HabitDayPeriod, int> periodTargets;
+  Map<HabitDayPeriod, int> targetsFor(int? reminderMinutes) =>
+      periodTargets.isNotEmpty
+      ? {
+          for (final p in HabitDayPeriod.values)
+            if (periodTargets.containsKey(p)) p: periodTargets[p]!,
+        }
+      : {
+          resolveHabitDayPeriod(
+            selection: dayPeriod,
+            target: targetPerDay,
+            reminderMinutes: reminderMinutes,
+          ): targetPerDay,
+        };
   bool includes(DateTime value) {
     final day = habitDate(value);
     return !day.isBefore(startDate) &&
@@ -56,6 +128,11 @@ class HabitSchedule {
     'endDate': endDate == null ? null : habitDayKey(endDate!),
     'weekdays': weekdays,
     'targetPerDay': targetPerDay,
+    if (dayPeriod != HabitDayPeriod.automatic) 'dayPeriod': dayPeriod.name,
+    if (periodTargets.isNotEmpty)
+      'periodTargets': {
+        for (final e in periodTargets.entries) e.key.name: e.value,
+      },
   };
   factory HabitSchedule.fromJson(Map<String, dynamic> json) => HabitSchedule(
     effectiveFrom: habitDateFromKey(json['effectiveFrom'] as String),
@@ -65,6 +142,12 @@ class HabitSchedule {
         : habitDateFromKey(json['endDate'] as String),
     weekdays: (json['weekdays'] as List).cast<int>(),
     targetPerDay: json['targetPerDay'] as int,
+    dayPeriod: json.containsKey('dayPeriod')
+        ? _habitDayPeriodFromJson(json['dayPeriod'])
+        : HabitDayPeriod.automatic,
+    periodTargets: json.containsKey('periodTargets')
+        ? habitPeriodTargetsFromJson(json['periodTargets'])
+        : const {},
   );
 }
 
@@ -149,10 +232,16 @@ class HabitDraft {
     required DateTime startDate,
     DateTime? endDate,
     Iterable<int> weekdays = const [1, 2, 3, 4, 5, 6, 7],
-    this.targetPerDay = 1,
+    int targetPerDay = 1,
+    Map<HabitDayPeriod, int> periodTargets = const {},
+    this.dayPeriod = HabitDayPeriod.automatic,
     this.projectId,
     this.reminderMinutes,
-  }) : title = title.trim(),
+  }) : periodTargets = Map.unmodifiable(periodTargets),
+       targetPerDay = periodTargets.isEmpty
+           ? targetPerDay
+           : periodTargets.values.fold(0, (a, b) => a + b),
+       title = title.trim(),
        startDate = habitDate(startDate),
        endDate = endDate == null ? null : habitDate(endDate),
        weekdays = List.unmodifiable(weekdays) {
@@ -169,6 +258,8 @@ class HabitDraft {
   final DateTime? endDate;
   final List<int> weekdays;
   final int targetPerDay;
+  final HabitDayPeriod dayPeriod;
+  final Map<HabitDayPeriod, int> periodTargets;
   final String? projectId;
   final int? reminderMinutes;
   HabitSchedule schedule(DateTime effectiveFrom) => HabitSchedule(
@@ -177,6 +268,8 @@ class HabitDraft {
     endDate: endDate,
     weekdays: weekdays,
     targetPerDay: targetPerDay,
+    dayPeriod: dayPeriod,
+    periodTargets: periodTargets,
   );
 }
 
@@ -189,14 +282,19 @@ class HabitCheckIn {
     required this.createdAt,
     required this.updatedAt,
     this.isDeleted = false,
+    this.dayPeriod,
   }) : day = habitDate(day) {
-    if (id.isEmpty || userId.isEmpty || habitId.isEmpty) {
+    if (id.isEmpty ||
+        userId.isEmpty ||
+        habitId.isEmpty ||
+        dayPeriod == HabitDayPeriod.automatic) {
       throw ArgumentError('Invalid habit check-in');
     }
   }
   final String id, userId, habitId;
   final DateTime day, createdAt, updatedAt;
   final bool isDeleted;
+  final HabitDayPeriod? dayPeriod;
   Map<String, Object?> toJson() => {
     'id': id,
     'userId': userId,
@@ -205,6 +303,7 @@ class HabitCheckIn {
     'createdAt': createdAt.toUtc().toIso8601String(),
     'updatedAt': updatedAt.toUtc().toIso8601String(),
     'isDeleted': isDeleted,
+    if (dayPeriod != null) 'dayPeriod': dayPeriod!.name,
   };
   factory HabitCheckIn.fromJson(Map<String, dynamic> json) => HabitCheckIn(
     id: json['id'] as String,
@@ -214,6 +313,9 @@ class HabitCheckIn {
     createdAt: DateTime.parse(json['createdAt'] as String),
     updatedAt: DateTime.parse(json['updatedAt'] as String),
     isDeleted: json['isDeleted'] as bool? ?? false,
+    dayPeriod: json.containsKey('dayPeriod')
+        ? _habitDayPeriodFromJson(json['dayPeriod'])
+        : null,
   );
 }
 
@@ -224,3 +326,60 @@ int habitCompletionCount(
 ) => checkIns
     .where((c) => c.habitId == id && !c.isDeleted && c.day == habitDate(day))
     .length;
+
+/// Assign legacy/unassigned marks deterministically without changing their data.
+/// Explicit marks retain their period; obsolete periods follow the same fallback.
+Map<String, HabitDayPeriod> habitCheckInPeriods(
+  Habit habit,
+  DateTime day,
+  Iterable<HabitCheckIn> checkIns,
+) {
+  final schedule = habit.scheduleFor(day);
+  if (schedule == null) return {};
+  final targets = schedule.targetsFor(habit.reminderMinutes);
+  final checks =
+      checkIns
+          .where(
+            (c) =>
+                !c.isDeleted &&
+                c.habitId == habit.id &&
+                c.day == habitDate(day),
+          )
+          .toList()
+        ..sort((a, b) {
+          final order = a.createdAt.compareTo(b.createdAt);
+          return order == 0 ? a.id.compareTo(b.id) : order;
+        });
+  final assigned = <String, HabitDayPeriod>{};
+  final counts = {for (final p in targets.keys) p: 0};
+  for (final check in checks) {
+    if (check.dayPeriod != null && targets.containsKey(check.dayPeriod)) {
+      assigned[check.id] = check.dayPeriod!;
+      counts[check.dayPeriod!] = counts[check.dayPeriod!]! + 1;
+    }
+  }
+  for (final check in checks) {
+    if (assigned.containsKey(check.id)) continue;
+    final period =
+        targets.keys.where((p) => counts[p]! < targets[p]!).firstOrNull ??
+        targets.keys.first;
+    assigned[check.id] = period;
+    counts[period] = counts[period]! + 1;
+  }
+  return assigned;
+}
+
+Map<HabitDayPeriod, int> habitPeriodCounts(
+  Habit habit,
+  DateTime day,
+  Iterable<HabitCheckIn> checks,
+) {
+  final targets =
+      habit.scheduleFor(day)?.targetsFor(habit.reminderMinutes) ??
+      <HabitDayPeriod, int>{};
+  final assigned = habitCheckInPeriods(habit, day, checks);
+  return {
+    for (final e in targets.entries)
+      e.key: assigned.values.where((p) => p == e.key).length.clamp(0, e.value),
+  };
+}

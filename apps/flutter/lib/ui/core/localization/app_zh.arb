@@ -93,7 +93,7 @@
   "oauthConsentClientRequest": "{clientName} 想要访问 Pomodoist",
   "oauthConsentRedirectOrigin": "返回地址",
   "oauthConsentCapabilitiesTitle": "此智能体可以",
-  "oauthConsentManagePlanning": "读取和管理任务、项目、自定义标签与看板。",
+  "oauthConsentManagePlanning": "读取和管理任务、习惯、项目、自定义标签与看板。",
   "oauthConsentReadInsights": "读取已完成的专注历史、效率报告与成就。",
   "oauthConsentUnavailableTitle": "此智能体不能",
   "oauthConsentUnavailable": "访问你的账户或账单、Google 日历或正在运行的专注计时器。",
@@ -1302,6 +1302,33 @@
   "settingsPreviewProject": "个人",
   "settingsPreviewLongTask": "准备资料并规划下一步",
   "settingsPreviewCompletedTask": "检查笔记",
+  "habitsListView": "列表",
+  "habitsRhythmView": "每日节奏",
+  "habitsRemaining": "待完成",
+  "habitsDone": "已完成",
+  "habitsPlanned": "已计划",
+  "habitDayPeriod": "时段",
+  "habitPeriodAutomatic": "自动",
+  "habitPeriodAnytime": "全天",
+  "habitPeriodNight": "深夜",
+  "habitPeriodMultipleReason": "目标包含一天中的多次重复。",
+  "habitPeriodNoTimeReason": "未设置提醒时间。",
+  "habitPeriodReminderReason": "根据提醒时间分组。",
+  "habitsViewPreferenceError": "无法保存或加载所选视图。",
+  "habitPeriodExplanation": "{period}：{reason}",
+  "@habitPeriodExplanation": {
+    "description": "Resolved automatic habit group and the reason for choosing it.",
+    "placeholders": {
+      "period": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "habitPeriodCustom": "按时段",
+  "habitPeriodTargetsHint": "选择一个或多个时段，并为每个时段设置目标。每日总目标：1–99。",
   "accountAvatar": "头像",
   "accountChangeAvatar": "更改头像",
   "accountAvatarInput": "输入或粘贴表情符号",

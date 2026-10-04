@@ -85,6 +85,18 @@ select throws_ok($$select public.read_pomodoist_openclaw_state('66666666-6666-46
  '33333333-3333-4333-8333-333333333333','22222222-2222-4222-8222-222222222222','original')$$,
  '42501','OpenClaw authorization revoked','spoofed OAuth subject is rejected');
 
+-- Habits use the same session/revision preparation path as other guarded actions.
+do $$
+declare action text; prepared jsonb;
+begin
+  foreach action in array array['create_habit','update_habit','add_habit_check_in','complete_habit','undo_habit_check_in','finish_habit','reopen_habit','delete_habit'] loop
+    prepared := pg_temp.action(gen_random_uuid(),null,null,repeat('a',64),action);
+    if prepared->>'revision' is null then raise exception 'Missing habit action revision: %',action; end if;
+  end loop;
+end;
+$$;
+select pass('every habit action resolves the existing OAuth session and prepares an account revision');
+
 delete from auth.sessions where id='33333333-3333-4333-8333-333333333333';
 select throws_ok($$select pg_temp.action('44444444-4444-4444-8444-444444444444')$$,
  '42501','OpenClaw authorization revoked','revoked sessions cannot replay previous successes');

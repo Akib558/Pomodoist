@@ -44,6 +44,7 @@ import 'package:pomodoist/ui/core/themes/macos_glass.dart';
 import 'package:pomodoist/ui/core/widgets/mini_focus_player.dart';
 import 'package:pomodoist/ui/core/widgets/app_context_menu_region.dart';
 import 'package:pomodoist/ui/core/widgets/task_details_host.dart';
+import 'package:pomodoist/ui/habits/widgets/habit_editor.dart';
 import 'package:pomodoist/routing/task_detail_navigation.dart';
 import 'package:pomodoist/ui/onboarding/widgets/learning_tour_overlay.dart';
 import 'package:pomodoist/ui/onboarding/view_models/learning_tour_view_model.dart';
@@ -64,12 +65,14 @@ class AdaptiveShell extends ConsumerStatefulWidget {
     required this.location,
     required this.child,
     this.taskId,
+    this.habitId,
     this.mapFullscreen = false,
     super.key,
   });
 
   final String location;
   final String? taskId;
+  final String? habitId;
   final bool mapFullscreen;
   final Widget child;
 
@@ -79,6 +82,7 @@ class AdaptiveShell extends ConsumerStatefulWidget {
 
 class _AdaptiveShellState extends ConsumerState<AdaptiveShell> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+  final _detailsHostKey = GlobalKey();
   final _addTaskButtonKey = GlobalKey();
   final _backgroundLink = LayerLink();
   Alignment _addTaskCorner = Alignment.bottomRight;
@@ -203,11 +207,12 @@ class _AdaptiveShellState extends ConsumerState<AdaptiveShell> {
     }
     final wide = MediaQuery.sizeOf(context).width >= _wideLayoutBreakpoint;
     final mapFullscreen = widget.mapFullscreen;
-    // Details reached through the `/task/:id` route fill the viewport just like
-    // the query-parameter selection, so both hide the shell chrome below 820 px.
-    final compactTaskDetailsOpen =
+    // Contextual editors and standalone task details replace compact chrome.
+    final compactDetailsOpen =
         !wide &&
-        (widget.taskId != null || widget.location.startsWith('/task/'));
+        (widget.taskId != null ||
+            widget.habitId != null ||
+            widget.location.startsWith('/task/'));
     final focusLocation = _isFocusLocation(widget.location);
     final navigation =
         ref.watch(bottomNavigationProvider).value ??
@@ -230,50 +235,54 @@ class _AdaptiveShellState extends ConsumerState<AdaptiveShell> {
     final glass =
         backgrounds.type == ThemeBackgroundType.macosGlass &&
         macosGlassReady(context, ref);
-    final content = TaskDetailsHost(
-      taskId: widget.taskId,
-      child: Column(
-        children: [
-          const AchievementAnnouncementBridge(),
-          if (!compactTaskDetailsOpen && !mapFullscreen)
-            _ShellTopBar(
-              location: widget.location,
-              onMenuPressed: _toggleSidebar,
-            ),
-          Expanded(
-            // Keep the route mounted when the surrounding shell bars disappear.
-            key: const ValueKey('shell-main-content'),
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                MediaQuery.removePadding(
-                  context: context,
-                  removeTop: !compactTaskDetailsOpen && !mapFullscreen,
-                  removeBottom: !wide && !mapFullscreen,
-                  child: widget.child,
-                ),
-                const Positioned(
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  child: AchievementAnnouncementSlot(
-                    presentation: AchievementPresentation.globalBanner,
+    final content = HabitDetailsHost(
+      key: _detailsHostKey,
+      habitId: widget.habitId,
+      child: TaskDetailsHost(
+        taskId: widget.taskId,
+        child: Column(
+          children: [
+            const AchievementAnnouncementBridge(),
+            if (!compactDetailsOpen && !mapFullscreen)
+              _ShellTopBar(
+                location: widget.location,
+                onMenuPressed: _toggleSidebar,
+              ),
+            Expanded(
+              // Keep the route mounted when the surrounding shell bars disappear.
+              key: const ValueKey('shell-main-content'),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  MediaQuery.removePadding(
+                    context: context,
+                    removeTop: !compactDetailsOpen && !mapFullscreen,
+                    removeBottom: !wide && !mapFullscreen,
+                    child: widget.child,
                   ),
-                ),
-                const Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: AchievementAnnouncementSlot(
-                    presentation: AchievementPresentation.bottomPlaque,
+                  const Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: AchievementAnnouncementSlot(
+                      presentation: AchievementPresentation.globalBanner,
+                    ),
                   ),
-                ),
-              ],
+                  const Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: AchievementAnnouncementSlot(
+                      presentation: AchievementPresentation.bottomPlaque,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          if (wide && showMiniFocusPlayer)
-            const VoicePanelBottomClearance(child: MiniFocusPlayer()),
-        ],
+            if (wide && showMiniFocusPlayer)
+              const VoicePanelBottomClearance(child: MiniFocusPlayer()),
+          ],
+        ),
       ),
     );
 
@@ -323,7 +332,7 @@ class _AdaptiveShellState extends ConsumerState<AdaptiveShell> {
           final location = CompactTaskButtonLocation(
             corner: _addTaskCorner,
             dragPosition: _addTaskDrag,
-            bottomClearance: compactTaskDetailsOpen ? 0 : clearance,
+            bottomClearance: compactDetailsOpen ? 0 : clearance,
           );
           void finishDrag([DragEndDetails? details]) {
             setState(() {
@@ -366,7 +375,8 @@ class _AdaptiveShellState extends ConsumerState<AdaptiveShell> {
                   floatingActionButton: ValueListenableBuilder<bool>(
                     valueListenable: voiceQuickAddActiveOf(context),
                     builder: (context, voiceActive, _) =>
-                        mapFullscreen ||
+                        compactDetailsOpen ||
+                            mapFullscreen ||
                             voiceActive ||
                             widget.location == '/calendar'
                         ? const SizedBox.shrink()
@@ -417,7 +427,7 @@ class _AdaptiveShellState extends ConsumerState<AdaptiveShell> {
                         _addTaskDrag != null ||
                         MediaQuery.disableAnimationsOf(context),
                   ),
-                  bottomNavigationBar: compactTaskDetailsOpen || mapFullscreen
+                  bottomNavigationBar: compactDetailsOpen || mapFullscreen
                       ? null
                       : VoicePanelBottomClearance(
                           child: _ShellBottomChrome(

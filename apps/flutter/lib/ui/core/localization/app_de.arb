@@ -93,7 +93,7 @@
   "oauthConsentClientRequest": "{clientName} möchte auf Pomodoist zugreifen",
   "oauthConsentRedirectOrigin": "Rücksprungadresse",
   "oauthConsentCapabilitiesTitle": "Dieser Agent kann",
-  "oauthConsentManagePlanning": "Aufgaben, Projekte, eigene Labels und Kanban lesen und verwalten.",
+  "oauthConsentManagePlanning": "Aufgaben, Gewohnheiten, Projekte, eigene Labels und Kanban lesen und verwalten.",
   "oauthConsentReadInsights": "Abgeschlossenen Fokusverlauf, Produktivitätsberichte und Erfolge lesen.",
   "oauthConsentUnavailableTitle": "Dieser Agent kann nicht",
   "oauthConsentUnavailable": "Auf dein Konto oder Zahlungen, Google Kalender oder den laufenden Fokus-Timer zugreifen.",
@@ -1302,6 +1302,33 @@
   "settingsPreviewProject": "Persönlich",
   "settingsPreviewLongTask": "Materialien vorbereiten und die nächsten Schritte planen",
   "settingsPreviewCompletedTask": "Notizen prüfen",
+  "habitsListView": "Liste",
+  "habitsRhythmView": "Tagesrhythmus",
+  "habitsRemaining": "Noch offen",
+  "habitsDone": "Erledigt",
+  "habitsPlanned": "Geplant",
+  "habitDayPeriod": "Tageszeit",
+  "habitPeriodAutomatic": "Automatisch",
+  "habitPeriodAnytime": "Über den Tag verteilt",
+  "habitPeriodNight": "Nacht",
+  "habitPeriodMultipleReason": "Das Tagesziel umfasst mehrere Wiederholungen.",
+  "habitPeriodNoTimeReason": "Keine Erinnerungszeit festgelegt.",
+  "habitPeriodReminderReason": "Anhand der Erinnerungszeit.",
+  "habitsViewPreferenceError": "Die Ansichtspräferenz konnte nicht gespeichert oder geladen werden.",
+  "habitPeriodExplanation": "{period}: {reason}",
+  "@habitPeriodExplanation": {
+    "description": "Resolved automatic habit group and the reason for choosing it.",
+    "placeholders": {
+      "period": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "habitPeriodCustom": "Nach Tagesabschnitten",
+  "habitPeriodTargetsHint": "Wähle einen oder mehrere Tagesabschnitte mit jeweils einem Ziel. Tagessumme: 1–99.",
   "accountAvatar": "Avatar",
   "accountChangeAvatar": "Avatar ändern",
   "accountAvatarInput": "Emoji eingeben oder einfügen",

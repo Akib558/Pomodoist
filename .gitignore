@@ -43,6 +43,8 @@ private_keys/
 # path form turns it into a non-directory match, which makes VS Code resolve
 # nesting from the repository root instead of apps/flutter/.
 apps/flutter/.dart_tool
+# Generated Flutter widget preview scaffold.
+/apps/flutter/.widget_preview/
 .flutter-plugins-dependencies
 pubspec_overrides.yaml
 .pub-cache/
@@ -123,6 +125,7 @@ server/supabase/.temp/
 design/
 output/
 docs/*
+!docs/performance/
 !docs/localization/
 !docs/subscription-offers.md
 !docs/email-addresses.md

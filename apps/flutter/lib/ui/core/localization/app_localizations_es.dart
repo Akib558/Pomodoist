@@ -327,7 +327,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get oauthConsentManagePlanning =>
-      'Leer y gestionar tareas, proyectos, etiquetas propias y Kanban.';
+      'Leer y gestionar tareas, hábitos, proyectos, etiquetas propias y Kanban.';
 
   @override
   String get oauthConsentReadInsights =>
@@ -4102,6 +4102,59 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsPreviewCompletedTask => 'Revisar notas';
+
+  @override
+  String get habitsListView => 'Lista';
+
+  @override
+  String get habitsRhythmView => 'Ritmo del día';
+
+  @override
+  String get habitsRemaining => 'Pendientes';
+
+  @override
+  String get habitsDone => 'Completadas';
+
+  @override
+  String get habitsPlanned => 'Planificadas';
+
+  @override
+  String get habitDayPeriod => 'Momento del día';
+
+  @override
+  String get habitPeriodAutomatic => 'Automático';
+
+  @override
+  String get habitPeriodAnytime => 'A lo largo del día';
+
+  @override
+  String get habitPeriodNight => 'Noche';
+
+  @override
+  String get habitPeriodMultipleReason =>
+      'El objetivo incluye varias repeticiones durante el día.';
+
+  @override
+  String get habitPeriodNoTimeReason => 'No hay una hora de recordatorio.';
+
+  @override
+  String get habitPeriodReminderReason => 'Según la hora del recordatorio.';
+
+  @override
+  String get habitsViewPreferenceError =>
+      'No se pudo guardar o cargar la vista elegida.';
+
+  @override
+  String habitPeriodExplanation(String period, String reason) {
+    return '$period: $reason';
+  }
+
+  @override
+  String get habitPeriodCustom => 'Por momentos del día';
+
+  @override
+  String get habitPeriodTargetsHint =>
+      'Elige uno o más momentos del día y una meta para cada uno. Total diario: 1–99.';
 
   @override
   String get accountAvatar => 'Avatar';

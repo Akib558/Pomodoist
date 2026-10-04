@@ -93,7 +93,7 @@
   "oauthConsentClientRequest": "يريد {clientName} الوصول إلى Pomodoist",
   "oauthConsentRedirectOrigin": "عنوان العودة",
   "oauthConsentCapabilitiesTitle": "يمكن لهذا الوكيل",
-  "oauthConsentManagePlanning": "قراءة وإدارة المهام والمشاريع والتسميات الشخصية وكانبان.",
+  "oauthConsentManagePlanning": "قراءة وإدارة المهام والعادات والمشاريع والتسميات الشخصية وكانبان.",
   "oauthConsentReadInsights": "قراءة سجل التركيز المكتمل وتقارير الإنتاجية والإنجازات.",
   "oauthConsentUnavailableTitle": "لا يمكن لهذا الوكيل",
   "oauthConsentUnavailable": "الوصول إلى حسابك أو الفوترة أو تقويم Google أو مؤقت التركيز المباشر.",
@@ -1302,6 +1302,33 @@
   "settingsPreviewProject": "شخصي",
   "settingsPreviewLongTask": "إعداد المواد والتخطيط للخطوات التالية",
   "settingsPreviewCompletedTask": "مراجعة الملاحظات",
+  "habitsListView": "القائمة",
+  "habitsRhythmView": "إيقاع اليوم",
+  "habitsRemaining": "المتبقية",
+  "habitsDone": "المكتملة",
+  "habitsPlanned": "المخططة",
+  "habitDayPeriod": "فترة اليوم",
+  "habitPeriodAutomatic": "تلقائي",
+  "habitPeriodAnytime": "على مدار اليوم",
+  "habitPeriodNight": "الليل",
+  "habitPeriodMultipleReason": "يتضمن الهدف عدة تكرارات على مدار اليوم.",
+  "habitPeriodNoTimeReason": "لم يتم تحديد وقت للتذكير.",
+  "habitPeriodReminderReason": "حسب وقت التذكير.",
+  "habitsViewPreferenceError": "تعذر حفظ العرض المختار أو تحميله.",
+  "habitPeriodExplanation": "{period}: {reason}",
+  "@habitPeriodExplanation": {
+    "description": "Resolved automatic habit group and the reason for choosing it.",
+    "placeholders": {
+      "period": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "habitPeriodCustom": "حسب أوقات اليوم",
+  "habitPeriodTargetsHint": "اختر وقتًا أو أكثر من اليوم وحدد هدفًا لكل وقت. الإجمالي اليومي: 1–99.",
   "accountAvatar": "الصورة الرمزية",
   "accountChangeAvatar": "تغيير الصورة الرمزية",
   "accountAvatarInput": "أدخل رمزًا تعبيريًا أو الصقه",

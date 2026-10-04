@@ -40,46 +40,72 @@ class DriftTaskRepository implements TaskRepository {
   final KanbanTransitionCoordinator _kanbanTransitions;
   @override
   Stream<List<TaskItem>> watchTasks(TaskQuery query) {
-    return _tasks.watchTasks(query).asyncMap((rows) async {
-      final actorId = await _access.actorId();
-      final tasks = rows
-          .map(
-            (row) => _mapTask(row.task, scope: sharedScopeFromRow(row.scope)),
-          )
-          .where(
-            (task) =>
-                !{
-                  TaskQueryKind.today,
-                  TaskQueryKind.upcoming,
-                  TaskQueryKind.day,
-                }.contains(query.kind) ||
-                task.scopeId == null ||
-                task.assigneeIds.contains(actorId),
-          )
-          .where((task) => _matchesQuery(task, query))
-          .toList();
-      tasks.sort((a, b) {
-        final dayOrderCompare = (a.dayOrder ?? 999999).compareTo(
-          b.dayOrder ?? 999999,
-        );
-        if (dayOrderCompare != 0) {
-          return dayOrderCompare;
-        }
-        return a.orderKey.compareTo(b.orderKey);
-      });
-      return List<TaskItem>.unmodifiable(tasks);
-    });
+    var previous = <String, ({TaskRow row, TaskItem item})>{};
+    return _tasks
+        .watchTasks(query)
+        .asyncMap((rows) async {
+          final actorId = await _access.actorId();
+          final next = <String, ({TaskRow row, TaskItem item})>{};
+          final tasks = rows
+              .map((row) {
+                final scope = sharedScopeFromRow(row.scope);
+                final cached = previous[row.task.id];
+                final canEdit =
+                    row.task.scopeId == null || (scope?.canEdit ?? false);
+                final item =
+                    cached != null &&
+                        cached.row == row.task &&
+                        cached.item.canEdit == canEdit
+                    ? cached.item
+                    : _mapTask(row.task, scope: scope);
+                next[row.task.id] = (row: row.task, item: item);
+                return item;
+              })
+              .where(
+                (task) =>
+                    !{
+                      TaskQueryKind.today,
+                      TaskQueryKind.upcoming,
+                      TaskQueryKind.day,
+                    }.contains(query.kind) ||
+                    task.scopeId == null ||
+                    task.assigneeIds.contains(actorId),
+              )
+              .where((task) => _matchesQuery(task, query))
+              .toList();
+          tasks.sort((a, b) {
+            final dayOrderCompare = (a.dayOrder ?? 999999).compareTo(
+              b.dayOrder ?? 999999,
+            );
+            if (dayOrderCompare != 0) {
+              return dayOrderCompare;
+            }
+            return a.orderKey.compareTo(b.orderKey);
+          });
+          previous = next;
+          return List<TaskItem>.unmodifiable(tasks);
+        })
+        .distinct(const ListEquality<TaskItem>().equals);
   }
 
   @override
   Stream<TaskItem?> watchTask(String id) {
-    return _tasks
-        .watchTask(id)
-        .map(
-          (row) => row == null
-              ? null
-              : _mapTask(row.task, scope: sharedScopeFromRow(row.scope)),
-        );
+    TaskRow? previous;
+    TaskItem? item;
+    return _tasks.watchTask(id).map((row) {
+      if (row == null) {
+        previous = null;
+        item = null;
+        return null;
+      }
+      final scope = sharedScopeFromRow(row.scope);
+      final canEdit = row.task.scopeId == null || (scope?.canEdit ?? false);
+      if (previous != row.task || item?.canEdit != canEdit) {
+        previous = row.task;
+        item = _mapTask(row.task, scope: scope);
+      }
+      return item;
+    });
   }
 
   @override

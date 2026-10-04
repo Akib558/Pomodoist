@@ -676,7 +676,7 @@ abstract class AppLocalizations {
   /// No description provided for @oauthConsentManagePlanning.
   ///
   /// In en, this message translates to:
-  /// **'Read and manage tasks, projects, user labels, and Kanban.'**
+  /// **'Read and manage tasks, habits, projects, user labels, and Kanban.'**
   String get oauthConsentManagePlanning;
 
   /// No description provided for @oauthConsentReadInsights.
@@ -7048,6 +7048,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Review notes'**
   String get settingsPreviewCompletedTask;
+
+  /// No description provided for @habitsListView.
+  ///
+  /// In en, this message translates to:
+  /// **'List'**
+  String get habitsListView;
+
+  /// No description provided for @habitsRhythmView.
+  ///
+  /// In en, this message translates to:
+  /// **'Day rhythm'**
+  String get habitsRhythmView;
+
+  /// No description provided for @habitsRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'Remaining'**
+  String get habitsRemaining;
+
+  /// No description provided for @habitsDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get habitsDone;
+
+  /// No description provided for @habitsPlanned.
+  ///
+  /// In en, this message translates to:
+  /// **'Planned'**
+  String get habitsPlanned;
+
+  /// No description provided for @habitDayPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Part of day'**
+  String get habitDayPeriod;
+
+  /// No description provided for @habitPeriodAutomatic.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic'**
+  String get habitPeriodAutomatic;
+
+  /// No description provided for @habitPeriodAnytime.
+  ///
+  /// In en, this message translates to:
+  /// **'Throughout the day'**
+  String get habitPeriodAnytime;
+
+  /// No description provided for @habitPeriodNight.
+  ///
+  /// In en, this message translates to:
+  /// **'Night'**
+  String get habitPeriodNight;
+
+  /// No description provided for @habitPeriodMultipleReason.
+  ///
+  /// In en, this message translates to:
+  /// **'The goal has multiple repetitions across the day.'**
+  String get habitPeriodMultipleReason;
+
+  /// No description provided for @habitPeriodNoTimeReason.
+  ///
+  /// In en, this message translates to:
+  /// **'No reminder time is set.'**
+  String get habitPeriodNoTimeReason;
+
+  /// No description provided for @habitPeriodReminderReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Based on the reminder time.'**
+  String get habitPeriodReminderReason;
+
+  /// No description provided for @habitsViewPreferenceError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save or load the view preference.'**
+  String get habitsViewPreferenceError;
+
+  /// Resolved automatic habit group and the reason for choosing it.
+  ///
+  /// In en, this message translates to:
+  /// **'{period}: {reason}'**
+  String habitPeriodExplanation(String period, String reason);
+
+  /// No description provided for @habitPeriodCustom.
+  ///
+  /// In en, this message translates to:
+  /// **'By parts of day'**
+  String get habitPeriodCustom;
+
+  /// No description provided for @habitPeriodTargetsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose one or more parts of day and set a goal for each. Daily total: 1–99.'**
+  String get habitPeriodTargetsHint;
 
   /// No description provided for @accountAvatar.
   ///

@@ -1,3 +1,4 @@
+import 'package:pomodoist/ui/tasks/widgets/task_list_view.dart';
 import 'package:pomodoist/utils/result.dart';
 import 'package:pomodoist/data/repositories/projects/project_repository.dart';
 import 'package:pomodoist/data/repositories/tasks/task_repository.dart';
@@ -48,7 +49,7 @@ void main() {
     tester,
   ) async {
     final queries = <TaskQuery>[];
-    await _pumpUpcoming(
+    await pumpUpcomingForTest(
       tester,
       today: today,
       tasks: [_task('tomorrow', DateTime(2030, 1, 11))],
@@ -102,7 +103,7 @@ void main() {
         isDeleted: true,
       );
 
-      await _pumpUpcoming(
+      await pumpUpcomingForTest(
         tester,
         today: today,
         tasks: [futureOpen],
@@ -154,7 +155,11 @@ void main() {
       _task('tomorrow', DateTime(2030, 1, 11)),
       _task('later', DateTime(2030, 1, 15)),
     ];
-    final harness = await _pumpUpcoming(tester, today: today, tasks: tasks);
+    final harness = await pumpUpcomingForTest(
+      tester,
+      today: today,
+      tasks: tasks,
+    );
 
     await tester.tap(
       find.byKey(const ValueKey('upcoming-calendar-day-2030-01-11')),
@@ -182,7 +187,7 @@ void main() {
   testWidgets('localized day headings sit above their agenda cards', (
     tester,
   ) async {
-    await _pumpUpcoming(
+    await pumpUpcomingForTest(
       tester,
       today: today,
       tasks: [
@@ -217,7 +222,11 @@ void main() {
           content: 'Task for January $day',
         ),
     ];
-    final harness = await _pumpUpcoming(tester, today: today, tasks: tasks);
+    final harness = await pumpUpcomingForTest(
+      tester,
+      today: today,
+      tasks: tasks,
+    );
     const selectedDay = ValueKey('upcoming-calendar-day-2030-01-11');
 
     await tester.tap(find.byKey(selectedDay));
@@ -233,6 +242,7 @@ void main() {
       isTrue,
     );
 
+    await _scrollToTop(tester);
     await tester.ensureVisible(find.byKey(selectedDay));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(selectedDay));
@@ -253,7 +263,7 @@ void main() {
           content: 'Task for January $day',
         ),
     ];
-    final harness = await _pumpUpcoming(
+    final harness = await pumpUpcomingForTest(
       tester,
       today: today,
       tasks: tasks,
@@ -308,7 +318,7 @@ void main() {
     final controller = StreamController<List<TaskItem>>();
     addTearDown(controller.close);
     controller.add(tasks);
-    await _pumpUpcoming(
+    await pumpUpcomingForTest(
       tester,
       today: today,
       tasks: tasks,
@@ -317,7 +327,7 @@ void main() {
     );
     expect(_verticalOffset(tester), 0);
 
-    final scrollView = tester.widget<SingleChildScrollView>(
+    final scrollView = tester.widget<CustomScrollView>(
       find.byKey(const ValueKey('upcoming-scroll-view')),
     );
     scrollView.controller!.jumpTo(0);
@@ -345,7 +355,7 @@ void main() {
     final controller = StreamController<List<TaskItem>>();
     addTearDown(controller.close);
     controller.add([_task('moving-task', today, content: 'Moving task')]);
-    await _pumpUpcoming(
+    await pumpUpcomingForTest(
       tester,
       today: today,
       tasks: const [],
@@ -388,7 +398,7 @@ void main() {
   testWidgets('today route filters the agenda from today onward', (
     tester,
   ) async {
-    final harness = await _pumpUpcoming(
+    final harness = await pumpUpcomingForTest(
       tester,
       today: today,
       tasks: [
@@ -418,7 +428,7 @@ void main() {
   testWidgets(
     'past deep link selects its empty group and repeat returns to today',
     (tester) async {
-      final harness = await _pumpUpcoming(
+      final harness = await pumpUpcomingForTest(
         tester,
         today: today,
         tasks: [
@@ -445,12 +455,6 @@ void main() {
       );
       expect(find.text('No tasks scheduled for this day'), findsOneWidget);
       expect(
-        find.byKey(
-          const ValueKey('upcoming-calendar-selected-marker-2030-01-09'),
-        ),
-        findsOneWidget,
-      );
-      expect(
         _isVisible(
           tester,
           find.byKey(const ValueKey('upcoming-day-group-2030-01-09')),
@@ -460,7 +464,15 @@ void main() {
       expect(_verticalOffset(tester), greaterThan(0));
       expect(find.text('Task for January 1'), findsNothing);
 
+      await _scrollToTop(tester);
+      expect(
+        find.byKey(
+          const ValueKey('upcoming-calendar-selected-marker-2030-01-09'),
+        ),
+        findsOneWidget,
+      );
       const selectedDay = ValueKey('upcoming-calendar-day-2030-01-09');
+      await _scrollToTop(tester);
       await tester.ensureVisible(find.byKey(selectedDay));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(selectedDay));
@@ -479,7 +491,7 @@ void main() {
   );
 
   testWidgets('quick add defaults to the selected day', (tester) async {
-    final harness = await _pumpUpcoming(
+    final harness = await pumpUpcomingForTest(
       tester,
       today: today,
       tasks: const <TaskItem>[],
@@ -489,10 +501,7 @@ void main() {
     await tester.tap(find.byTooltip('Add'));
     await tester.pumpAndSettle();
 
-    expect(
-      _createdDate(harness.taskRepository.created.single),
-      DateTime(2030, 1, 10),
-    );
+    expect(_createdDate(harness.created.single), DateTime(2030, 1, 10));
 
     harness.router.go('/upcoming?date=2030-01-20');
     await tester.pumpAndSettle();
@@ -502,11 +511,8 @@ void main() {
     await tester.tap(find.byTooltip('Add'));
     await tester.pumpAndSettle();
 
-    expect(harness.taskRepository.created, hasLength(2));
-    expect(
-      _createdDate(harness.taskRepository.created.last),
-      DateTime(2030, 1, 20),
-    );
+    expect(harness.created, hasLength(2));
+    expect(_createdDate(harness.created.last), DateTime(2030, 1, 20));
 
     harness.router.go('/upcoming?date=2030-01-09');
     await tester.pumpAndSettle();
@@ -516,15 +522,12 @@ void main() {
     await tester.tap(find.byTooltip('Add'));
     await tester.pumpAndSettle();
 
-    expect(harness.taskRepository.created, hasLength(3));
-    expect(
-      _createdDate(harness.taskRepository.created.last),
-      DateTime(2030, 1, 9),
-    );
+    expect(harness.created, hasLength(3));
+    expect(_createdDate(harness.created.last), DateTime(2030, 1, 9));
   });
 
   testWidgets('broad and selected empty states stay distinct', (tester) async {
-    final harness = await _pumpUpcoming(
+    final harness = await pumpUpcomingForTest(
       tester,
       today: today,
       tasks: const <TaskItem>[],
@@ -545,7 +548,7 @@ void main() {
   });
 
   testWidgets('loading state is visible', (tester) async {
-    await _pumpUpcoming(
+    await pumpUpcomingForTest(
       tester,
       today: today,
       tasks: const <TaskItem>[],
@@ -563,7 +566,7 @@ void main() {
   testWidgets('completed stream pending keeps the complete agenda loading', (
     tester,
   ) async {
-    await _pumpUpcoming(
+    await pumpUpcomingForTest(
       tester,
       today: today,
       tasks: const <TaskItem>[],
@@ -579,7 +582,7 @@ void main() {
   });
 
   testWidgets('error state is visible', (tester) async {
-    await _pumpUpcoming(
+    await pumpUpcomingForTest(
       tester,
       today: today,
       tasks: const <TaskItem>[],
@@ -593,7 +596,7 @@ void main() {
   });
 
   testWidgets('completed stream error is visible', (tester) async {
-    await _pumpUpcoming(
+    await pumpUpcomingForTest(
       tester,
       today: today,
       tasks: const <TaskItem>[],
@@ -631,7 +634,7 @@ void main() {
       scheduled: false,
     );
 
-    await _pumpUpcoming(
+    await pumpUpcomingForTest(
       tester,
       today: today,
       tasks: [parent],
@@ -664,7 +667,11 @@ void main() {
           content: 'Task for January $day',
         ),
     ];
-    final harness = await _pumpUpcoming(tester, today: today, tasks: tasks);
+    final harness = await pumpUpcomingForTest(
+      tester,
+      today: today,
+      tasks: tasks,
+    );
 
     await tester.tap(find.byKey(const ValueKey('upcoming-calendar-next')));
     await tester.pump();
@@ -673,7 +680,7 @@ void main() {
       findsNothing,
     );
 
-    final scrollView = tester.widget<SingleChildScrollView>(
+    final scrollView = tester.widget<CustomScrollView>(
       find.byKey(const ValueKey('upcoming-scroll-view')),
     );
     scrollView.controller!.jumpTo(
@@ -682,6 +689,7 @@ void main() {
     await tester.pump();
     expect(_verticalOffset(tester), greaterThan(0));
 
+    await _scrollToTop(tester);
     final todayButton = tester.widget<ShadButton>(
       find.byKey(const ValueKey('upcoming-calendar-today')),
     );
@@ -691,6 +699,7 @@ void main() {
     expect(_location(harness.router), '/upcoming?date=2030-01-10');
     expect(find.text('Yesterday task before Today action'), findsNothing);
     expect(find.text('Today action task'), findsOneWidget);
+    await _scrollToTop(tester);
     expect(
       find.byKey(const ValueKey('upcoming-calendar-day-2030-01-10')),
       findsOneWidget,
@@ -710,7 +719,7 @@ void main() {
     );
 
     for (final themeMode in [ThemeMode.light, ThemeMode.dark]) {
-      await _pumpUpcoming(
+      await pumpUpcomingForTest(
         tester,
         today: today,
         tasks: [task],
@@ -726,7 +735,7 @@ void main() {
     tester,
   ) async {
     final semantics = tester.ensureSemantics();
-    await _pumpUpcoming(
+    await pumpUpcomingForTest(
       tester,
       today: today,
       tasks: [_task('tomorrow', DateTime(2030, 1, 11))],
@@ -764,7 +773,7 @@ void main() {
       content: 'Today completed task',
       status: 'completed',
     );
-    await _pumpUpcoming(
+    await pumpUpcomingForTest(
       tester,
       today: today,
       tasks: [future],
@@ -787,10 +796,13 @@ void main() {
   });
 }
 
-Future<_Harness> _pumpUpcoming(
+Future<UpcomingTestHarness> pumpUpcomingForTest(
   WidgetTester tester, {
   required DateTime today,
   required List<TaskItem> tasks,
+  TaskQuery? listQuery,
+  TaskRepository? repository,
+  bool reduceMotion = false,
   ValueChanged<TaskQuery>? onQuery,
   String initialLocation = '/upcoming',
   Stream<List<TaskItem>>? allStream,
@@ -807,7 +819,7 @@ Future<_Harness> _pumpUpcoming(
   final projectRepository = _FakeProjectRepository();
   final quickAddService = QuickAddUseCase(
     parser: const QuickAddParser(),
-    taskRepository: taskRepository,
+    taskRepository: repository ?? taskRepository,
     projectRepository: projectRepository,
   );
   late final GoRouter router;
@@ -817,11 +829,13 @@ Future<_Harness> _pumpUpcoming(
       GoRoute(
         path: '/upcoming',
         builder: (context, state) => Scaffold(
-          body: UpcomingScreen(
-            selectedDate: DateTime.tryParse(
-              state.uri.queryParameters['date'] ?? '',
-            ),
-          ),
+          body: listQuery != null
+              ? TaskListView(title: 'Tasks', query: listQuery)
+              : UpcomingScreen(
+                  selectedDate: DateTime.tryParse(
+                    state.uri.queryParameters['date'] ?? '',
+                  ),
+                ),
         ),
       ),
     ],
@@ -832,7 +846,7 @@ Future<_Harness> _pumpUpcoming(
     ProviderScope(
       overrides: [
         clockProvider.overrideWithValue(FixedClock(today)),
-        taskRepositoryProvider.overrideWithValue(taskRepository),
+        taskRepositoryProvider.overrideWithValue(repository ?? taskRepository),
         projectRepositoryProvider.overrideWithValue(projectRepository),
         quickAddUseCaseProvider.overrideWithValue(quickAddService),
         focusRepositoryProvider.overrideWithValue(_FakeFocusRepository()),
@@ -844,6 +858,7 @@ Future<_Harness> _pumpUpcoming(
         quickAddHintTextProvider.overrideWithValue(null),
         tasksByQueryProvider.overrideWith((ref, query) {
           onQuery?.call(query);
+          if (query == listQuery) return allStream ?? Stream.value(tasks);
           return switch (query.kind) {
             TaskQueryKind.all => allStream ?? Stream.value(allTasks ?? tasks),
             TaskQueryKind.completed =>
@@ -866,6 +881,7 @@ Future<_Harness> _pumpUpcoming(
         routerConfig: router,
         builder: (context, child) => MediaQuery(
           data: MediaQuery.of(context).copyWith(
+            disableAnimations: reduceMotion,
             alwaysUse24HourFormat: true,
             textScaler: TextScaler.linear(textScale),
           ),
@@ -879,7 +895,7 @@ Future<_Harness> _pumpUpcoming(
   } else {
     await tester.pump();
   }
-  return _Harness(router, taskRepository);
+  return UpcomingTestHarness(router, taskRepository.created);
 }
 
 TaskItem _task(
@@ -947,11 +963,11 @@ bool _isVisible(WidgetTester tester, Finder finder) {
   return rect.bottom > 0 && rect.top < height;
 }
 
-class _Harness {
-  const _Harness(this.router, this.taskRepository);
+class UpcomingTestHarness {
+  const UpcomingTestHarness(this.router, this.created);
 
   final GoRouter router;
-  final _FakeTaskRepository taskRepository;
+  final List<CreateTaskInput> created;
 }
 
 class _FakeTaskRepository implements TaskRepository {
@@ -979,4 +995,12 @@ class _FakeFocusRepository implements FocusRepository {
   @override
   dynamic noSuchMethod(Invocation invocation) =>
       throw UnimplementedError(invocation.memberName.toString());
+}
+
+Future<void> _scrollToTop(WidgetTester tester) async {
+  final scroll = tester.widget<CustomScrollView>(
+    find.byKey(const ValueKey('upcoming-scroll-view')),
+  );
+  scroll.controller!.jumpTo(0);
+  await tester.pumpAndSettle();
 }

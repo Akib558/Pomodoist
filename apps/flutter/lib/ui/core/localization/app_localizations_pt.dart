@@ -325,7 +325,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get oauthConsentManagePlanning =>
-      'Ler e gerenciar tarefas, projetos, etiquetas do usuário e Kanban.';
+      'Ler e gerenciar tarefas, hábitos, projetos, etiquetas do usuário e Kanban.';
 
   @override
   String get oauthConsentReadInsights =>
@@ -4116,6 +4116,60 @@ class AppLocalizationsPt extends AppLocalizations {
   String get settingsPreviewCompletedTask => 'Revisar anotações';
 
   @override
+  String get habitsListView => 'Lista';
+
+  @override
+  String get habitsRhythmView => 'Ritmo do dia';
+
+  @override
+  String get habitsRemaining => 'Restantes';
+
+  @override
+  String get habitsDone => 'Concluídas';
+
+  @override
+  String get habitsPlanned => 'Planeadas';
+
+  @override
+  String get habitDayPeriod => 'Parte do dia';
+
+  @override
+  String get habitPeriodAutomatic => 'Automático';
+
+  @override
+  String get habitPeriodAnytime => 'Ao longo do dia';
+
+  @override
+  String get habitPeriodNight => 'Noite';
+
+  @override
+  String get habitPeriodMultipleReason =>
+      'A meta inclui várias repetições ao longo do dia.';
+
+  @override
+  String get habitPeriodNoTimeReason =>
+      'Não foi definida uma hora de lembrete.';
+
+  @override
+  String get habitPeriodReminderReason => 'Com base na hora do lembrete.';
+
+  @override
+  String get habitsViewPreferenceError =>
+      'Não foi possível guardar ou carregar a vista escolhida.';
+
+  @override
+  String habitPeriodExplanation(String period, String reason) {
+    return '$period: $reason';
+  }
+
+  @override
+  String get habitPeriodCustom => 'Por períodos do dia';
+
+  @override
+  String get habitPeriodTargetsHint =>
+      'Escolha um ou mais períodos do dia e uma meta para cada um. Total diário: 1–99.';
+
+  @override
   String get accountAvatar => 'Avatar';
 
   @override
@@ -4686,6 +4740,60 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get settingsPreviewCompletedTask => 'Revisar anotações';
+
+  @override
+  String get habitsListView => 'Lista';
+
+  @override
+  String get habitsRhythmView => 'Ritmo do dia';
+
+  @override
+  String get habitsRemaining => 'Restantes';
+
+  @override
+  String get habitsDone => 'Concluídas';
+
+  @override
+  String get habitsPlanned => 'Planejadas';
+
+  @override
+  String get habitDayPeriod => 'Parte do dia';
+
+  @override
+  String get habitPeriodAutomatic => 'Automático';
+
+  @override
+  String get habitPeriodAnytime => 'Ao longo do dia';
+
+  @override
+  String get habitPeriodNight => 'Noite';
+
+  @override
+  String get habitPeriodMultipleReason =>
+      'A meta inclui várias repetições ao longo do dia.';
+
+  @override
+  String get habitPeriodNoTimeReason =>
+      'Nenhum horário de lembrete foi definido.';
+
+  @override
+  String get habitPeriodReminderReason => 'Com base no horário do lembrete.';
+
+  @override
+  String get habitsViewPreferenceError =>
+      'Não foi possível salvar ou carregar a visualização escolhida.';
+
+  @override
+  String habitPeriodExplanation(String period, String reason) {
+    return '$period: $reason';
+  }
+
+  @override
+  String get habitPeriodCustom => 'Por períodos do dia';
+
+  @override
+  String get habitPeriodTargetsHint =>
+      'Escolha um ou mais períodos do dia e uma meta para cada um. Total diário: 1–99.';
 
   @override
   String get accountAvatar => 'Avatar';

@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pomodoist/config/providers.dart';
 import 'package:pomodoist/config/task_preferences_dependencies.dart';
@@ -38,6 +39,34 @@ final taskHierarchyViewModelProvider = Provider.autoDispose<TaskHierarchyData>((
         : const {},
   );
 });
+
+final taskProgressProvider = Provider.autoDispose
+    .family<({bool live, TaskSubtaskProgress? progress}), String>(
+      (ref, id) => ref.watch(
+        taskHierarchyViewModelProvider.select(
+          (data) =>
+              (live: data.byId.containsKey(id), progress: data.progress[id]),
+        ),
+      ),
+    );
+
+final taskAncestorsProvider = Provider.autoDispose
+    .family<TaskAncestorSnapshot, TaskItem>(
+      (ref, task) => TaskAncestorSnapshot(
+        taskAncestorPath(task, ref.watch(taskHierarchyViewModelProvider).byId),
+      ),
+    );
+
+class TaskAncestorSnapshot {
+  const TaskAncestorSnapshot(this.items);
+  final List<TaskItem> items;
+  @override
+  bool operator ==(Object other) =>
+      other is TaskAncestorSnapshot &&
+      const ListEquality<TaskItem>().equals(items, other.items);
+  @override
+  int get hashCode => const ListEquality<TaskItem>().hash(items);
+}
 
 final taskBranchViewModelProvider = NotifierProvider.autoDispose
     .family<TaskBranchViewModel, Map<String, bool>, String>(

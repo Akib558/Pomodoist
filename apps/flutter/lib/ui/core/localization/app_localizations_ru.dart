@@ -325,7 +325,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get oauthConsentManagePlanning =>
-      'Читать и изменять задачи, проекты, пользовательские метки и канбан.';
+      'Читать и изменять задачи, привычки, проекты, пользовательские метки и канбан.';
 
   @override
   String get oauthConsentReadInsights =>
@@ -4095,6 +4095,59 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get settingsPreviewCompletedTask => 'Проверить заметки';
+
+  @override
+  String get habitsListView => 'Список';
+
+  @override
+  String get habitsRhythmView => 'Ритм дня';
+
+  @override
+  String get habitsRemaining => 'Осталось';
+
+  @override
+  String get habitsDone => 'Выполнено';
+
+  @override
+  String get habitsPlanned => 'Запланировано';
+
+  @override
+  String get habitDayPeriod => 'Часть дня';
+
+  @override
+  String get habitPeriodAutomatic => 'Автоматически';
+
+  @override
+  String get habitPeriodAnytime => 'В течение дня';
+
+  @override
+  String get habitPeriodNight => 'Ночь';
+
+  @override
+  String get habitPeriodMultipleReason =>
+      'Цель содержит несколько повторений в течение дня.';
+
+  @override
+  String get habitPeriodNoTimeReason => 'Время напоминания не задано.';
+
+  @override
+  String get habitPeriodReminderReason => 'По времени напоминания.';
+
+  @override
+  String get habitsViewPreferenceError =>
+      'Не удалось сохранить или загрузить выбранный вид.';
+
+  @override
+  String habitPeriodExplanation(String period, String reason) {
+    return '$period: $reason';
+  }
+
+  @override
+  String get habitPeriodCustom => 'По частям дня';
+
+  @override
+  String get habitPeriodTargetsHint =>
+      'Выберите одну или несколько частей дня и задайте цель для каждой. Всего за день: 1–99.';
 
   @override
   String get accountAvatar => 'Аватар';

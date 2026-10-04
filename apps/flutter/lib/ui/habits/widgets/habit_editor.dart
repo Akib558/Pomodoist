@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:pomodoist/routing/habit_detail_navigation.dart';
+import 'package:pomodoist/ui/core/widgets/task_details_host.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
@@ -8,6 +10,98 @@ import 'package:pomodoist/ui/core/localization/app_l10n.dart';
 import 'package:pomodoist/ui/core/themes/app_theme.dart';
 import 'package:pomodoist/ui/core/widgets/app_date_time_picker.dart';
 import 'package:pomodoist/ui/habits/view_models/habits_view_model.dart';
+
+String habitDayPeriodLabel(BuildContext context, HabitDayPeriod period) {
+  final l = context.l10n;
+  return switch (period) {
+    HabitDayPeriod.automatic => l.habitPeriodAutomatic,
+    HabitDayPeriod.anytime => l.habitPeriodAnytime,
+    HabitDayPeriod.morning => l.calendarMorning,
+    HabitDayPeriod.afternoon => l.calendarAfternoon,
+    HabitDayPeriod.evening => l.calendarEvening,
+    HabitDayPeriod.night => l.habitPeriodNight,
+  };
+}
+
+class HabitDetailsHost extends ConsumerWidget {
+  const HabitDetailsHost({
+    required this.habitId,
+    required this.child,
+    super.key,
+  });
+
+  final String? habitId;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    void close() {
+      if (!ref.read(habitsViewModelProvider).saving) closeHabitDetails(context);
+    }
+
+    return DetailsPanelHost(
+      onClose: close,
+      panel: habitId == null
+          ? null
+          : SafeArea(
+              child: _HabitDetailsContent(habitId: habitId!, onClose: close),
+            ),
+      child: child,
+    );
+  }
+}
+
+class _HabitDetailsContent extends ConsumerWidget {
+  const _HabitDetailsContent({required this.habitId, required this.onClose});
+
+  final String habitId;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (habitId == newHabitDetailsId) {
+      return HabitEditor(key: ValueKey(habitId), onClose: onClose);
+    }
+    final view = ref.watch(habitsViewModelProvider);
+    final habit = view.habits.where((habit) => habit.id == habitId).firstOrNull;
+    if (habit != null) {
+      return HabitEditor(
+        key: ValueKey(habitId),
+        habit: habit,
+        onClose: onClose,
+      );
+    }
+    final l = context.l10n;
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: IconButton(
+              tooltip: l.commonClose,
+              onPressed: onClose,
+              icon: const Icon(LucideIcons.x),
+            ),
+          ),
+          Expanded(
+            child: Center(
+              child: view.loading
+                  ? const CircularProgressIndicator()
+                  : Text(view.loadError ? l.habitLoadError : l.habitsEmpty),
+            ),
+          ),
+          if (view.loadError)
+            ShadButton.ghost(
+              onPressed: ref.read(habitsViewModelProvider.notifier).retry,
+              child: Text(l.commonRetry),
+            ),
+        ],
+      ),
+    );
+  }
+}
 
 class HabitEditor extends ConsumerStatefulWidget {
   const HabitEditor({this.habit, required this.onClose, super.key});
@@ -24,6 +118,14 @@ class _HabitEditorState extends ConsumerState<HabitEditor> {
   late Set<int> _weekdays;
   late bool _daily, _reminder;
   late TimeOfDay _time;
+  late HabitDayPeriod _dayPeriod;
+  late bool _customPeriods;
+  late final Set<HabitDayPeriod> _selectedPeriods;
+  late final Map<HabitDayPeriod, TextEditingController> _periodControllers;
+  Map<HabitDayPeriod, int> get _periodTargets => {
+    for (final p in _selectedPeriods)
+      p: int.tryParse(_periodControllers[p]!.text) ?? 0,
+  };
   String? _project;
   int _duration = 0;
   bool _error = false;
@@ -34,6 +136,25 @@ class _HabitEditorState extends ConsumerState<HabitEditor> {
     final schedule = habit?.scheduleHistory.last;
     _title = TextEditingController(text: habit?.title ?? '');
     _target = TextEditingController(text: '${schedule?.targetPerDay ?? 1}');
+    _target.addListener(_targetChanged);
+    _dayPeriod = schedule?.dayPeriod ?? HabitDayPeriod.automatic;
+    final targets = schedule?.periodTargets ?? <HabitDayPeriod, int>{};
+    final manual =
+        _dayPeriod != HabitDayPeriod.automatic &&
+        _dayPeriod != HabitDayPeriod.anytime;
+    _customPeriods = targets.isNotEmpty || manual;
+    _selectedPeriods = targets.isNotEmpty
+        ? targets.keys.toSet()
+        : manual
+        ? {_dayPeriod}
+        : {};
+    _periodControllers = {
+      for (final p in HabitDayPeriod.values.skip(2))
+        p: TextEditingController(
+          text:
+              '${targets[p] ?? (manual && p == _dayPeriod ? schedule!.targetPerDay : 1)}',
+        )..addListener(_targetChanged),
+    };
     _start = schedule?.startDate ?? ref.read(habitsViewModelProvider).today;
     _end = schedule?.endDate;
     _duration = _end == null ? 0 : -1;
@@ -48,9 +169,16 @@ class _HabitEditorState extends ConsumerState<HabitEditor> {
         : null;
   }
 
+  void _targetChanged() => setState(() {});
+
   @override
   void dispose() {
+    for (final controller in _periodControllers.values) {
+      controller.removeListener(_targetChanged);
+      controller.dispose();
+    }
     _title.dispose();
+    _target.removeListener(_targetChanged);
     _target.dispose();
     super.dispose();
   }
@@ -77,6 +205,10 @@ class _HabitEditorState extends ConsumerState<HabitEditor> {
   }
 
   Future<void> _save() async {
+    if (_customPeriods && _selectedPeriods.isEmpty) {
+      setState(() => _error = true);
+      return;
+    }
     final saved = await ref
         .read(habitsViewModelProvider.notifier)
         .save(
@@ -96,6 +228,8 @@ class _HabitEditorState extends ConsumerState<HabitEditor> {
               ? _project
               : null,
           reminderMinutes: _reminder ? _time.hour * 60 + _time.minute : null,
+          dayPeriod: _customPeriods ? HabitDayPeriod.automatic : _dayPeriod,
+          periodTargets: _customPeriods ? _periodTargets : const {},
         );
     if (!mounted) return;
     if (saved) {
@@ -231,15 +365,167 @@ class _HabitEditorState extends ConsumerState<HabitEditor> {
                           ],
                         ),
                       ),
+                    if (!_customPeriods)
+                      _field(
+                        l.habitTarget,
+                        ShadInput(
+                          controller: _target,
+                          enabled: !view.saving,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(2),
+                          ],
+                        ),
+                      ),
                     _field(
-                      l.habitTarget,
-                      ShadInput(
-                        controller: _target,
-                        enabled: !view.saving,
-                        keyboardType: TextInputType.number,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                          LengthLimitingTextInputFormatter(2),
+                      l.habitDayPeriod,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          ShadSelect<String>(
+                            key: ValueKey(
+                              _customPeriods ? 'custom' : _dayPeriod.name,
+                            ),
+                            initialValue: _customPeriods
+                                ? 'custom'
+                                : _dayPeriod.name,
+                            enabled: !view.saving,
+                            padding: const EdgeInsets.all(12),
+                            options: [
+                              ShadOption(
+                                value: 'automatic',
+                                child: Text(l.habitPeriodAutomatic),
+                              ),
+                              ShadOption(
+                                value: 'anytime',
+                                child: Text(l.habitPeriodAnytime),
+                              ),
+                              ShadOption(
+                                value: 'custom',
+                                child: Text(l.habitPeriodCustom),
+                              ),
+                            ],
+                            selectedOptionBuilder: (context, mode) => Text(
+                              mode == 'custom'
+                                  ? l.habitPeriodCustom
+                                  : habitDayPeriodLabel(
+                                      context,
+                                      HabitDayPeriod.values.byName(mode),
+                                    ),
+                            ),
+                            onChanged: (mode) {
+                              if (mode == null) return;
+                              if (_customPeriods && mode != 'custom') {
+                                final total = _periodTargets.values.fold(
+                                  0,
+                                  (a, b) => a + b,
+                                );
+                                if (total >= 1 && total <= 99) {
+                                  _target.text = '$total';
+                                }
+                              }
+                              if (mode == 'custom' &&
+                                  _selectedPeriods.isEmpty) {
+                                _periodControllers[HabitDayPeriod.morning]!
+                                        .text =
+                                    _target.text;
+                              }
+                              setState(() {
+                                _customPeriods = mode == 'custom';
+                                if (!_customPeriods) {
+                                  _dayPeriod = HabitDayPeriod.values.byName(
+                                    mode,
+                                  );
+                                }
+                                if (_customPeriods &&
+                                    _selectedPeriods.isEmpty) {
+                                  _selectedPeriods.add(HabitDayPeriod.morning);
+                                }
+                              });
+                            },
+                          ),
+                          if (_customPeriods) ...[
+                            const SizedBox(height: 12),
+                            Text(
+                              l.habitPeriodTargetsHint,
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: colors.mutedText),
+                            ),
+                            for (final period in HabitDayPeriod.values.skip(2))
+                              Padding(
+                                padding: const EdgeInsets.only(top: 12),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: ShadCheckbox(
+                                        value: _selectedPeriods.contains(
+                                          period,
+                                        ),
+                                        enabled: !view.saving,
+                                        onChanged: (selected) => setState(
+                                          () => selected
+                                              ? _selectedPeriods.add(period)
+                                              : _selectedPeriods.remove(period),
+                                        ),
+                                        label: Text(
+                                          habitDayPeriodLabel(context, period),
+                                        ),
+                                      ),
+                                    ),
+                                    if (_selectedPeriods.contains(period))
+                                      SizedBox(
+                                        width: 72,
+                                        child: Semantics(
+                                          label:
+                                              '${habitDayPeriodLabel(context, period)}: ${l.habitTarget}',
+                                          child: ShadInput(
+                                            controller:
+                                                _periodControllers[period],
+                                            enabled: !view.saving,
+                                            keyboardType: TextInputType.number,
+                                            inputFormatters: [
+                                              FilteringTextInputFormatter
+                                                  .digitsOnly,
+                                              LengthLimitingTextInputFormatter(
+                                                2,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            const SizedBox(height: 12),
+                            Text(
+                              '${l.habitTarget}: ${_periodTargets.values.fold(0, (a, b) => a + b)}',
+                            ),
+                          ],
+                          if (!_customPeriods &&
+                              _dayPeriod == HabitDayPeriod.automatic) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              l.habitPeriodExplanation(
+                                habitDayPeriodLabel(
+                                  context,
+                                  resolveHabitDayPeriod(
+                                    target: int.tryParse(_target.text) ?? 1,
+                                    reminderMinutes: _reminder
+                                        ? _time.hour * 60 + _time.minute
+                                        : null,
+                                  ),
+                                ),
+                                (int.tryParse(_target.text) ?? 1) > 1
+                                    ? l.habitPeriodMultipleReason
+                                    : !_reminder
+                                    ? l.habitPeriodNoTimeReason
+                                    : l.habitPeriodReminderReason,
+                              ),
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: colors.mutedText),
+                            ),
+                          ],
                         ],
                       ),
                     ),

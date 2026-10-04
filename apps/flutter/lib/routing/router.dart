@@ -166,6 +166,11 @@ final routerProvider = Provider<GoRouter>((ref) {
               child: AdaptiveShell(
                 location: state.uri.path,
                 taskId: state.uri.queryParameters['task'],
+                habitId:
+                    state.uri.path == '/habits' &&
+                        state.uri.queryParameters['task'] == null
+                    ? state.uri.queryParameters['habit']
+                    : null,
                 mapFullscreen: isProjectMapFullscreen(state.uri),
                 child: child,
               ),

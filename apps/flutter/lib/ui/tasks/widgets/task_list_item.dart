@@ -1,3 +1,5 @@
+import 'package:pomodoist/ui/tasks/view_models/task_list_view_model.dart'
+    show taskListViewModelProvider;
 import 'package:pomodoist/ui/tasks/widgets/task_row_geometry.dart';
 import 'package:pomodoist/ui/tasks/widgets/task_title_dialog.dart';
 import 'package:pomodoist/ui/core/widgets/app_context_menu_region.dart';
@@ -153,6 +155,49 @@ Future<void> deleteTaskWithRecurringPrompt(
   onDeleted?.call();
 }
 
+/// Structure is supplied by the list; content is observed by task ID.
+class TaskListRow extends ConsumerWidget {
+  const TaskListRow({
+    required this.row,
+    required this.branchScope,
+    this.progress,
+    this.query,
+    this.project,
+    this.presentation = TaskListItemPresentation.standard,
+    super.key,
+  });
+  final VisibleTaskRow row;
+  final TaskQuery? query;
+  final String branchScope;
+  final TaskSubtaskProgress? progress;
+  final ProjectItem? project;
+  final TaskListItemPresentation presentation;
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final liveTask = query == null
+        ? ref.watch(
+            taskHierarchyViewModelProvider.select(
+              (data) => data.byId[row.task.id],
+            ),
+          )
+        : ref.watch(
+            taskListViewModelProvider(
+              query!,
+            ).select((state) => state.byId[row.task.id]),
+          );
+    return TaskListItem(
+      key: ValueKey(row.task.id),
+      task: liveTask ?? row.task,
+      depth: row.displayDepth,
+      hierarchy: row,
+      branchScope: branchScope,
+      subtaskProgress: progress,
+      project: project,
+      presentation: presentation,
+    );
+  }
+}
+
 class TaskListItem extends ConsumerWidget {
   const TaskListItem({
     required this.task,
@@ -186,8 +231,10 @@ class TaskListItem extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final hierarchyData = ref.watch(taskHierarchyViewModelProvider);
-    final progress = hierarchyData.progress[task.id] ?? subtaskProgress;
+    final progressSnapshot = ref.watch(taskProgressProvider(task.id));
+    final progress = progressSnapshot.live
+        ? progressSnapshot.progress
+        : subtaskProgress;
     final rowDepth = hierarchy?.displayDepth ?? math.min(depth, 2);
     final grouped =
         !diagram &&
@@ -201,8 +248,7 @@ class TaskListItem extends ConsumerWidget {
         (hierarchy == null ||
             hierarchy!.visibleParentId == null ||
             hierarchy!.depth > 2);
-    final ancestors =
-        hierarchy?.ancestors ?? hierarchyAncestors(task, hierarchyData);
+    final ancestors = ref.watch(taskAncestorsProvider(task)).items;
     final selection = TaskSelectionScope.maybeOf(context);
     final viewState = ref.watch(taskItemViewModelProvider(task));
     final viewModel = ref.read(taskItemViewModelProvider(task).notifier);
@@ -814,11 +860,10 @@ class TaskListItem extends ConsumerWidget {
     final colors = context.appColors;
     final selection = TaskSelectionScope.maybeOf(context);
     final parent = usesTouchTaskInteraction
-        ? taskParentForNavigation(
-            task,
-            ref.watch(taskHierarchyViewModelProvider).byId,
-            selectionActive: selection?.active ?? false,
-          )
+        ? taskParentForNavigation(task, {
+            for (final parent in ref.watch(taskAncestorsProvider(task)).items)
+              parent.id: parent,
+          }, selectionActive: selection?.active ?? false)
         : null;
     return [
       if (includeFocus)
@@ -1262,9 +1307,7 @@ class TaskListDivider extends ConsumerWidget {
           (() {
             final task = previousRow!.task;
             final state = ref.watch(taskItemViewModelProvider(task));
-            final progress = ref
-                .watch(taskHierarchyViewModelProvider)
-                .progress[task.id];
+            final progress = ref.watch(taskProgressProvider(task.id)).progress;
             return (task.description?.trim().isNotEmpty ?? false) ||
                 task.schedule != null ||
                 state.project != null ||

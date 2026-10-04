@@ -9,6 +9,9 @@ test('read mode uses OAuth and an explicit read allowlist', () => {
   assert.equal(config.sslVerify, true);
   assert.equal(config.supportsParallelToolCalls, false);
   assert.ok(config.toolFilter.include.includes('list_tasks'));
+  assert.ok(config.toolFilter.include.includes('list_habits'));
+  assert.ok(config.toolFilter.include.includes('get_habit'));
+  assert.ok(!config.toolFilter.include.includes('openclaw_complete_habit'));
   assert.ok(config.toolFilter.include.includes('openclaw_get_focus'));
   assert.ok(!config.toolFilter.include.includes('openclaw_create_task'));
   assert.ok(!JSON.stringify(config).includes('Authorization'));
@@ -19,6 +22,10 @@ test('write mode permits guarded tools only, never globs or legacy mutations', (
   assert.ok(config.toolFilter.include.includes('openclaw_focus'));
   assert.ok(config.toolFilter.include.includes('openclaw_set_task_details'));
   assert.ok(!config.toolFilter.include.some(x => x.includes('*')));
+  for (const action of ['create_habit', 'update_habit', 'add_habit_check_in', 'complete_habit', 'undo_habit_check_in', 'finish_habit', 'reopen_habit', 'delete_habit']) {
+    assert.ok(config.toolFilter.include.includes(`openclaw_${action}`));
+    assert.ok(!config.toolFilter.include.includes(action));
+  }
   for (const name of ['create_task', 'update_task', 'delete_task']) {
     assert.ok(!config.toolFilter.include.includes(name));
   }
