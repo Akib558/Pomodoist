@@ -15,8 +15,8 @@ FLUTTER = REPO / '.fvm/flutter_sdk/bin/flutter'
 HARNESS = ['test/performance/task_performance_test.dart', 'test/performance/task_widget_performance_test.dart']
 
 # Reviewed dart format output of the frozen measuring code. Keep the original
-# artifact digests intact while accepting these exact formatting-only revisions.
-FORMATTED_HARNESS_DIGESTS = {'aac4235e738725378948fb36ccddbfe3169e1f74150295106df4da1db3638719': 'ac488286e5a9292bedbc78bed1307942c871690ed6c4ad5d717d56071abee283', '9bf33678cd678156659ebf1394828cb9a0439eb051e895a9b7d92dc6cbc2e2cb': '867bf213893a0ce5ea876839ad793a1ada566cd837e3afbc37ec449b0fc9b62a'}
+# artifact digests intact while accepting these exact formatting and lint-only revisions.
+FORMATTED_HARNESS_DIGESTS = {'025bae2827517e00adec403ff8f5a56416d6285ee288dcdb1ebd3ac5f6db8536': 'ac488286e5a9292bedbc78bed1307942c871690ed6c4ad5d717d56071abee283', 'f5cdb3850c5f2b9f39c7104d09676df30110704d0da11e3129939d3431e8a6d6': '867bf213893a0ce5ea876839ad793a1ada566cd837e3afbc37ec449b0fc9b62a'}
 
 
 def timing(runs, name):
@@ -53,9 +53,11 @@ def main():
         if 'samples_us' in value:
             old, new = timing(before['runs'], name), timing(results, name)
             comparison[name] = dict(before=old, after=new, change_percent=(new['median_us']/old['median_us']-1)*100)
+    sdk = json.loads(subprocess.check_output([str(FLUTTER), '--version', '--machine'], text=True))
+    sdk.pop('flutterRoot', None)
     report = dict(revision=subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=REPO, text=True).strip(),
                   working_diff_sha256=hashlib.sha256(subprocess.check_output(['git', 'diff'], cwd=REPO)).hexdigest(),
-                  sdk=json.loads(subprocess.check_output([str(FLUTTER), '--version', '--machine'], text=True)),
+                  sdk=sdk,
                   warmups=20, iterations=100, harness_sha256=hashes, runs=results, widget=widgets, comparison=comparison)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2)+'\n')

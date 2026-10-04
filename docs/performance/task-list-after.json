@@ -13,8 +13,7 @@
     "engineBuildDate": "2026-08-11 20:18:15.653",
     "dartSdkVersion": "3.13.0",
     "devToolsVersion": "2.60.0",
-    "flutterVersion": "3.47.0",
-    "flutterRoot": "/Users/kabanya/fvm/versions/3.47.0"
+    "flutterVersion": "3.47.0"
   },
   "warmups": 20,
   "iterations": 100,
