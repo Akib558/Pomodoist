@@ -40,9 +40,10 @@ jobs:
             context: .
             dockerfile: tool/deploy/web/Dockerfile
             primary_tag: latest
+            # RELEASE_SHA must equal POMODOIST_RELEASE in the Komodo stack environment.
             build_args: |
               POMODOIST_BILLING_CHANNEL=stripe
-              RELEASE_SHA=${{ github.sha }}
+              RELEASE_SHA=${{ vars.POMODOIST_RELEASE }}
 
     steps:
       - name: Checkout
@@ -57,6 +58,20 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate POMODOIST_RELEASE for web image
+        if: matrix.image == 'pomodoist-web'
+        env:
+          POMODOIST_RELEASE: ${{ vars.POMODOIST_RELEASE }}
+        run: |
+          if [ -z "$POMODOIST_RELEASE" ]; then
+            echo "::error::vars.POMODOIST_RELEASE is empty; set a 40-character lowercase hex release id in repository variables."
+            exit 1
+          fi
+          if ! printf '%s' "$POMODOIST_RELEASE" | grep -qE '^[0-9a-f]{40}$'; then
+            echo "::error::vars.POMODOIST_RELEASE must be exactly 40 lowercase hex characters (got: ${POMODOIST_RELEASE})"
+            exit 1
+          fi
 
       - name: Build and push image
         uses: docker/build-push-action@v6
