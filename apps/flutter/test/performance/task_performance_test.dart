@@ -31,10 +31,11 @@ final metrics = <String, Object?>{};
 void main() {
   tearDownAll(() {
     final path = Platform.environment['PERFORMANCE_OUTPUT'];
-    if (path != null)
+    if (path != null) {
       File(
         path,
       ).writeAsStringSync(const JsonEncoder.withIndent('  ').convert(metrics));
+    }
   });
   test('fixed computation benchmark', () {
     for (final n in [40, 1000]) {
@@ -523,8 +524,9 @@ void main() {
       expect(recorder.reads, isEmpty);
       final changed = Completer<void>();
       final resumed = container.listen(taskProvider('0'), (_, next) {
-        if (next.value?.content == 'Changed' && !changed.isCompleted)
+        if (next.value?.content == 'Changed' && !changed.isCompleted) {
           changed.complete();
+        }
       });
       await changed.future.timeout(const Duration(seconds: 5));
       await flush(container);

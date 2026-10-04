@@ -13,7 +13,7 @@ void main() {
   const inProgressId = 'kanban-status-in-progress-v1';
   const doneId = 'kanban-status-done-v1';
 
-  group('schema v9', () {
+  group('schema v10', () {
     late AppDatabase db;
     migrations.InitializedSchema? initializedV3;
 
@@ -41,15 +41,15 @@ void main() {
         (await db.customSelect('PRAGMA user_version').getSingle()).read<int>(
           'user_version',
         ),
-        9,
+        10,
       );
     });
 
     test('fresh database creates compact Kanban schema and index', () async {
       db = AppDatabase(NativeDatabase.memory());
 
-      expect(db.schemaVersion, 9);
-      if (db.schemaVersion != 9) {
+      expect(db.schemaVersion, 10);
+      if (db.schemaVersion != 10) {
         return;
       }
       await db
@@ -148,8 +148,8 @@ void main() {
         final version = await db
             .customSelect('PRAGMA user_version')
             .getSingle();
-        expect(version.read<int>('user_version'), 9);
-        if (version.read<int>('user_version') != 9) {
+        expect(version.read<int>('user_version'), 10);
+        if (version.read<int>('user_version') != 10) {
           return;
         }
         final userLabels = await db
@@ -235,7 +235,7 @@ void main() {
 
       final version = await db.customSelect('PRAGMA user_version').getSingle();
 
-      expect(version.read<int>('user_version'), 9);
+      expect(version.read<int>('user_version'), 10);
       expect(
         await _columnNames(db, 'labels'),
         containsAll(['kind', 'system_key', 'icon']),
@@ -250,7 +250,7 @@ void main() {
       final retriedVersion = await db
           .customSelect('PRAGMA user_version')
           .getSingle();
-      expect(retriedVersion.read<int>('user_version'), 9);
+      expect(retriedVersion.read<int>('user_version'), 10);
     });
   });
 

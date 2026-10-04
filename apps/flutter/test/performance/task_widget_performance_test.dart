@@ -14,10 +14,11 @@ void main() {
   final metrics = <String, Object?>{};
   tearDownAll(() {
     final path = Platform.environment['PERFORMANCE_WIDGET_OUTPUT'];
-    if (path != null)
+    if (path != null) {
       File(
         path,
       ).writeAsStringSync(const JsonEncoder.withIndent('  ').convert(metrics));
+    }
   });
   for (final n in [40, 1000]) {
     for (final spread in [false, true]) {
